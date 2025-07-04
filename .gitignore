@@ -1,0 +1,10 @@
+# node modules
+**/node_modules
+
+# lock files
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# env
+**/.env
