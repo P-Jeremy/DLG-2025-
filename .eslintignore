@@ -1,0 +1,3 @@
+# Ignore CommonJS setup/teardown for acceptance tests
+backend/tests/globalSetup.acceptance.cjs
+backend/tests/globalTeardown.acceptance.cjs

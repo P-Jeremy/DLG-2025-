@@ -1,12 +1,40 @@
 {
+  "overrides": {
+    "typescript": "^5.3.3"
+  },
   "name": "monorepo-dlg",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:backend": "cd backend && npx jest --config jest.config.ts",
+    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "lint": "eslint . --ext .ts,.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/mongoose": "^5.11.97",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.6.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "express": "^5.1.0",
+    "mongodb-memory-server": "^10.1.4",
+    "mongoose": "^8.16.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.3.3",
+    "vite": "^7.0.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.1"
+  }
 }
