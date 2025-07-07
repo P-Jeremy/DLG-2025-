@@ -2,10 +2,14 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "dev": "ts-node-dev src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "jest --config jest.config.ts",
+    "lint": "eslint . --ext .ts,.js",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -13,12 +17,22 @@
   "description": "",
   "dependencies": {
     "dotenv": "^17.0.1",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongoose": "^8.16.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/mongoose": "^5.11.97",
     "@types/node": "^24.0.10",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.0.4",
+    "jiti": "^2.4.2",
+    "mongodb-memory-server": "^10.1.4",
+    "supertest": "^7.1.1",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.3.3"
   }
 }
