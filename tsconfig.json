@@ -1,0 +1,28 @@
+{
+  "extends": [],
+  "compilerOptions": {
+    "composite": false,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "esnext",
+    "allowJs": true,
+    "checkJs": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "backend/**/*.ts",
+    "frontend/**/*.ts",
+    "frontend/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "backend/dist",
+    "frontend/dist"
+  ]
+}

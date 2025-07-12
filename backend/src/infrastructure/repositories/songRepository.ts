@@ -5,8 +5,14 @@ import { Tag } from '../../domain/models/Tag';
 
 export class SongRepository {
   async getAll(): Promise<Song[]> {
-    const docs = await SongModel.find().populate('tags').exec();
-    return docs.map((doc) => this._toDomain(doc));
+    try {
+      const docs = await SongModel.find().populate('tags').exec();
+      // console.log('[SongRepository] Fetched docs:', docs); // Suppression du log de debug
+      return docs.map((doc) => this._toDomain(doc));
+    } catch (err) {
+      console.error('[SongRepository] Error in getAll:', err);
+      throw err;
+    }
   }
 
   private _toDomain(doc: SongDocument): Song {

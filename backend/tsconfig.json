@@ -12,7 +12,8 @@
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]
-    }
+    },
+    "outDir": "dist"
   },
   "include": ["src", "tests", "jest.config.ts"],
   "exclude": ["node_modules", "dist"]
