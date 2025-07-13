@@ -1,11 +1,9 @@
 {
+  "extends": "./tsconfig.app.json",
   "include": [
+    "src/**/*",
     "vite.config.ts",
-    "src/vite-env.d.ts",
-    "src"
-  ],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    "vite.config.pwa.ts",
+    "setupTests.ts"
   ]
 }

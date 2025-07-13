@@ -7,34 +7,35 @@ import prettier from "eslint-config-prettier";
 
 export default [
   js.configs.recommended,
+
+  // Backend / Node (TS)
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["backend/**/*.ts"],
     languageOptions: {
-      parser: tsparser,
-      parserOptions: {
-        project: [
-          "./tsconfig.json",
-          "./backend/tsconfig.json",
-          "./frontend/tsconfig.json",
-        ],
-        sourceType: "module",
-        ecmaVersion: 2022,
-        ecmaFeatures: { jsx: true },
-      },
       globals: {
+        global: "readonly",
         process: "readonly",
+        console: "readonly",
+        Buffer: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
         require: "readonly",
         module: "readonly",
         __dirname: "readonly",
-        console: "readonly",
-        fetch: "readonly",
+      },
+      parser: tsparser,
+      parserOptions: {
+        project: ["./backend/tsconfig.json", "./frontend/tsconfig.eslint.json"],
+        sourceType: "module",
+        ecmaVersion: 2022,
       },
     },
     plugins: { "@typescript-eslint": tseslint },
     rules: {
       ...tseslint.configs.recommended.rules,
       ...tseslint.configs["recommended-type-checked"].rules,
-      // Allègement des règles trop strictes ou inutiles pour la productivité
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
@@ -43,27 +44,51 @@ export default [
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
     },
   },
+
+  // Frontend (React TSX)
   {
-    files: ["**/*.tsx", "**/*.jsx"],
+    files: ["frontend/**/*.{ts,tsx}"],
     languageOptions: {
       globals: {
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
         React: "readonly",
         fetch: "readonly",
-        document: "readonly",
+        console: "readonly",
+      },
+      parser: tsparser,
+      parserOptions: {
+        project: ["./frontend/tsconfig.json"],
+        sourceType: "module",
+        ecmaVersion: 2022,
+        ecmaFeatures: { jsx: true },
       },
     },
-    plugins: { react, "react-hooks": reactHooks },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      react,
+      "react-hooks": reactHooks,
+    },
     rules: {
+      ...tseslint.configs.recommended.rules,
+      ...tseslint.configs["recommended-type-checked"].rules,
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      // Allègement React
       "react/react-in-jsx-scope": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint.no-unsafe-member-access": "off",
+      "@typescript-eslint.no-unsafe-return": "off",
+      "@typescript-eslint/no-floating-promises": "warn",
+      "@typescript-eslint/no-unnecessary-type-assertion": "warn",
     },
     settings: {
       react: { version: "detect" },
     },
   },
-  prettier,
+
+  // Tests, setup, global files
   {
     files: ["**/*.test.ts", "**/*.test.tsx", "**/setup*.ts", "**/global*.ts"],
     languageOptions: {
@@ -77,6 +102,10 @@ export default [
         beforeEach: "readonly",
         afterEach: "readonly",
         jest: "readonly",
+        React: "readonly",
+        fetch: "readonly",
+        document: "readonly",
+        console: "readonly",
       },
     },
     rules: {
@@ -88,7 +117,12 @@ export default [
       "@typescript-eslint/no-unnecessary-type-assertion": "off",
     },
   },
+
+  // Ignore build files and declarations
   {
     ignores: ["dist/", "backend/dist/", "node_modules/", "**/*.d.ts"],
   },
+
+  // Prettier last to avoid conflicts
+  prettier,
 ];

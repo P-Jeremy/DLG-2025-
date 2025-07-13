@@ -1,4 +1,3 @@
-console.log('[DEBUG] src/index.ts loaded');
 import express from 'express';
 import dotenv from 'dotenv';
 import songsRouter from './application/routes/songs';
