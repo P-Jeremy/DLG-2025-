@@ -5,9 +5,9 @@ import type { ISong } from '../../src/domain/interfaces/Song';
 const buildMockRepository = (songs: ISong[]): ISongRepository & { receivedSortBy: SongSortField | undefined } => {
   const mock = {
     receivedSortBy: undefined as SongSortField | undefined,
-    async getAll(sortBy: SongSortField): Promise<ISong[]> {
+    getAll(sortBy: SongSortField): Promise<ISong[]> {
       mock.receivedSortBy = sortBy;
-      return songs;
+      return Promise.resolve(songs);
     },
   };
   return mock;

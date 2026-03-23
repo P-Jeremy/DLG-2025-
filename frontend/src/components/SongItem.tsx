@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DOMPurify from 'dompurify';
-import type { Song } from './SongList';
+import type { Song } from '../types/song';
 
 interface SongItemProps {
   song: Song;

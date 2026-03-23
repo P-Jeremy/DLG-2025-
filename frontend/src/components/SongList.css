@@ -78,6 +78,15 @@
   align-self: flex-end;
 }
 
+.song-list-message {
+  text-align: center;
+}
+
+.song-list-error {
+  text-align: center;
+  color: red;
+}
+
 @media (max-width: 900px) {
   .song-list {
     max-width: 98vw;

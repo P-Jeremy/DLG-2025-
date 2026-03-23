@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SongItem from './SongItem';
-import type { Song } from './SongList';
+import type { Song } from '../types/song';
 
 const song: Song = {
   id: '1',
