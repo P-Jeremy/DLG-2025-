@@ -1,20 +1,11 @@
 import path from "path";
 
 export default {
-  preset: "ts-jest",
   testEnvironment: "jsdom",
 
   transform: {
-    "^.+\\.tsx?$": [
-      "ts-jest",
-      {
-        useESM: true,
-        tsconfig: "./tsconfig.json",
-      },
-    ],
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.jest.json" }],
   },
-
-  extensionsToTreatAsEsm: [".ts", ".tsx"],
 
   moduleNameMapper: {
     "^react$": path.resolve("./node_modules/react"),
@@ -23,10 +14,4 @@ export default {
   },
 
   setupFilesAfterEnv: ["<rootDir>/setupTests.ts"],
-
-  globals: {
-    "ts-jest": {
-      useESM: true,
-    },
-  },
 };
