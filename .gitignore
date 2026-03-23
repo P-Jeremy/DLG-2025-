@@ -11,6 +11,9 @@
 **/.env.*
 !**/sample.env
 
+# build output
+**/dist/
+
 # config
 **/.vscode/
 .claude/
