@@ -2,11 +2,17 @@
 import { SongModel, SongDocument } from '../models/songModel';
 import { Song } from '../../domain/models/Song';
 import { Tag } from '../../domain/models/Tag';
+import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
 
-export class SongRepository {
+export class SongRepository implements ISongRepository {
   async getAll(): Promise<Song[]> {
-    const docs = await SongModel.find().populate('tags').exec();
-    return docs.map((doc) => this._toDomain(doc));
+    try {
+      const docs = await SongModel.find().populate('tags').exec();
+      return docs.map((doc) => this._toDomain(doc));
+    } catch (err) {
+      console.error('[SongRepository] Error in getAll:', err);
+      throw err;
+    }
   }
 
   private _toDomain(doc: SongDocument): Song {

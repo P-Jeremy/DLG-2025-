@@ -1,3 +1,4 @@
+import '../../src/infrastructure/models/tagModel';
 
 import { SongModel } from '../../src/infrastructure/models/songModel';
 import { ISong } from '../../src/domain/interfaces/Song';

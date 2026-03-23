@@ -4,7 +4,6 @@ import songsRouter from './application/routes/songs';
 import { connectMongo } from './infrastructure/db/mongo';
 
 
-// Charge .env uniquement si le fichier existe, sinon ignore silencieusement (utile pour la CI/tests)
 import fs from 'fs';
 if (fs.existsSync('.env')) {
   dotenv.config();
@@ -20,12 +19,10 @@ app.use(express.json());
 app.use('/api', songsRouter);
 
 
-// Export l'app pour les tests d'acceptance
 export default app;
 
 if (require.main === module) {
   app.listen(port, () => {
-    // eslint-disable-next-line no-console
     console.log(`Server running on port ${port}`);
   });
 }

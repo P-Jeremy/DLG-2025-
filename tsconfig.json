@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "composite": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "allowJs": true,
+    "checkJs": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "backend/**/*.ts",
+    "frontend/src/**/*.{ts,tsx}",
+    "frontend/vite.config.ts",
+    "frontend/vite.config.pwa.ts",
+    "frontend/setupTests.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "backend/dist",
+    "frontend/dist"
+  ]
+}

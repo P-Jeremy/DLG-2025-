@@ -1,3 +1,4 @@
+import '../models/tagModel';
 import { Schema, model, Document, Types } from 'mongoose';
 
 export interface SongProps {
@@ -21,4 +22,4 @@ const SongSchema = new Schema<SongDocument>({
   tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
 }, { timestamps: true });
 
-export const SongModel = model<SongDocument>('Song', SongSchema);
+export const SongModel = model<SongDocument>('songs', SongSchema);
