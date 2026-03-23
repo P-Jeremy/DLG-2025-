@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/src/index.js",
     "test": "jest --config jest.config.ts",
-    "lint": "eslint . --ext .ts,.js",
+    "lint": "cd .. && node_modules/.bin/eslint backend/",
     "format": "prettier --write ."
   },
   "keywords": [],

@@ -1,12 +1,11 @@
 {
-  "extends": [],
   "compilerOptions": {
     "composite": false,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "allowJs": true,
     "checkJs": false,
@@ -16,8 +15,10 @@
   },
   "include": [
     "backend/**/*.ts",
-    "frontend/**/*.ts",
-    "frontend/**/*.tsx"
+    "frontend/src/**/*.{ts,tsx}",
+    "frontend/vite.config.ts",
+    "frontend/vite.config.pwa.ts",
+    "frontend/setupTests.ts"
   ],
   "exclude": [
     "node_modules",

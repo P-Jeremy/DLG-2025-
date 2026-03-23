@@ -4,6 +4,10 @@ import tsparser from "@typescript-eslint/parser";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import prettier from "eslint-config-prettier";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default [
   js.configs.recommended,
@@ -27,7 +31,8 @@ export default [
       },
       parser: tsparser,
       parserOptions: {
-        project: ["./backend/tsconfig.json", "./frontend/tsconfig.eslint.json"],
+        project: [resolve(__dirname, "backend/tsconfig.json")],
+        tsconfigRootDir: resolve(__dirname, "backend"),
         sourceType: "module",
         ecmaVersion: 2022,
       },
@@ -59,7 +64,8 @@ export default [
       },
       parser: tsparser,
       parserOptions: {
-        project: ["./frontend/tsconfig.json"],
+        project: [resolve(__dirname, "frontend/tsconfig.json")],
+        tsconfigRootDir: resolve(__dirname, "frontend"),
         sourceType: "module",
         ecmaVersion: 2022,
         ecmaFeatures: { jsx: true },
@@ -78,8 +84,8 @@ export default [
       "react/react-in-jsx-scope": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint.no-unsafe-member-access": "off",
-      "@typescript-eslint.no-unsafe-return": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-floating-promises": "warn",
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
     },
