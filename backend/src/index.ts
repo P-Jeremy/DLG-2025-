@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import songsRouter from './infrastructure/http/routes/songs';
+import authRouter from './infrastructure/http/routes/auth';
+import usersRouter from './infrastructure/http/routes/users';
 import { connectMongo } from './infrastructure/db/mongo';
 
 
@@ -17,6 +19,8 @@ void connectMongo(mongoUri);
 
 app.use(express.json());
 app.use('/api', songsRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/users', usersRouter);
 
 
 export default app;

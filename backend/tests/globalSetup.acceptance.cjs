@@ -12,4 +12,6 @@ module.exports = async function globalSetup() {
   global.__MONGO_SERVER__ = mongoServer;
   process.env.MONGO_URI = uri;
   process.env.PORT = '3000';
+  process.env.JWT_SECRET = 'test-jwt-secret-acceptance';
+  process.env.NODE_ENV = 'test';
 };
