@@ -126,7 +126,7 @@ export default [
 
   // Ignore build files and declarations
   {
-    ignores: ["dist/", "backend/dist/", "node_modules/", "**/*.d.ts"],
+    ignores: ["**/dist/", "**/node_modules/", "**/*.d.ts"],
   },
 
   // Prettier last to avoid conflicts

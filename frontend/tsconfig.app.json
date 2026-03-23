@@ -23,9 +23,8 @@
     "noFallthroughCasesInSwitch": true,
   },
   "include": [
-  "src/**/*",
+    "src/**/*",
     "vite.config.ts",
-    "vite.config.pwa.ts",
     "setupTests.ts"
-]
+  ]
 }
