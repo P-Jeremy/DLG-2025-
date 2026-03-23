@@ -1,4 +1,4 @@
-import { GetSongsUsecase } from '../../src/domain/usecases/getSongs';
+import { GetSongsUsecase } from '../../src/application/usecases/GetSongs';
 import { SongRepository } from '../../src/infrastructure/repositories/songRepository';
 import { insertTestSongs } from '../helpers/insertTestSongs';
 import { insertTestTags } from '../helpers/insertTestTags';
@@ -13,7 +13,6 @@ describe('GetSongsUsecase integration test', () => {
   });
 
   it('should retrieve a list of songs', async () => {
-    // given
     const tags = [
       { name: 'rock' },
       { name: 'pop' },
@@ -39,10 +38,8 @@ describe('GetSongsUsecase integration test', () => {
     ];
     await insertTestSongs(songsData);
 
-    // when
     const songs = await usecase.execute('title');
 
-    // then
     const songWithoutTags = songs.find((s) => s.title === 'Song Without Tags');
     const songWithTags = songs.find((s) => s.title === 'Song With Tags');
     const expected = [

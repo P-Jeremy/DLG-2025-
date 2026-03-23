@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "express"],
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]

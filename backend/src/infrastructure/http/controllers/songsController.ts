@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { GetSongsUsecase } from '../../../domain/usecases/getSongs';
+import type { GetSongsUsecase } from '../../../application/usecases/GetSongs';
 import type { SongSortField } from '../../../domain/interfaces/ISongRepository';
 
 const VALID_SORT_FIELDS: SongSortField[] = ['title', 'author'];

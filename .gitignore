@@ -8,6 +8,8 @@
 
 # env
 **/.env
+**/.env.*
+!**/sample.env
 
 # config
 **/.vscode/
