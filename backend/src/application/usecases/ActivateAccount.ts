@@ -1,11 +1,5 @@
-import { DomainError } from '../errors/DomainError';
-import type { IUserRepository } from '../interfaces/IUserRepository';
-
-export class InvalidActivationTokenError extends DomainError {
-  constructor() {
-    super('Invalid activation token');
-  }
-}
+import { InvalidActivationTokenError } from '../../domain/errors/DomainError';
+import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
 
 export interface ActivateAccountInput {
   token: string;

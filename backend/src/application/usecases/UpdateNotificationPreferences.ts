@@ -1,11 +1,5 @@
-import { DomainError } from '../errors/DomainError';
-import type { IUserRepository } from '../interfaces/IUserRepository';
-
-export class UserNotFoundError extends DomainError {
-  constructor() {
-    super('User not found');
-  }
-}
+import { UserNotFoundError } from '../../domain/errors/DomainError';
+import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
 
 export interface UpdateNotificationPreferencesInput {
   userId: string;

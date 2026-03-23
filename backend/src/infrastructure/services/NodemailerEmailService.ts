@@ -3,26 +3,35 @@ import type { IEmailService } from '../../domain/interfaces/IEmailService';
 
 const IS_TEST_ENVIRONMENT = process.env.NODE_ENV === 'test';
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 export class NodemailerEmailService implements IEmailService {
-  private readonly transporter: nodemailer.Transporter;
-  private readonly senderEmail: string;
-  private readonly clientUrl: string;
-
-  constructor() {
-    this.senderEmail = process.env.EMAIL ?? '';
-    this.clientUrl = process.env.CLIENT_URL ?? '';
-
+  private get transporter(): nodemailer.Transporter {
     if (IS_TEST_ENVIRONMENT) {
-      this.transporter = nodemailer.createTransport({ jsonTransport: true });
-    } else {
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: this.senderEmail,
-          pass: process.env.GMAIL_PASS,
-        },
-      });
+      return nodemailer.createTransport({ jsonTransport: true });
     }
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.GMAIL_PASS,
+      },
+    });
+  }
+
+  private get senderEmail(): string {
+    return process.env.EMAIL ?? '';
+  }
+
+  private get clientUrl(): string {
+    return process.env.CLIENT_URL ?? '';
   }
 
   async sendActivationEmail(to: string, token: string): Promise<void> {
@@ -50,7 +59,7 @@ export class NodemailerEmailService implements IEmailService {
       from: this.senderEmail,
       to,
       subject: 'Nouvelle chanson ajoutée',
-      html: `<p>Une nouvelle chanson a été ajoutée : <strong>${songTitle}</strong></p>`,
+      html: `<p>Une nouvelle chanson a été ajoutée : <strong>${escapeHtml(songTitle)}</strong></p>`,
     });
   }
 }

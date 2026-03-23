@@ -1,15 +1,7 @@
-import bcrypt from 'bcryptjs';
-import { HashedPassword } from '../value-objects/HashedPassword';
-import { DomainError } from '../errors/DomainError';
-import type { IUserRepository } from '../interfaces/IUserRepository';
-
-const BCRYPT_ROUNDS = 10;
-
-export class InvalidResetTokenError extends DomainError {
-  constructor() {
-    super('Invalid reset token');
-  }
-}
+import { HashedPassword } from '../../domain/value-objects/HashedPassword';
+import { InvalidResetTokenError } from '../../domain/errors/DomainError';
+import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
+import type { IPasswordHasher } from '../../domain/interfaces/IPasswordHasher';
 
 export interface ResetPasswordInput {
   token: string;
@@ -21,7 +13,10 @@ export interface ResetPasswordOutput {
 }
 
 export class ResetPassword {
-  constructor(private readonly userRepository: IUserRepository) {}
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly passwordHasher: IPasswordHasher,
+  ) {}
 
   async execute(input: ResetPasswordInput): Promise<ResetPasswordOutput> {
     const user = await this.userRepository.findByResetToken(input.token);
@@ -30,7 +25,7 @@ export class ResetPassword {
       throw new InvalidResetTokenError();
     }
 
-    const hashedPasswordValue = await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS);
+    const hashedPasswordValue = await this.passwordHasher.hash(input.newPassword);
     user.password = new HashedPassword(hashedPasswordValue);
     user.tokens = [];
 

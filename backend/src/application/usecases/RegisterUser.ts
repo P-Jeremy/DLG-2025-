@@ -1,27 +1,14 @@
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import { User } from '../models/User';
-import { Email } from '../value-objects/Email';
-import { Pseudo } from '../value-objects/Pseudo';
-import { HashedPassword } from '../value-objects/HashedPassword';
-import { DomainError } from '../errors/DomainError';
-import type { IUserRepository } from '../interfaces/IUserRepository';
-import type { IEmailService } from '../interfaces/IEmailService';
+import { User } from '../../domain/models/User';
+import { Email } from '../../domain/value-objects/Email';
+import { Pseudo } from '../../domain/value-objects/Pseudo';
+import { HashedPassword } from '../../domain/value-objects/HashedPassword';
+import { EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../domain/errors/DomainError';
+import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
+import type { IEmailService } from '../../domain/interfaces/IEmailService';
+import type { IPasswordHasher } from '../../domain/interfaces/IPasswordHasher';
 
-const BCRYPT_ROUNDS = 10;
 const TOKEN_BYTE_LENGTH = 32;
-
-export class EmailAlreadyTakenError extends DomainError {
-  constructor() {
-    super('Email already taken');
-  }
-}
-
-export class PseudoAlreadyTakenError extends DomainError {
-  constructor() {
-    super('Pseudo already taken');
-  }
-}
 
 export interface RegisterUserInput {
   email: string;
@@ -37,6 +24,7 @@ export class RegisterUser {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly emailService: IEmailService,
+    private readonly passwordHasher: IPasswordHasher,
   ) {}
 
   async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
@@ -53,7 +41,7 @@ export class RegisterUser {
       throw new PseudoAlreadyTakenError();
     }
 
-    const hashedPasswordValue = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
+    const hashedPasswordValue = await this.passwordHasher.hash(input.password);
     const hashedPassword = new HashedPassword(hashedPasswordValue);
 
     const activationToken = crypto.randomBytes(TOKEN_BYTE_LENGTH).toString('hex');
@@ -71,7 +59,9 @@ export class RegisterUser {
 
     const savedUser = await this.userRepository.save(user);
 
-    await this.emailService.sendActivationEmail(email.toString(), activationToken);
+    try {
+      await this.emailService.sendActivationEmail(email.toString(), activationToken);
+    } catch (_: unknown) {}
 
     return { userId: savedUser.id! };
   }

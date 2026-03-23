@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import type { IJwtService, JwtPayload } from '../../domain/interfaces/IJwtService';
+import type { IJwtService, JwtPayload } from '../../application/interfaces/IJwtService';
 
 const TOKEN_EXPIRATION = '1d';
 

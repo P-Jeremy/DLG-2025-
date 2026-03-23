@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { SongsController } from '../controllers/songsController';
-import { GetSongsUsecase } from '../../../domain/usecases/getSongs';
+import { GetSongsUsecase } from '../../../application/usecases/GetSongs';
 import { SongRepository } from '../../repositories/songRepository';
 
 const router = Router();

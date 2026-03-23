@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import type { IUserRepository } from '../interfaces/IUserRepository';
-import type { IEmailService } from '../interfaces/IEmailService';
+import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
+import type { IEmailService } from '../../domain/interfaces/IEmailService';
 
 const TOKEN_BYTE_LENGTH = 32;
 
@@ -30,7 +30,11 @@ export class RequestPasswordReset {
 
     await this.userRepository.update(user);
 
-    await this.emailService.sendPasswordResetEmail(user.email.toString(), resetToken);
+    try {
+      await this.emailService.sendPasswordResetEmail(user.email.toString(), resetToken);
+    } catch (emailError) {
+      console.error('[RequestPasswordReset] Email send failed:', emailError instanceof Error ? emailError.message : 'Unknown error');
+    }
 
     return { success: true };
   }

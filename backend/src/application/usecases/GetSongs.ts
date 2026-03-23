@@ -1,5 +1,5 @@
-import type { ISongRepository, SongSortField } from '../interfaces/ISongRepository';
-import type { ISong } from '../interfaces/Song';
+import type { ISongRepository, SongSortField } from '../../domain/interfaces/ISongRepository';
+import type { ISong } from '../../domain/interfaces/Song';
 
 export class GetSongsUsecase {
   constructor(private readonly songRepo: ISongRepository) {}

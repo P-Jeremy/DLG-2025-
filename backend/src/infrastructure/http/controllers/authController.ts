@@ -1,23 +1,45 @@
 import type { Request, Response } from 'express';
-import { RegisterUser, EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../../domain/usecases/RegisterUser';
-import { LoginUser, UserNotFoundError, AccountNotActiveError, InvalidPasswordError } from '../../../domain/usecases/LoginUser';
-import { ActivateAccount, InvalidActivationTokenError } from '../../../domain/usecases/ActivateAccount';
-import { RequestPasswordReset } from '../../../domain/usecases/RequestPasswordReset';
-import { ResetPassword, InvalidResetTokenError } from '../../../domain/usecases/ResetPassword';
-import { DomainError } from '../../../domain/errors/DomainError';
-import { UserMongoRepository } from '../../repositories/userRepository';
-import { JwtService } from '../../services/JwtService';
-import { NodemailerEmailService } from '../../services/NodemailerEmailService';
-
-const userRepository = new UserMongoRepository();
-const jwtService = new JwtService();
-const emailService = new NodemailerEmailService();
+import { RegisterUser } from '../../../application/usecases/RegisterUser';
+import { LoginUser } from '../../../application/usecases/LoginUser';
+import { ActivateAccount } from '../../../application/usecases/ActivateAccount';
+import { RequestPasswordReset } from '../../../application/usecases/RequestPasswordReset';
+import { ResetPassword } from '../../../application/usecases/ResetPassword';
+import {
+  DomainError,
+  EmailAlreadyTakenError,
+  PseudoAlreadyTakenError,
+  UserNotFoundError,
+  AccountNotActiveError,
+  InvalidPasswordError,
+  InvalidActivationTokenError,
+  InvalidResetTokenError,
+} from '../../../domain/errors/DomainError';
+import type { IUserRepository } from '../../../domain/interfaces/IUserRepository';
+import type { IEmailService } from '../../../domain/interfaces/IEmailService';
+import type { IPasswordHasher } from '../../../domain/interfaces/IPasswordHasher';
+import type { IJwtService } from '../../../application/interfaces/IJwtService';
+import type { LoginUserInput } from '../../../application/usecases/LoginUser';
+import type { ResetPasswordInput } from '../../../application/usecases/ResetPassword';
 
 export class AuthController {
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly jwtService: IJwtService,
+    private readonly emailService: IEmailService,
+    private readonly passwordHasher: IPasswordHasher,
+  ) {}
+
   async register(req: Request, res: Response): Promise<void> {
+    const { email, pseudo, password, apiKey } = req.body;
+    const validApiKey = process.env.USER_API_KEY;
+    if (!validApiKey || apiKey !== validApiKey) {
+      res.status(403).json({ message: 'Clé d\'accès invalide' });
+      return;
+    }
+
     try {
-      const usecase = new RegisterUser(userRepository, emailService);
-      const result = await usecase.execute(req.body);
+      const usecase = new RegisterUser(this.userRepository, this.emailService, this.passwordHasher);
+      const result = await usecase.execute({ email, pseudo, password });
       res.status(201).json(result);
     } catch (error) {
       if (error instanceof EmailAlreadyTakenError) {
@@ -38,8 +60,8 @@ export class AuthController {
 
   async login(req: Request, res: Response): Promise<void> {
     try {
-      const usecase = new LoginUser(userRepository, jwtService);
-      const result = await usecase.execute(req.body);
+      const usecase = new LoginUser(this.userRepository, this.jwtService, this.passwordHasher);
+      const result = await usecase.execute(req.body as LoginUserInput);
       res.json(result);
     } catch (error) {
       if (error instanceof UserNotFoundError || error instanceof InvalidPasswordError) {
@@ -56,7 +78,7 @@ export class AuthController {
 
   async activateAccount(req: Request, res: Response): Promise<void> {
     try {
-      const usecase = new ActivateAccount(userRepository);
+      const usecase = new ActivateAccount(this.userRepository);
       const result = await usecase.execute({ token: req.params.token });
       res.json(result);
     } catch (error) {
@@ -70,7 +92,7 @@ export class AuthController {
 
   async forgotPassword(req: Request, res: Response): Promise<void> {
     try {
-      const usecase = new RequestPasswordReset(userRepository, emailService);
+      const usecase = new RequestPasswordReset(this.userRepository, this.emailService);
       const result = await usecase.execute({ email: req.body.email });
       res.json(result);
     } catch {
@@ -80,8 +102,8 @@ export class AuthController {
 
   async resetPassword(req: Request, res: Response): Promise<void> {
     try {
-      const usecase = new ResetPassword(userRepository);
-      const result = await usecase.execute(req.body);
+      const usecase = new ResetPassword(this.userRepository, this.passwordHasher);
+      const result = await usecase.execute(req.body as ResetPasswordInput);
       res.json(result);
     } catch (error) {
       if (error instanceof InvalidResetTokenError) {

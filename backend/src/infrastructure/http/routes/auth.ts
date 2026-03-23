@@ -1,8 +1,20 @@
 import { Router, Request, Response } from 'express';
 import { AuthController } from '../controllers/authController';
+import { UserMongoRepository } from '../../repositories/userRepository';
+import { JwtService } from '../../services/JwtService';
+import { NodemailerEmailService } from '../../services/NodemailerEmailService';
+import { BcryptPasswordHasher } from '../../services/BcryptPasswordHasher';
+import { authRateLimiter } from '../middlewares/rateLimiter';
 
 const router = Router();
-const controller = new AuthController();
+
+const userRepository = new UserMongoRepository();
+const jwtService = new JwtService();
+const emailService = new NodemailerEmailService();
+const passwordHasher = new BcryptPasswordHasher();
+const controller = new AuthController(userRepository, jwtService, emailService, passwordHasher);
+
+router.use(authRateLimiter);
 
 router.post('/register', async (req: Request, res: Response) => {
   await controller.register(req, res);

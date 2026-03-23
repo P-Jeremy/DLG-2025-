@@ -1,15 +1,18 @@
 import type { Request, Response } from 'express';
-import { UpdateNotificationPreferences, UserNotFoundError } from '../../../domain/usecases/UpdateNotificationPreferences';
-import { UserMongoRepository } from '../../repositories/userRepository';
-
-const userRepository = new UserMongoRepository();
+import { UpdateNotificationPreferences } from '../../../application/usecases/UpdateNotificationPreferences';
+import { UserNotFoundError } from '../../../domain/errors/DomainError';
+import type { IUserRepository } from '../../../domain/interfaces/IUserRepository';
+import type { AuthenticatedRequest } from '../middlewares/authenticate';
 
 export class UserController {
+  constructor(private readonly userRepository: IUserRepository) {}
+
   async updateNotifications(req: Request, res: Response): Promise<void> {
+    const { userId } = (req as AuthenticatedRequest).user;
     try {
-      const usecase = new UpdateNotificationPreferences(userRepository);
+      const usecase = new UpdateNotificationPreferences(this.userRepository);
       const result = await usecase.execute({
-        userId: req.user!.userId,
+        userId,
         titleNotif: req.body.titleNotif,
       });
       res.json(result);
