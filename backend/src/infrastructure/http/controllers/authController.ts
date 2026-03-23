@@ -79,7 +79,7 @@ export class AuthController {
   async activateAccount(req: Request, res: Response): Promise<void> {
     try {
       const usecase = new ActivateAccount(this.userRepository);
-      const result = await usecase.execute({ token: req.params.token });
+      const result = await usecase.execute({ token: String(req.params.token) });
       res.json(result);
     } catch (error) {
       if (error instanceof InvalidActivationTokenError) {
