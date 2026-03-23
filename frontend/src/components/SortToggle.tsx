@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SortField } from '../types/song';
-import './SortToggle.css';
+import './SortToggle.scss';
 
 interface SortToggleProps {
   sortField: SortField;
@@ -27,6 +27,7 @@ const SortToggle: React.FC<SortToggleProps> = ({ sortField, onToggle }) => {
         className={`sort-toggle__label sort-toggle__label--left${!isChecked ? ' sort-toggle__label--active' : ''}`}
         onClick={() => onToggle('title')}
       >
+        <span className="material-icons sort-toggle__icon">audiotrack</span>
         Titre
       </span>
       <span className="sort-toggle__track">
@@ -36,6 +37,7 @@ const SortToggle: React.FC<SortToggleProps> = ({ sortField, onToggle }) => {
         className={`sort-toggle__label sort-toggle__label--right${isChecked ? ' sort-toggle__label--active' : ''}`}
         onClick={() => onToggle('author')}
       >
+        <span className="material-icons sort-toggle__icon">perm_identity</span>
         Artiste
       </span>
     </label>

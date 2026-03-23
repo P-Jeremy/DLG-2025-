@@ -1,4 +1,8 @@
-*, *::before, *::after {
+@use './styles/variables' as *;
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -10,8 +14,11 @@ body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #213547;
-  background-color: #f5f5f5;
+  color: $color-text;
+  background-image: url('/background.png');
+  background-size: 15em;
+  background-attachment: fixed;
+  background-position: center;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: contain;
@@ -22,23 +29,23 @@ body {
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  border-radius: $border-radius-button;
+  border: 1px solid $color-border-default;
   padding: 0.6em 1.2em;
   min-height: 44px;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #f0f0f0;
-  color: #213547;
+  background-color: $color-button-bg;
+  color: $color-text;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: border-color 0.2s, background-color 0.2s;
-}
+  transition: border-color $transition-fast, background-color $transition-fast;
 
-button:hover,
-button:active {
-  border-color: #1976d2;
-  background-color: #e3f2fd;
+  &:hover,
+  &:active {
+    border-color: $color-button-hover-border;
+    background-color: $color-button-hover-bg;
+  }
 }

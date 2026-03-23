@@ -3,7 +3,7 @@ import SongItem from './SongItem';
 import SortToggle from './SortToggle';
 import { fetchSongs } from '../api/songs';
 import type { Song, SortField } from '../types/song';
-import './SongList.css';
+import './SongList.scss';
 
 const SongList: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -19,7 +19,7 @@ const SongList: React.FC = () => {
         const data = await fetchSongs(sortField);
         setSongs(data);
       } catch (err: unknown) {
-        setError((err as Error).message || 'Erreur inconnue');
+        setError((err as Error).message || 'Unknown error');
       } finally {
         setLoading(false);
       }
@@ -27,7 +27,7 @@ const SongList: React.FC = () => {
     void loadSongs();
   }, [sortField]);
 
-  if (loading) return <div className="song-list-bg"><div className="song-list-message">Chargement...</div></div>;
+  if (loading) return <div className="song-list-bg"><img src="/vinyl.png" className="vinyl-loader" alt="Chargement..." /></div>;
   if (error) return <div className="song-list-bg"><div className="song-list-error">Erreur : {error}</div></div>;
   if (songs.length === 0) return <div className="song-list-bg"><div className="song-list-message">Aucune chanson trouvée.</div></div>;
 
