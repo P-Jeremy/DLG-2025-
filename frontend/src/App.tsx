@@ -5,7 +5,7 @@ const App: React.FC = () => {
   return (
     <div className="app-bg">
       <div className="app-header">
-        <h1>DLG - Chansons</h1>
+        <h1>DLG</h1>
       </div>
       <SongList />
     </div>
