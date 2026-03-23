@@ -1,11 +1,11 @@
-import type { Song } from '../components/SongList';
+import type { Song, SortField } from '../types/song';
 
-export async function fetchSongs(): Promise<Song[]> {
-  const res = await fetch('/api/songs');
+export async function fetchSongs(sortBy: SortField): Promise<Song[]> {
+  const res = await fetch(`/api/songs?sortBy=${sortBy}`);
   if (!res.ok) throw new Error('Erreur lors du chargement des chansons');
   const data = await res.json() as unknown;
-  
+
   if (!Array.isArray(data)) throw new Error('Format incorrect');
-  
+
   return data as Song[];
 }

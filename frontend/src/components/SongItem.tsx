@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import DOMPurify from 'dompurify';
-import type { Song } from './SongList';
+import type { Song } from '../types/song';
+import './SongItem.scss';
 
 interface SongItemProps {
   song: Song;
@@ -14,7 +15,6 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
   const toggleAll = () => {
     setOpen(o => !o);
     if (!open) {
-      // Si on ouvre, on ouvre tout par défaut
       setShowTab(true);
       setShowLyrics(true);
     }
@@ -23,17 +23,11 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
   return (
     <div
       className={`song-card${open ? ' open' : ''}`}
-      style={{ cursor: 'pointer', transition: 'box-shadow 0.2s' }}
       onClick={toggleAll}
     >
-      <div
-        className="song-title"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-      >
+      <div className="song-title">
         <span>{song.title}</span>
-        <span
-          style={{ fontSize: '1.2em', color: '#1976d2', marginLeft: 8, userSelect: 'none' }}
-        >
+        <span className="song-chevron">
           {open ? '▲' : '▼'}
         </span>
       </div>
@@ -41,21 +35,12 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
       {song.tags && song.tags.length > 0 && (
         <ul
           className="song-tags"
-          style={{
-            padding: 0,
-            margin: 0,
-            listStyle: 'none',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '0.5rem'
-          }}
           onClick={e => e.stopPropagation()}
         >
           {song.tags.map(tag => (
             <li
               className="song-tag"
               key={tag.id || tag.name}
-              style={{ display: 'inline-block' }}
             >
               {tag.name}
             </li>
@@ -68,10 +53,9 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
       {open && (
         <div
           className="song-details"
-          style={{ marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '1rem' }}
           onClick={e => e.stopPropagation()}
         >
-          <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
+          <div className="song-details-actions">
             {song.tab && (
               <button onClick={() => setShowTab(t => !t)}>
                 {showTab ? 'Masquer la tablature' : 'Afficher la tablature'}
@@ -85,16 +69,9 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
           </div>
 
           {showTab && song.tab && (
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ fontWeight: 600, marginBottom: 4, color: '#1976d2' }}>Tablature</div>
-              <div
-                style={{
-                  background: '#f8f8f8',
-                  borderRadius: 6,
-                  padding: '0.75em',
-                  textAlign: 'center'
-                }}
-              >
+            <div className="song-section">
+              <div className="song-section-title">Tablature</div>
+              <div className="song-section-content song-section-content--centered">
                 <img
                   src={song.tab}
                   alt="Tablature"
@@ -105,15 +82,10 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
           )}
 
           {showLyrics && song.lyrics && (
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ fontWeight: 600, marginBottom: 4, color: '#1976d2' }}>Paroles</div>
+            <div className="song-section">
+              <div className="song-section-title">Paroles</div>
               <div
-                style={{
-                  background: '#f8f8f8',
-                  borderRadius: 6,
-                  padding: '0.75em',
-                  fontFamily: 'inherit'
-                }}
+                className="song-section-content"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(song.lyrics) }}
               />
             </div>

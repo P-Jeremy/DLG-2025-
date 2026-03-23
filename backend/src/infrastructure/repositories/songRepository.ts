@@ -2,20 +2,15 @@
 import { SongModel, SongDocument } from '../models/songModel';
 import { Song } from '../../domain/models/Song';
 import { Tag } from '../../domain/models/Tag';
-import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
+import type { ISongRepository, SongSortField } from '../../domain/interfaces/ISongRepository';
 
 export class SongRepository implements ISongRepository {
-  async getAll(): Promise<Song[]> {
-    try {
-      const docs = await SongModel.find().populate('tags').exec();
-      return docs.map((doc) => this._toDomain(doc));
-    } catch (err) {
-      console.error('[SongRepository] Error in getAll:', err);
-      throw err;
-    }
+  async getAll(sortBy: SongSortField): Promise<Song[]> {
+    const docs = await SongModel.find().sort({ [sortBy]: 1 }).populate('tags').exec();
+    return docs.map((doc) => this.toDomain(doc));
   }
 
-  private _toDomain(doc: SongDocument): Song {
+  private toDomain(doc: SongDocument): Song {
     return new Song({
       id: doc._id.toString(),
       title: doc.title,

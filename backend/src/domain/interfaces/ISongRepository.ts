@@ -1,5 +1,7 @@
 import type { ISong } from './Song';
 
+export type SongSortField = 'title' | 'author';
+
 export interface ISongRepository {
-  getAll(): Promise<ISong[]>;
+  getAll(sortBy: SongSortField): Promise<ISong[]>;
 }

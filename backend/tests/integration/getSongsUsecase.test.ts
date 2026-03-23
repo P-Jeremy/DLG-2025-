@@ -40,7 +40,7 @@ describe('GetSongsUsecase integration test', () => {
     await insertTestSongs(songsData);
 
     // when
-    const songs = await usecase.execute();
+    const songs = await usecase.execute('title');
 
     // then
     const songWithoutTags = songs.find((s) => s.title === 'Song Without Tags');
