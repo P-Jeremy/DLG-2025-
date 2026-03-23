@@ -3,7 +3,7 @@ import SongItem from './SongItem';
 import './SongList.css';
 
 export interface Song {
-  _id: string;
+  id: string;
   title: string;
   author?: string;
   lyrics?: string;
@@ -42,7 +42,7 @@ const SongList: React.FC = () => {
     <div className="song-list-bg">
       <div className="song-list">
         {songs.map(song => (
-          <SongItem key={song._id} song={song} />
+          <SongItem key={song.id} song={song} />
         ))}
       </div>
     </div>

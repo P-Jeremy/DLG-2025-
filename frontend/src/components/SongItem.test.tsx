@@ -1,10 +1,10 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SongItem from './SongItem';
-import { Song } from './SongList';
+import type { Song } from './SongList';
 
 const song: Song = {
-  _id: '1',
+  id: '1',
   title: 'Test Song',
   author: 'Test Author',
   lyrics: '<b>Paroles test</b>',

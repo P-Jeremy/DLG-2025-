@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
 import type { Song } from './SongList';
 
 interface SongItemProps {
@@ -113,7 +114,7 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
                   padding: '0.75em',
                   fontFamily: 'inherit'
                 }}
-                dangerouslySetInnerHTML={{ __html: song.lyrics }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(song.lyrics) }}
               />
             </div>
           )}
