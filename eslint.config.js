@@ -47,6 +47,7 @@ export default [
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-floating-promises": "warn",
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+      "no-empty": ["error", { "allowEmptyCatch": true }],
     },
   },
 
@@ -58,6 +59,7 @@ export default [
         window: "readonly",
         document: "readonly",
         navigator: "readonly",
+        localStorage: "readonly",
         React: "readonly",
         fetch: "readonly",
         console: "readonly",
@@ -88,6 +90,8 @@ export default [
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-floating-promises": "warn",
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/no-misused-promises": ["error", { "checksVoidReturn": { "attributes": false } }],
     },
     settings: {
       react: { version: "detect" },
@@ -121,6 +125,9 @@ export default [
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/no-unnecessary-type-assertion": "off",
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/require-await": "off",
+      "no-undef": "off",
     },
   },
 

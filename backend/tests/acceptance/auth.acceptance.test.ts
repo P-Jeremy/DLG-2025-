@@ -6,12 +6,18 @@ function getTypedApp(): import('express').Application {
   return app as import('express').Application;
 }
 
+const USER_API_KEY = process.env.USER_API_KEY!;
+
+function registerPayload(email: string, pseudo: string, password: string): Record<string, string> {
+  return { email, pseudo, password, apiKey: USER_API_KEY };
+}
+
 describe('Auth endpoints (acceptance)', () => {
   describe('POST /api/auth/register', () => {
     it('should register a new user and return 201 with userId', async () => {
       const { status, body } = await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'newuser@example.com', pseudo: 'newuser', password: 'password123' });
+        .send(registerPayload('newuser@example.com', 'newuser', 'password123'));
 
       expect(status).toBe(201);
       expect(body).toHaveProperty('userId');
@@ -20,11 +26,11 @@ describe('Auth endpoints (acceptance)', () => {
     it('should return 409 when email is already taken', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'taken@example.com', pseudo: 'user1', password: 'pass' });
+        .send(registerPayload('taken@example.com', 'user1', 'pass'));
 
       const { status, body } = await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'taken@example.com', pseudo: 'user2', password: 'pass' });
+        .send(registerPayload('taken@example.com', 'user2', 'pass'));
 
       expect(status).toBe(409);
       expect(body.message).toBe('Email already taken');
@@ -33,11 +39,11 @@ describe('Auth endpoints (acceptance)', () => {
     it('should return 409 when pseudo is already taken', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'user3@example.com', pseudo: 'dupseudo', password: 'pass' });
+        .send(registerPayload('user3@example.com', 'dupseudo', 'pass'));
 
       const { status, body } = await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'user4@example.com', pseudo: 'dupseudo', password: 'pass' });
+        .send(registerPayload('user4@example.com', 'dupseudo', 'pass'));
 
       expect(status).toBe(409);
       expect(body.message).toBe('Pseudo already taken');
@@ -46,9 +52,17 @@ describe('Auth endpoints (acceptance)', () => {
     it('should return 400 when email format is invalid', async () => {
       const { status } = await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'not-an-email', pseudo: 'user', password: 'pass' });
+        .send(registerPayload('not-an-email', 'user', 'pass'));
 
       expect(status).toBe(400);
+    });
+
+    it('should return 403 when apiKey is missing', async () => {
+      const { status } = await request(getTypedApp())
+        .post('/api/auth/register')
+        .send({ email: 'nokey@example.com', pseudo: 'nokey', password: 'pass' });
+
+      expect(status).toBe(403);
     });
   });
 
@@ -56,7 +70,7 @@ describe('Auth endpoints (acceptance)', () => {
     it('should activate account when token is valid', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'activate@example.com', pseudo: 'activateuser', password: 'pass' });
+        .send(registerPayload('activate@example.com', 'activateuser', 'pass'));
 
       const user = await UserModel.findOne({ email: 'activate@example.com' });
       const token = user!.tokens[0].used_token;
@@ -84,7 +98,7 @@ describe('Auth endpoints (acceptance)', () => {
     it('should return token and user info on successful login', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'login@example.com', pseudo: 'loginuser', password: 'mypassword' });
+        .send(registerPayload('login@example.com', 'loginuser', 'mypassword'));
 
       const user = await UserModel.findOne({ email: 'login@example.com' });
       const token = user!.tokens[0].used_token;
@@ -111,7 +125,7 @@ describe('Auth endpoints (acceptance)', () => {
     it('should return 401 for wrong password', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'wrongpass@example.com', pseudo: 'wrongpassuser', password: 'correct' });
+        .send(registerPayload('wrongpass@example.com', 'wrongpassuser', 'correct'));
 
       const user = await UserModel.findOne({ email: 'wrongpass@example.com' });
       await request(getTypedApp()).get(`/api/auth/activate/${user!.tokens[0].used_token}`);
@@ -126,7 +140,7 @@ describe('Auth endpoints (acceptance)', () => {
     it('should return 403 for non-activated account', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'inactive@example.com', pseudo: 'inactiveuser', password: 'pass' });
+        .send(registerPayload('inactive@example.com', 'inactiveuser', 'pass'));
 
       const { status } = await request(getTypedApp())
         .post('/api/auth/login')
@@ -140,7 +154,7 @@ describe('Auth endpoints (acceptance)', () => {
     it('should return success true for existing user', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'forgot@example.com', pseudo: 'forgotuser', password: 'pass' });
+        .send(registerPayload('forgot@example.com', 'forgotuser', 'pass'));
 
       const user = await UserModel.findOne({ email: 'forgot@example.com' });
       await request(getTypedApp()).get(`/api/auth/activate/${user!.tokens[0].used_token}`);
@@ -167,7 +181,7 @@ describe('Auth endpoints (acceptance)', () => {
     it('should reset password when token is valid', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'resetpass@example.com', pseudo: 'resetpassuser', password: 'oldpass' });
+        .send(registerPayload('resetpass@example.com', 'resetpassuser', 'oldpass'));
 
       const user = await UserModel.findOne({ email: 'resetpass@example.com' });
       const activationToken = user!.tokens[0].used_token;
@@ -206,7 +220,7 @@ describe('Auth endpoints (acceptance)', () => {
     it('should update notification preferences when authenticated', async () => {
       await request(getTypedApp())
         .post('/api/auth/register')
-        .send({ email: 'notif@example.com', pseudo: 'notifuser', password: 'pass' });
+        .send(registerPayload('notif@example.com', 'notifuser', 'pass'));
 
       const user = await UserModel.findOne({ email: 'notif@example.com' });
       await request(getTypedApp()).get(`/api/auth/activate/${user!.tokens[0].used_token}`);

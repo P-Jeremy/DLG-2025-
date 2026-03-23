@@ -1,4 +1,4 @@
-import { GetSongsUsecase } from '../../src/domain/usecases/getSongs';
+import { GetSongsUsecase } from '../../src/application/usecases/GetSongs';
 import type { ISongRepository, SongSortField } from '../../src/domain/interfaces/ISongRepository';
 import type { ISong } from '../../src/domain/interfaces/Song';
 

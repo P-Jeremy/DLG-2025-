@@ -1,19 +1,19 @@
-import bcrypt from 'bcryptjs';
-import { LoginUser, UserNotFoundError, AccountNotActiveError, InvalidPasswordError } from '../../src/domain/usecases/LoginUser';
+import { LoginUser } from '../../src/application/usecases/LoginUser';
+import { UserNotFoundError, AccountNotActiveError, InvalidPasswordError } from '../../src/domain/errors/DomainError';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
-import type { IJwtService, JwtPayload } from '../../src/domain/interfaces/IJwtService';
+import type { IPasswordHasher } from '../../src/domain/interfaces/IPasswordHasher';
+import type { IJwtService, JwtPayload } from '../../src/application/interfaces/IJwtService';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';
 import { Pseudo } from '../../src/domain/value-objects/Pseudo';
 import { HashedPassword } from '../../src/domain/value-objects/HashedPassword';
 
-const buildActiveUser = async (passwordPlain: string): Promise<User> => {
-  const hash = await bcrypt.hash(passwordPlain, 10);
+const buildActiveUser = (): User => {
   return new User({
     id: 'user-id-1',
     email: new Email('user@example.com'),
     pseudo: new Pseudo('john'),
-    password: new HashedPassword(hash),
+    password: new HashedPassword('hashed-password'),
     isAdmin: false,
     isActive: true,
     isDeleted: false,
@@ -37,12 +37,18 @@ const buildMockJwtService = (): IJwtService => ({
   verifyToken: jest.fn().mockReturnValue({} as JwtPayload),
 });
 
+const buildMockPasswordHasher = (passwordMatches = true): IPasswordHasher => ({
+  hash: jest.fn().mockResolvedValue('hashed-password'),
+  compare: jest.fn().mockResolvedValue(passwordMatches),
+});
+
 describe('LoginUser use case', () => {
   it('should return token, isAdmin, and pseudo on successful login', async () => {
-    const user = await buildActiveUser('correct-password');
+    const user = buildActiveUser();
     const repository = buildMockUserRepository({ findByEmail: jest.fn().mockResolvedValue(user) });
     const jwtService = buildMockJwtService();
-    const usecase = new LoginUser(repository, jwtService);
+    const passwordHasher = buildMockPasswordHasher(true);
+    const usecase = new LoginUser(repository, jwtService, passwordHasher);
 
     const result = await usecase.execute({ email: 'user@example.com', password: 'correct-password' });
 
@@ -52,10 +58,11 @@ describe('LoginUser use case', () => {
   });
 
   it('should generate JWT with correct payload', async () => {
-    const user = await buildActiveUser('correct-password');
+    const user = buildActiveUser();
     const repository = buildMockUserRepository({ findByEmail: jest.fn().mockResolvedValue(user) });
     const jwtService = buildMockJwtService();
-    const usecase = new LoginUser(repository, jwtService);
+    const passwordHasher = buildMockPasswordHasher(true);
+    const usecase = new LoginUser(repository, jwtService, passwordHasher);
 
     await usecase.execute({ email: 'user@example.com', password: 'correct-password' });
 
@@ -69,7 +76,8 @@ describe('LoginUser use case', () => {
   it('should throw UserNotFoundError when user does not exist', async () => {
     const repository = buildMockUserRepository({ findByEmail: jest.fn().mockResolvedValue(null) });
     const jwtService = buildMockJwtService();
-    const usecase = new LoginUser(repository, jwtService);
+    const passwordHasher = buildMockPasswordHasher(true);
+    const usecase = new LoginUser(repository, jwtService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'unknown@example.com', password: 'pass' }),
@@ -77,11 +85,12 @@ describe('LoginUser use case', () => {
   });
 
   it('should throw UserNotFoundError when user is deleted', async () => {
-    const user = await buildActiveUser('pass');
+    const user = buildActiveUser();
     user.isDeleted = true;
     const repository = buildMockUserRepository({ findByEmail: jest.fn().mockResolvedValue(user) });
     const jwtService = buildMockJwtService();
-    const usecase = new LoginUser(repository, jwtService);
+    const passwordHasher = buildMockPasswordHasher(true);
+    const usecase = new LoginUser(repository, jwtService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'user@example.com', password: 'pass' }),
@@ -89,11 +98,12 @@ describe('LoginUser use case', () => {
   });
 
   it('should throw AccountNotActiveError when account is not yet activated', async () => {
-    const user = await buildActiveUser('pass');
+    const user = buildActiveUser();
     user.isActive = false;
     const repository = buildMockUserRepository({ findByEmail: jest.fn().mockResolvedValue(user) });
     const jwtService = buildMockJwtService();
-    const usecase = new LoginUser(repository, jwtService);
+    const passwordHasher = buildMockPasswordHasher(true);
+    const usecase = new LoginUser(repository, jwtService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'user@example.com', password: 'pass' }),
@@ -101,10 +111,11 @@ describe('LoginUser use case', () => {
   });
 
   it('should throw InvalidPasswordError when password does not match', async () => {
-    const user = await buildActiveUser('correct-password');
+    const user = buildActiveUser();
     const repository = buildMockUserRepository({ findByEmail: jest.fn().mockResolvedValue(user) });
     const jwtService = buildMockJwtService();
-    const usecase = new LoginUser(repository, jwtService);
+    const passwordHasher = buildMockPasswordHasher(false);
+    const usecase = new LoginUser(repository, jwtService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'user@example.com', password: 'wrong-password' }),

@@ -1,6 +1,8 @@
-import { RegisterUser, EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../src/domain/usecases/RegisterUser';
+import { RegisterUser } from '../../src/application/usecases/RegisterUser';
+import { EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../src/domain/errors/DomainError';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
 import type { IEmailService } from '../../src/domain/interfaces/IEmailService';
+import type { IPasswordHasher } from '../../src/domain/interfaces/IPasswordHasher';
 import type { User } from '../../src/domain/models/User';
 
 const buildMockUserRepository = (overrides: Partial<IUserRepository> = {}): IUserRepository => ({
@@ -20,11 +22,18 @@ const buildMockEmailService = (overrides: Partial<IEmailService> = {}): IEmailSe
   ...overrides,
 });
 
+const buildMockPasswordHasher = (overrides: Partial<IPasswordHasher> = {}): IPasswordHasher => ({
+  hash: jest.fn().mockResolvedValue('hashed-password'),
+  compare: jest.fn().mockResolvedValue(true),
+  ...overrides,
+});
+
 describe('RegisterUser use case', () => {
   it('should register a user and return a userId', async () => {
     const repository = buildMockUserRepository();
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     const result = await usecase.execute({ email: 'user@example.com', pseudo: 'john', password: 'pass123' });
 
@@ -35,7 +44,8 @@ describe('RegisterUser use case', () => {
   it('should save the user with isActive false and isAdmin false', async () => {
     const repository = buildMockUserRepository();
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     await usecase.execute({ email: 'user@example.com', pseudo: 'john', password: 'pass123' });
 
@@ -49,7 +59,8 @@ describe('RegisterUser use case', () => {
   it('should save the user with an activation token', async () => {
     const repository = buildMockUserRepository();
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     await usecase.execute({ email: 'user@example.com', pseudo: 'john', password: 'pass123' });
 
@@ -61,7 +72,8 @@ describe('RegisterUser use case', () => {
   it('should send an activation email with the generated token', async () => {
     const repository = buildMockUserRepository();
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     await usecase.execute({ email: 'user@example.com', pseudo: 'john', password: 'pass123' });
 
@@ -75,7 +87,8 @@ describe('RegisterUser use case', () => {
       findByEmail: jest.fn().mockResolvedValue({ id: 'existing-id' }),
     });
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'taken@example.com', pseudo: 'john', password: 'pass123' }),
@@ -87,7 +100,8 @@ describe('RegisterUser use case', () => {
       findByPseudo: jest.fn().mockResolvedValue({ id: 'existing-id' }),
     });
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'user@example.com', pseudo: 'taken', password: 'pass123' }),
@@ -97,7 +111,8 @@ describe('RegisterUser use case', () => {
   it('should throw when email format is invalid', async () => {
     const repository = buildMockUserRepository();
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'not-an-email', pseudo: 'john', password: 'pass123' }),
@@ -107,7 +122,8 @@ describe('RegisterUser use case', () => {
   it('should throw when pseudo is empty', async () => {
     const repository = buildMockUserRepository();
     const emailService = buildMockEmailService();
-    const usecase = new RegisterUser(repository, emailService);
+    const passwordHasher = buildMockPasswordHasher();
+    const usecase = new RegisterUser(repository, emailService, passwordHasher);
 
     await expect(
       usecase.execute({ email: 'user@example.com', pseudo: '', password: 'pass123' }),

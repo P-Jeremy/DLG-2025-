@@ -1,13 +1,23 @@
 import bcrypt from 'bcryptjs';
-import { RegisterUser, EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../src/domain/usecases/RegisterUser';
-import { LoginUser, UserNotFoundError, AccountNotActiveError, InvalidPasswordError } from '../../src/domain/usecases/LoginUser';
-import { ActivateAccount, InvalidActivationTokenError } from '../../src/domain/usecases/ActivateAccount';
-import { RequestPasswordReset } from '../../src/domain/usecases/RequestPasswordReset';
-import { ResetPassword, InvalidResetTokenError } from '../../src/domain/usecases/ResetPassword';
-import { UpdateNotificationPreferences } from '../../src/domain/usecases/UpdateNotificationPreferences';
+import { RegisterUser } from '../../src/application/usecases/RegisterUser';
+import { LoginUser } from '../../src/application/usecases/LoginUser';
+import { ActivateAccount } from '../../src/application/usecases/ActivateAccount';
+import { RequestPasswordReset } from '../../src/application/usecases/RequestPasswordReset';
+import { ResetPassword } from '../../src/application/usecases/ResetPassword';
+import { UpdateNotificationPreferences } from '../../src/application/usecases/UpdateNotificationPreferences';
+import {
+  EmailAlreadyTakenError,
+  PseudoAlreadyTakenError,
+  UserNotFoundError,
+  AccountNotActiveError,
+  InvalidPasswordError,
+  InvalidActivationTokenError,
+  InvalidResetTokenError,
+} from '../../src/domain/errors/DomainError';
 import { UserMongoRepository } from '../../src/infrastructure/repositories/userRepository';
+import { BcryptPasswordHasher } from '../../src/infrastructure/services/BcryptPasswordHasher';
 import type { IEmailService } from '../../src/domain/interfaces/IEmailService';
-import type { IJwtService, JwtPayload } from '../../src/domain/interfaces/IJwtService';
+import type { IJwtService, JwtPayload } from '../../src/application/interfaces/IJwtService';
 
 const buildMockEmailService = (): IEmailService => ({
   sendActivationEmail: jest.fn().mockResolvedValue(undefined),
@@ -22,15 +32,17 @@ const buildMockJwtService = (): IJwtService => ({
 
 describe('Auth use cases integration tests', () => {
   let userRepository: UserMongoRepository;
+  let passwordHasher: BcryptPasswordHasher;
 
   beforeAll(() => {
     userRepository = new UserMongoRepository();
+    passwordHasher = new BcryptPasswordHasher();
   });
 
   describe('RegisterUser', () => {
     it('should register a new user in the database', async () => {
       const emailService = buildMockEmailService();
-      const usecase = new RegisterUser(userRepository, emailService);
+      const usecase = new RegisterUser(userRepository, emailService, passwordHasher);
 
       const result = await usecase.execute({ email: 'register@example.com', pseudo: 'registeruser', password: 'password123' });
 
@@ -43,7 +55,7 @@ describe('Auth use cases integration tests', () => {
 
     it('should throw EmailAlreadyTakenError for duplicate email', async () => {
       const emailService = buildMockEmailService();
-      const usecase = new RegisterUser(userRepository, emailService);
+      const usecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await usecase.execute({ email: 'duplicate@example.com', pseudo: 'user1', password: 'pass' });
 
       await expect(
@@ -53,7 +65,7 @@ describe('Auth use cases integration tests', () => {
 
     it('should throw PseudoAlreadyTakenError for duplicate pseudo', async () => {
       const emailService = buildMockEmailService();
-      const usecase = new RegisterUser(userRepository, emailService);
+      const usecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await usecase.execute({ email: 'user3@example.com', pseudo: 'dupseudo', password: 'pass' });
 
       await expect(
@@ -65,7 +77,7 @@ describe('Auth use cases integration tests', () => {
   describe('ActivateAccount', () => {
     it('should activate user account when token is valid', async () => {
       const emailService = buildMockEmailService();
-      const registerUsecase = new RegisterUser(userRepository, emailService);
+      const registerUsecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await registerUsecase.execute({ email: 'activate@example.com', pseudo: 'activateuser', password: 'pass' });
 
       const user = await userRepository.findByEmail('activate@example.com');
@@ -90,7 +102,7 @@ describe('Auth use cases integration tests', () => {
   describe('LoginUser', () => {
     it('should return token and user info on valid login', async () => {
       const emailService = buildMockEmailService();
-      const registerUsecase = new RegisterUser(userRepository, emailService);
+      const registerUsecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await registerUsecase.execute({ email: 'login@example.com', pseudo: 'loginuser', password: 'mypassword' });
 
       const user = await userRepository.findByEmail('login@example.com');
@@ -99,7 +111,7 @@ describe('Auth use cases integration tests', () => {
       await activateUsecase.execute({ token });
 
       const jwtService = buildMockJwtService();
-      const loginUsecase = new LoginUser(userRepository, jwtService);
+      const loginUsecase = new LoginUser(userRepository, jwtService, passwordHasher);
       const result = await loginUsecase.execute({ email: 'login@example.com', password: 'mypassword' });
 
       expect(result.token).toBe('jwt-token');
@@ -109,11 +121,11 @@ describe('Auth use cases integration tests', () => {
 
     it('should throw AccountNotActiveError for non-activated account', async () => {
       const emailService = buildMockEmailService();
-      const registerUsecase = new RegisterUser(userRepository, emailService);
+      const registerUsecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await registerUsecase.execute({ email: 'inactive@example.com', pseudo: 'inactiveuser', password: 'pass' });
 
       const jwtService = buildMockJwtService();
-      const loginUsecase = new LoginUser(userRepository, jwtService);
+      const loginUsecase = new LoginUser(userRepository, jwtService, passwordHasher);
 
       await expect(
         loginUsecase.execute({ email: 'inactive@example.com', password: 'pass' }),
@@ -122,7 +134,7 @@ describe('Auth use cases integration tests', () => {
 
     it('should throw InvalidPasswordError for wrong password', async () => {
       const emailService = buildMockEmailService();
-      const registerUsecase = new RegisterUser(userRepository, emailService);
+      const registerUsecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await registerUsecase.execute({ email: 'wrongpass@example.com', pseudo: 'wrongpassuser', password: 'correct' });
 
       const user = await userRepository.findByEmail('wrongpass@example.com');
@@ -130,7 +142,7 @@ describe('Auth use cases integration tests', () => {
       await activateUsecase.execute({ token: user!.tokens[0].used_token });
 
       const jwtService = buildMockJwtService();
-      const loginUsecase = new LoginUser(userRepository, jwtService);
+      const loginUsecase = new LoginUser(userRepository, jwtService, passwordHasher);
 
       await expect(
         loginUsecase.execute({ email: 'wrongpass@example.com', password: 'wrong' }),
@@ -139,7 +151,7 @@ describe('Auth use cases integration tests', () => {
 
     it('should throw UserNotFoundError for non-existent user', async () => {
       const jwtService = buildMockJwtService();
-      const loginUsecase = new LoginUser(userRepository, jwtService);
+      const loginUsecase = new LoginUser(userRepository, jwtService, passwordHasher);
 
       await expect(
         loginUsecase.execute({ email: 'ghost@example.com', password: 'pass' }),
@@ -150,7 +162,7 @@ describe('Auth use cases integration tests', () => {
   describe('RequestPasswordReset', () => {
     it('should push a reset token to user tokens array', async () => {
       const emailService = buildMockEmailService();
-      const registerUsecase = new RegisterUser(userRepository, emailService);
+      const registerUsecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await registerUsecase.execute({ email: 'reset@example.com', pseudo: 'resetuser', password: 'pass' });
 
       const user = await userRepository.findByEmail('reset@example.com');
@@ -181,13 +193,13 @@ describe('Auth use cases integration tests', () => {
   describe('ResetPassword', () => {
     it('should update password and clear tokens', async () => {
       const emailService = buildMockEmailService();
-      const registerUsecase = new RegisterUser(userRepository, emailService);
+      const registerUsecase = new RegisterUser(userRepository, emailService, passwordHasher);
       await registerUsecase.execute({ email: 'newpass@example.com', pseudo: 'newpassuser', password: 'oldpassword' });
 
       const user = await userRepository.findByEmail('newpass@example.com');
       const token = user!.tokens[0].used_token;
 
-      const resetUsecase = new ResetPassword(userRepository);
+      const resetUsecase = new ResetPassword(userRepository, passwordHasher);
       const result = await resetUsecase.execute({ token, newPassword: 'newpassword' });
 
       expect(result.success).toBe(true);
@@ -198,7 +210,7 @@ describe('Auth use cases integration tests', () => {
     });
 
     it('should throw InvalidResetTokenError for invalid token', async () => {
-      const usecase = new ResetPassword(userRepository);
+      const usecase = new ResetPassword(userRepository, passwordHasher);
 
       await expect(
         usecase.execute({ token: 'bad-token', newPassword: 'newpass' }),
@@ -209,7 +221,7 @@ describe('Auth use cases integration tests', () => {
   describe('UpdateNotificationPreferences', () => {
     it('should update titleNotif preference', async () => {
       const emailService = buildMockEmailService();
-      const registerUsecase = new RegisterUser(userRepository, emailService);
+      const registerUsecase = new RegisterUser(userRepository, emailService, passwordHasher);
       const { userId } = await registerUsecase.execute({ email: 'notif@example.com', pseudo: 'notifuser', password: 'pass' });
 
       const usecase = new UpdateNotificationPreferences(userRepository);
