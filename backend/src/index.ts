@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import songsRouter from './application/routes/songs';
+import songsRouter from './infrastructure/http/routes/songs';
 import { connectMongo } from './infrastructure/db/mongo';
 
 
