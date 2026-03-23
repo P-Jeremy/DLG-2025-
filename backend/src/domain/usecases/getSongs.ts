@@ -1,12 +1,8 @@
-import { SongRepository } from '../../infrastructure/repositories/songRepository';
-import { ISong } from '../interfaces/Song';
+import type { ISongRepository } from '../interfaces/ISongRepository';
+import type { ISong } from '../interfaces/Song';
 
 export class GetSongsUsecase {
-  private songRepo: SongRepository;
-
-  constructor(songRepo: SongRepository) {
-    this.songRepo = songRepo;
-  }
+  constructor(private readonly songRepo: ISongRepository) {}
 
   async execute(): Promise<ISong[]> {
     return this.songRepo.getAll();
