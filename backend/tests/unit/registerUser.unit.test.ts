@@ -10,6 +10,7 @@ const buildMockUserRepository = (overrides: Partial<IUserRepository> = {}): IUse
   findByPseudo: jest.fn().mockResolvedValue(null),
   findById: jest.fn().mockResolvedValue(null),
   findByResetToken: jest.fn().mockResolvedValue(null),
+  findAllWithTitleNotif: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockImplementation((user: User) => Promise.resolve({ ...user, id: 'generated-id' })),
   update: jest.fn().mockResolvedValue(null),
   ...overrides,

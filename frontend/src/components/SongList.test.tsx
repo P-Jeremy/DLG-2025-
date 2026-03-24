@@ -2,6 +2,14 @@ import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SongList from './SongList';
 
+jest.mock('socket.io-client', () => ({
+  io: () => ({
+    on: jest.fn(),
+    off: jest.fn(),
+    disconnect: jest.fn(),
+  }),
+}));
+
 const songsSortedByTitle = [
   { id: '2', title: 'Angie', author: 'Rolling Stones' },
   { id: '1', title: 'Bohemian Rhapsody', author: 'Queen' },

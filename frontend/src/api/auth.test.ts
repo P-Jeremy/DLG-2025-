@@ -1,4 +1,7 @@
+jest.mock('./config', () => ({ API_BASE_URL: '' }));
+
 import { register, login, forgotPassword, resetPassword, activateAccount } from './auth';
+import { API_BASE_URL } from './config';
 
 type GlobalWithFetch = typeof globalThis & { fetch: jest.Mock };
 
@@ -25,7 +28,7 @@ describe('Unit | API | auth', () => {
       await register({ email: 'test@test.com', pseudo: 'test', password: 'secret', apiKey: 'test-key' });
 
       expect((globalThis as GlobalWithFetch).fetch).toHaveBeenCalledWith(
-        '/api/auth/register',
+        `${API_BASE_URL}/api/auth/register`,
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({ email: 'test@test.com', pseudo: 'test', password: 'secret', apiKey: 'test-key' }),
@@ -56,7 +59,7 @@ describe('Unit | API | auth', () => {
       const result = await login({ email: 'test@test.com', password: 'secret' });
 
       expect((globalThis as GlobalWithFetch).fetch).toHaveBeenCalledWith(
-        '/api/auth/login',
+        `${API_BASE_URL}/api/auth/login`,
         expect.objectContaining({ method: 'POST' })
       );
       expect(result).toEqual(responseData);
