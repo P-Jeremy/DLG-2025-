@@ -9,6 +9,9 @@ const buildMockRepository = (songs: ISong[]): ISongRepository & { receivedSortBy
       mock.receivedSortBy = sortBy;
       return Promise.resolve(songs);
     },
+    save(song: ISong): Promise<ISong> {
+      return Promise.resolve(song);
+    },
   };
   return mock;
 };

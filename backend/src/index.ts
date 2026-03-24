@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import songsRouter from './infrastructure/http/routes/songs';
 import authRouter from './infrastructure/http/routes/auth';
 import usersRouter from './infrastructure/http/routes/users';
+import tagsRouter from './infrastructure/http/routes/tags';
 import { connectMongo } from './infrastructure/db/mongo';
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use('/api', songsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
+app.use('/api', tagsRouter);
 
 export default app;
 

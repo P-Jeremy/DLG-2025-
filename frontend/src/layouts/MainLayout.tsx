@@ -32,6 +32,11 @@ const MainLayout: React.FC = () => {
               Administration
             </Link>
           )}
+          {isAdmin && (
+            <Link className="navbar__item" to="/songs/add" onClick={closeMenu}>
+              Ajouter une chanson
+            </Link>
+          )}
           {pseudo ? (
             <button
               className="navbar__item navbar__item--button"

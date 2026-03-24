@@ -9,3 +9,33 @@ export async function fetchSongs(sortBy: SortField): Promise<Song[]> {
 
   return data as Song[];
 }
+
+export interface AddSongPayload {
+  title: string;
+  author: string;
+  lyrics: string;
+  tab: File;
+  selectedTags: string[];
+}
+
+export async function addSong(payload: AddSongPayload, token: string): Promise<Song> {
+  const formData = new FormData();
+  formData.append('title', payload.title);
+  formData.append('author', payload.author);
+  formData.append('lyrics', payload.lyrics);
+  formData.append('tab', payload.tab);
+  formData.append('selectedTags', JSON.stringify(payload.selectedTags));
+
+  const res = await fetch('/api/songs', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json() as { message?: string };
+    throw new Error(body.message ?? 'Erreur lors de l\'ajout de la chanson');
+  }
+
+  return (await res.json()) as Song;
+}

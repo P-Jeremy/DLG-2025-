@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
+import AddSongPage from './pages/AddSongPage';
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const App: React.FC = () => {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/activate/:token" element={<ActivateAccountPage />} />
+          <Route path="/songs/add" element={<AddSongPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
