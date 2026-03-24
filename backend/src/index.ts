@@ -30,7 +30,7 @@ void connectMongo(mongoUri);
 const allowedOrigin = process.env.ALLOWED_ORIGIN ?? '*';
 
 app.use(cors({ origin: allowedOrigin }));
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(express.json());
 
 const socketEventEmitter = new SocketEventEmitter(io);
