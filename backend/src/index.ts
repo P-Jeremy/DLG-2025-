@@ -8,6 +8,7 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import helmet from 'helmet';
+import cors from 'cors';
 import authRouter from './infrastructure/http/routes/auth';
 import usersRouter from './infrastructure/http/routes/users';
 import tagsRouter from './infrastructure/http/routes/tags';
@@ -26,6 +27,9 @@ const port: number = Number(process.env.PORT) || 3000;
 const mongoUri: string = process.env.MONGO_URI || '';
 void connectMongo(mongoUri);
 
+const allowedOrigin = process.env.ALLOWED_ORIGIN ?? '*';
+
+app.use(cors({ origin: allowedOrigin }));
 app.use(helmet());
 app.use(express.json());
 
