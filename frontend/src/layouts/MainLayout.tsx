@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SongList from '../components/SongList';
+import AdminDropdown from '../components/AdminDropdown';
 import { useAuth } from '../contexts/AuthContext';
 import './MainLayout.scss';
 
@@ -28,14 +29,7 @@ const MainLayout: React.FC = () => {
 
         <nav className={`navbar__menu${menuOpen ? ' navbar__menu--open' : ''}`}>
           {isAdmin && (
-            <Link className="navbar__item" to="/admin/songs" onClick={closeMenu}>
-              Administration
-            </Link>
-          )}
-          {isAdmin && (
-            <Link className="navbar__item" to="/songs/add" onClick={closeMenu}>
-              Ajouter une chanson
-            </Link>
+            <AdminDropdown onNavigate={closeMenu} mobileExpanded={menuOpen} />
           )}
           {pseudo ? (
             <button
