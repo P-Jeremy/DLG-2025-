@@ -15,10 +15,21 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('@tiptap/react', () => {
   const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const chainMock = { focus: jest.fn(), toggleBold: jest.fn(), toggleItalic: jest.fn(), toggleStrike: jest.fn(), toggleBulletList: jest.fn(), toggleOrderedList: jest.fn(), undo: jest.fn(), redo: jest.fn(), run: jest.fn() };
+  chainMock.focus.mockReturnValue(chainMock);
+  chainMock.toggleBold.mockReturnValue(chainMock);
+  chainMock.toggleItalic.mockReturnValue(chainMock);
+  chainMock.toggleStrike.mockReturnValue(chainMock);
+  chainMock.toggleBulletList.mockReturnValue(chainMock);
+  chainMock.toggleOrderedList.mockReturnValue(chainMock);
+  chainMock.undo.mockReturnValue(chainMock);
+  chainMock.redo.mockReturnValue(chainMock);
   return {
     useEditor: () => ({
       getHTML: () => '<p>Test lyrics</p>',
       commands: { setContent: jest.fn() },
+      isActive: jest.fn().mockReturnValue(false),
+      chain: jest.fn().mockReturnValue(chainMock),
     }),
     EditorContent: ({ editor }: { editor: unknown }) =>
       createElement('div', { 'data-testid': 'tiptap-editor' }, String(editor)),

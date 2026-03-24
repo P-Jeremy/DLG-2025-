@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { addSong } from '../api/songs';
 import { fetchTags } from '../api/tags';
 import type { Tag } from '../api/tags';
+import RichTextToolbar from '../components/RichTextToolbar';
 import './AddSongPage.scss';
 
 const AddSongPage: React.FC = () => {
@@ -135,6 +136,7 @@ const AddSongPage: React.FC = () => {
           <div className="add-song-field">
             <label>Paroles</label>
             <div className="add-song-editor">
+              <RichTextToolbar editor={editor} />
               <EditorContent editor={editor} />
             </div>
           </div>
@@ -169,9 +171,19 @@ const AddSongPage: React.FC = () => {
             </div>
           )}
 
-          <button className="add-song-submit" type="submit" disabled={loading}>
-            {loading ? 'Envoi en cours...' : 'Ajouter la chanson'}
-          </button>
+          <div className="add-song-actions">
+            <button
+              className="add-song-cancel"
+              type="button"
+              onClick={() => void navigate('/')}
+              disabled={loading}
+            >
+              Annuler
+            </button>
+            <button className="add-song-submit" type="submit" disabled={loading}>
+              {loading ? 'Envoi en cours...' : 'Ajouter la chanson'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

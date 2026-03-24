@@ -64,14 +64,13 @@
 .add-song-editor {
   border: 1.5px solid $color-border-default;
   border-radius: $border-radius-content;
-  min-height: 180px;
-  padding: 0.6em 0.9em;
   font-size: 1rem;
   font-family: inherit;
   background: #fff;
   color: $color-text;
   cursor: text;
   transition: border-color $transition-fast;
+  overflow: hidden;
 
   &:focus-within {
     border-color: $color-primary;
@@ -80,8 +79,14 @@
   .ProseMirror {
     outline: none;
     min-height: 140px;
+    padding: 0.6em 0.9em;
+
+    ul, ol {
+      padding-left: 1.5em;
+    }
   }
 }
+
 
 .add-song-tags {
   display: flex;
@@ -110,8 +115,37 @@
   }
 }
 
+.add-song-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.add-song-cancel {
+  background: none;
+  color: $color-text-muted;
+  border: 1.5px solid $color-border-default;
+  border-radius: $border-radius-button;
+  padding: 0.75em 1.2em;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  transition: border-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    border-color: $color-text-muted;
+    color: $color-text;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .add-song-submit {
-  width: 100%;
   background-color: $color-primary;
   color: #fff;
   border: none;
