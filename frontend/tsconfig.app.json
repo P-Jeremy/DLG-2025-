@@ -26,5 +26,9 @@
     "src/**/*",
     "vite.config.ts",
     "setupTests.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
   ]
 }
