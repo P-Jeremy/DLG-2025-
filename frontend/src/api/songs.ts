@@ -1,7 +1,8 @@
 import type { Song, SortField } from '../types/song';
+import { API_BASE_URL } from './config';
 
 export async function fetchSongs(sortBy: SortField): Promise<Song[]> {
-  const res = await fetch(`/api/songs?sortBy=${sortBy}`);
+  const res = await fetch(`${API_BASE_URL}/api/songs?sortBy=${sortBy}`);
   if (!res.ok) throw new Error('Erreur lors du chargement des chansons');
   const data = await res.json() as unknown;
 
@@ -26,7 +27,7 @@ export async function addSong(payload: AddSongPayload, token: string): Promise<S
   formData.append('tab', payload.tab);
   formData.append('selectedTags', JSON.stringify(payload.selectedTags));
 
-  const res = await fetch('/api/songs', {
+  const res = await fetch(`${API_BASE_URL}/api/songs`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: formData,

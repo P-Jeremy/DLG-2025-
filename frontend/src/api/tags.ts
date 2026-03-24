@@ -1,10 +1,12 @@
+import { API_BASE_URL } from './config';
+
 export interface Tag {
   id: string;
   name: string;
 }
 
 export async function fetchTags(): Promise<Tag[]> {
-  const res = await fetch('/api/tags');
+  const res = await fetch(`${API_BASE_URL}/api/tags`);
   if (!res.ok) throw new Error('Erreur lors du chargement des tags');
   const data = await res.json() as unknown;
 
