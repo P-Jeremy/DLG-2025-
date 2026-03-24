@@ -26,6 +26,11 @@ export class UserMongoRepository implements IUserRepository {
     return doc ? this.toDomain(doc) : null;
   }
 
+  async findAllWithTitleNotif(): Promise<User[]> {
+    const docs = await UserModel.find({ titleNotif: true, isActive: true, isDeleted: false }).exec();
+    return docs.map((doc) => this.toDomain(doc));
+  }
+
   async save(user: User): Promise<User> {
     const doc = new UserModel({
       email: user.email.toString(),

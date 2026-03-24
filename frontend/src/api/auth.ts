@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './config';
+
 export interface RegisterPayload {
   email: string;
   pseudo: string;
@@ -35,7 +37,7 @@ async function parseErrorMessage(res: Response): Promise<string> {
 }
 
 export async function register(payload: RegisterPayload): Promise<void> {
-  const res = await fetch('/api/auth/register', {
+  const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -46,7 +48,7 @@ export async function register(payload: RegisterPayload): Promise<void> {
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -58,7 +60,7 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function forgotPassword(payload: ForgotPasswordPayload): Promise<void> {
-  const res = await fetch('/api/auth/forgot-password', {
+  const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -69,7 +71,7 @@ export async function forgotPassword(payload: ForgotPasswordPayload): Promise<vo
 }
 
 export async function resetPassword(payload: ResetPasswordPayload): Promise<void> {
-  const res = await fetch('/api/auth/reset-password', {
+  const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -80,7 +82,7 @@ export async function resetPassword(payload: ResetPasswordPayload): Promise<void
 }
 
 export async function activateAccount(token: string): Promise<void> {
-  const res = await fetch(`/api/auth/activate/${token}`);
+  const res = await fetch(`${API_BASE_URL}/api/auth/activate/${token}`);
   if (!res.ok) {
     throw new Error(await parseErrorMessage(res));
   }

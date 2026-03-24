@@ -1,0 +1,45 @@
+@use './variables' as *;
+
+.rich-text-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid $color-border-default;
+  background: $color-surface-alt;
+  flex-wrap: wrap;
+}
+
+.rich-text-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid transparent;
+  border-radius: $border-radius-content;
+  background: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  color: $color-text;
+  transition: background-color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    background: $color-primary-bg;
+    border-color: $color-border-default;
+  }
+
+  &.is-active {
+    background: $color-primary-bg;
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.rich-text-toolbar-separator {
+  width: 1px;
+  height: 1.2rem;
+  background: $color-border-default;
+  margin: 0 0.2rem;
+}

@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import SongItem from './SongItem';
 import SortToggle from './SortToggle';
 import { fetchSongs } from '../api/songs';
+import { useSocket } from '../hooks/useSocket';
 import type { Song, SortField } from '../types/song';
 import './SongList.scss';
+
+const REFRESH_EVENT = 'refresh';
 
 const SongList: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -11,21 +14,28 @@ const SongList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('title');
 
-  useEffect(() => {
-    const loadSongs = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchSongs(sortField);
-        setSongs(data);
-      } catch (err: unknown) {
-        setError((err as Error).message || 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
-    void loadSongs();
+  const loadSongs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchSongs(sortField);
+      setSongs(data);
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
   }, [sortField]);
+
+  useEffect(() => {
+    void loadSongs();
+  }, [loadSongs]);
+
+  const handleRefresh = useCallback(() => {
+    void loadSongs();
+  }, [loadSongs]);
+
+  useSocket(REFRESH_EVENT, handleRefresh);
 
   if (loading) return <div className="song-list-bg"><img src="/vinyl.png" className="vinyl-loader" alt="Chargement..." /></div>;
   if (error) return <div className="song-list-bg"><div className="song-list-error">Erreur : {error}</div></div>;
