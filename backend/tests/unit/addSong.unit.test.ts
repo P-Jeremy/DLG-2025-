@@ -3,6 +3,7 @@ import type { ISongRepository } from '../../src/domain/interfaces/ISongRepositor
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
 import type { IEmailService } from '../../src/domain/interfaces/IEmailService';
 import type { IFileUploadService, UploadableFile } from '../../src/application/interfaces/IFileUploadService';
+import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
 import type { ISong } from '../../src/domain/interfaces/Song';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';
@@ -48,6 +49,11 @@ const buildMockFileUploadService = (overrides: Partial<IFileUploadService> = {})
   ...overrides,
 });
 
+const buildMockEventEmitter = (overrides: Partial<IEventEmitter> = {}): IEventEmitter => ({
+  emit: jest.fn(),
+  ...overrides,
+});
+
 const buildUserWithTitleNotif = (email: string): User =>
   new User({
     id: 'user-id',
@@ -74,6 +80,7 @@ describe('AddSong use case', () => {
       buildMockUserRepository(),
       buildMockEmailService(),
       fileUploadService,
+      buildMockEventEmitter(),
     );
 
     const file = buildMockFile();
@@ -103,6 +110,7 @@ describe('AddSong use case', () => {
       buildMockUserRepository(),
       buildMockEmailService(),
       buildMockFileUploadService(),
+      buildMockEventEmitter(),
     );
 
     const { song } = await usecase.execute({
@@ -135,7 +143,7 @@ describe('AddSong use case', () => {
       save: jest.fn().mockResolvedValue(savedSong),
     });
 
-    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService());
+    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter());
 
     await usecase.execute({
       title: 'New Song',
@@ -157,7 +165,7 @@ describe('AddSong use case', () => {
     const emailService = buildMockEmailService();
     const songRepository = buildMockSongRepository();
 
-    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService());
+    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter());
 
     await usecase.execute({
       title: 'Silent Song',
@@ -179,6 +187,7 @@ describe('AddSong use case', () => {
       buildMockUserRepository(),
       buildMockEmailService(),
       buildMockFileUploadService(),
+      buildMockEventEmitter(),
     );
 
     await usecase.execute({
@@ -209,10 +218,25 @@ describe('AddSong use case', () => {
     });
     const songRepository = buildMockSongRepository();
 
-    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService());
+    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter());
 
     await expect(
       usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile(), tagIds: [] }),
     ).resolves.not.toThrow();
+  });
+
+  it('should emit the refresh event after saving the song', async () => {
+    const eventEmitter = buildMockEventEmitter();
+    const usecase = new AddSong(
+      buildMockSongRepository(),
+      buildMockUserRepository(),
+      buildMockEmailService(),
+      buildMockFileUploadService(),
+      eventEmitter,
+    );
+
+    await usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile(), tagIds: [] });
+
+    expect(eventEmitter.emit).toHaveBeenCalledWith('refresh');
   });
 });
