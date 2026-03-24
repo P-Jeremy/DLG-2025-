@@ -68,7 +68,7 @@ export default [
       },
       parser: tsparser,
       parserOptions: {
-        project: [resolve(__dirname, "frontend/tsconfig.json")],
+        project: [resolve(__dirname, "frontend/tsconfig.eslint.json")],
         tsconfigRootDir: resolve(__dirname, "frontend"),
         sourceType: "module",
         ecmaVersion: 2022,
@@ -132,6 +132,16 @@ export default [
       "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/require-await": "off",
       "no-undef": "off",
+    },
+  },
+
+  // Vite config (Node environment)
+  {
+    files: ["frontend/vite.config.ts"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+      },
     },
   },
 
