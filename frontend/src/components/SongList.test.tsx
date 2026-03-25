@@ -10,6 +10,15 @@ jest.mock('socket.io-client', () => ({
   }),
 }));
 
+jest.mock('../api/tags', () => ({
+  fetchTags: jest.fn().mockResolvedValue([]),
+}));
+
+beforeEach(() => {
+  const { fetchTags } = jest.requireMock('../api/tags') as { fetchTags: jest.Mock };
+  fetchTags.mockResolvedValue([]);
+});
+
 const songsSortedByTitle = [
   { id: '2', title: 'Angie', author: 'Rolling Stones' },
   { id: '1', title: 'Bohemian Rhapsody', author: 'Queen' },

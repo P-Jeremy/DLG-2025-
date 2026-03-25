@@ -11,6 +11,16 @@ export async function fetchSongs(sortBy: SortField): Promise<Song[]> {
   return data as Song[];
 }
 
+export async function fetchSongsByTag(tagId: string): Promise<Song[]> {
+  const res = await fetch(`${API_BASE_URL}/api/songs?tagId=${tagId}`);
+  if (!res.ok) throw new Error('Erreur lors du chargement des chansons');
+  const data = await res.json() as unknown;
+
+  if (!Array.isArray(data)) throw new Error('Format incorrect');
+
+  return data as Song[];
+}
+
 export interface AddSongPayload {
   title: string;
   author: string;
