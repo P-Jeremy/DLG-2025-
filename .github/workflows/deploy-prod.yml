@@ -18,15 +18,36 @@ jobs:
           token: ${{ secrets.PAT_DEPLOY }}
           fetch-depth: 0
 
-      - name: Install
+      # -------------------------
+      # Install dependencies
+      # -------------------------
+      - name: Install root dependencies
         run: npm install
 
-      - name: Tests
-        run: npm run test
+      - name: Install backend dependencies
+        run: cd backend && npm install
 
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      # -------------------------
+      # Tests
+      # -------------------------
+      - name: Test backend
+        run: cd backend && npm run test
+
+      - name: Test frontend
+        run: cd frontend && npm test
+
+      # -------------------------
+      # Build
+      # -------------------------
       - name: Build
         run: npm run build
 
+      # -------------------------
+      # Git config
+      # -------------------------
       - name: Configure git
         run: |
           git config user.name "github-actions"
@@ -36,6 +57,9 @@ jobs:
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.PAT_DEPLOY }}@github.com/${{ github.repository }}
 
+      # -------------------------
+      # Merge main → prod
+      # -------------------------
       - name: Fetch prod
         run: git fetch origin prod
 
@@ -44,12 +68,18 @@ jobs:
           git checkout prod
           git merge origin/main --no-ff -m "🚀 Deploy production"
 
+      # -------------------------
+      # Tag version
+      # -------------------------
       - name: Tag version
         run: |
           VERSION=$(date +'%Y.%m.%d-%H%M')
           git tag "prod-$VERSION"
 
-      - name: Push
+      # -------------------------
+      # Push
+      # -------------------------
+      - name: Push to prod
         run: |
           git push origin prod
           git push origin --tags
