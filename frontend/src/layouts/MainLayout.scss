@@ -6,6 +6,16 @@
   width: 100vw;
 }
 
+.app-parallax-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url('/background.png');
+  background-size: 15em;
+  background-position: center 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+
 .navbar {
   width: 100%;
   display: flex;
