@@ -14,7 +14,7 @@ export class PlaylistsController {
   ) {}
 
   async getPlaylist(req: Request, res: Response): Promise<void> {
-    const { tagId } = req.params;
+    const tagId = req.params['tagId'] as string;
 
     try {
       const result = await this.getPlaylistUsecase.execute({ tagId });
@@ -25,7 +25,7 @@ export class PlaylistsController {
   }
 
   async reorderPlaylist(req: Request, res: Response): Promise<void> {
-    const { tagId } = req.params;
+    const tagId = req.params['tagId'] as string;
     const { songIds } = req.body as { songIds?: unknown };
 
     if (!Array.isArray(songIds)) {
@@ -49,7 +49,7 @@ export class PlaylistsController {
   }
 
   async addSongToPlaylist(req: Request, res: Response): Promise<void> {
-    const { tagId } = req.params;
+    const tagId = req.params['tagId'] as string;
     const { songId } = req.body as { songId?: unknown };
 
     if (!songId || typeof songId !== 'string') {
@@ -74,7 +74,8 @@ export class PlaylistsController {
   }
 
   async removeSongFromPlaylist(req: Request, res: Response): Promise<void> {
-    const { tagId, songId } = req.params;
+    const tagId = req.params['tagId'] as string;
+    const songId = req.params['songId'] as string;
 
     try {
       const { playlist } = await this.removeSongFromPlaylistUsecase.execute({ tagId, songId });
