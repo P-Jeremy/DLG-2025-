@@ -50,6 +50,26 @@ const AdminDropdown: React.FC<AdminDropdownProps> = ({ onNavigate, mobileExpande
             Ajouter une chanson
           </Link>
         </li>
+        <li role="none">
+          <Link
+            className="admin-dropdown__item"
+            to="/admin/tags"
+            onClick={handleLinkClick}
+            role="menuitem"
+          >
+            Gérer les tags
+          </Link>
+        </li>
+        <li role="none">
+          <Link
+            className="admin-dropdown__item"
+            to="/admin/playlists"
+            onClick={handleLinkClick}
+            role="menuitem"
+          >
+            Gérer les playlists
+          </Link>
+        </li>
       </ul>
     </div>
   );
