@@ -1,4 +1,5 @@
 @use './styles/variables' as *;
+@use './styles/auth';
 
 *,
 *::before,
@@ -15,13 +16,10 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: $color-text;
-  background-image: url('/background.png');
-  background-size: 15em;
-  background-attachment: fixed;
-  background-position: center;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: contain;
+  overflow-anchor: none;
 }
 
 #root {
@@ -29,6 +27,8 @@ body {
 }
 
 button {
+  -webkit-appearance: none;
+  appearance: none;
   border-radius: $border-radius-button;
   border: 1px solid $color-border-default;
   padding: 0.6em 1.2em;

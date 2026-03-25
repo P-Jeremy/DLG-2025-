@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SongList from '../components/SongList';
 import AdminDropdown from '../components/AdminDropdown';
@@ -9,10 +9,31 @@ const MainLayout: React.FC = () => {
   const { pseudo, isAdmin, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const parallaxBgRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let rafId: number;
+    const handleScroll = () => {
+      window.cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(() => {
+        if (parallaxBgRef.current) {
+          const offset = window.scrollY * 0.2;
+          parallaxBgRef.current.style.backgroundPositionY = `calc(50% + ${offset}px)`;
+        }
+      });
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   const closeMenu = () => setMenuOpen(false);
 
   return (
     <div className="app-bg">
+      <div className="app-parallax-bg" ref={parallaxBgRef} />
       <header className="navbar">
         <div className="navbar__brand">DLG</div>
 
