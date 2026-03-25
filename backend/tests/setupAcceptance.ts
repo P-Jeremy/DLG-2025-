@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 beforeEach(async () => {
-  if (mongoose.connection.db) {
-    await mongoose.connection.db.dropDatabase();
-  }
+  const collections = mongoose.connection.collections;
+  await Promise.all(
+    Object.values(collections).map((collection) => collection.deleteMany({})),
+  );
 });

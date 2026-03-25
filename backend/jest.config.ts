@@ -3,6 +3,7 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testTimeout: 30000,
+  maxWorkers: 1,
   setupFilesAfterEnv: ['<rootDir>/tests/globalSetup.ts'],
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
