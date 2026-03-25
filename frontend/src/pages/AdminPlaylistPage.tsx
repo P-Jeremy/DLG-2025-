@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchPlaylist, reorderPlaylist, addSongToPlaylist } from '../api/playlists';
+import { fetchPlaylist, reorderPlaylist, addSongToPlaylist, removeSongFromPlaylist } from '../api/playlists';
 import { fetchSongs } from '../api/songs';
 import type { Song } from '../types/song';
 import AppBackground from '../components/AppBackground';
 import SongSearchInput from '../components/SongSearchInput';
+import PlaylistSongRemoveConfirm from '../components/PlaylistSongRemoveConfirm';
 import './AdminPlaylistPage.scss';
 
 const AdminPlaylistPage: React.FC = () => {
@@ -22,6 +23,8 @@ const AdminPlaylistPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
 
   const loadPlaylist = useCallback(async () => {
@@ -106,6 +109,22 @@ const AdminPlaylistPage: React.FC = () => {
       setError((err as Error).message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRemoveSong = async (songId: string) => {
+    if (!tagId || !token) return;
+    setRemovingId(songId);
+    setError(null);
+    try {
+      await removeSongFromPlaylist(tagId, songId, token);
+      setSongs((prev) => prev.filter((s) => s.id !== songId));
+      setConfirmRemoveId(null);
+      setSuccess(false);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -205,6 +224,23 @@ const AdminPlaylistPage: React.FC = () => {
                       ▼
                     </button>
                   </div>
+                  {confirmRemoveId === song.id ? (
+                    <PlaylistSongRemoveConfirm
+                      onConfirm={() => void handleRemoveSong(song.id)}
+                      onCancel={() => setConfirmRemoveId(null)}
+                      disabled={removingId === song.id}
+                    />
+                  ) : (
+                    <button
+                      className="admin-playlist-item__remove-btn"
+                      type="button"
+                      disabled={saving || removingId !== null}
+                      onClick={(e) => { e.stopPropagation(); setConfirmRemoveId(song.id); }}
+                      aria-label={`Retirer ${song.title} de la playlist`}
+                    >
+                      <span className="material-icons">delete</span>
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

@@ -1,0 +1,65 @@
+@use '../styles/variables' as *;
+
+.playlist-song-remove-confirm {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.playlist-song-remove-confirm__confirm-btn {
+  background: $color-primary;
+  color: #fff;
+  border: none;
+  border-radius: $border-radius-button;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background $transition-fast;
+  white-space: nowrap;
+  min-width: 40px;
+  min-height: 40px;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.playlist-song-remove-confirm__cancel-btn {
+  background: none;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  color: $color-text-muted;
+  cursor: pointer;
+  transition: border-color $transition-fast, color $transition-fast;
+  white-space: nowrap;
+  min-width: 40px;
+  min-height: 40px;
+
+  &:hover:not(:disabled) {
+    border-color: $color-text;
+    color: $color-text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-text-muted;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

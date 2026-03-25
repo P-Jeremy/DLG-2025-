@@ -40,6 +40,22 @@ export async function addSongToPlaylist(tagId: string, songId: string, token: st
   return (await res.json()) as Playlist;
 }
 
+export async function removeSongFromPlaylist(tagId: string, songId: string, token: string): Promise<Playlist> {
+  const res = await fetch(`${API_BASE_URL}/api/playlists/${tagId}/songs/${songId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.json() as { message?: string };
+    throw new Error(body.message ?? 'Erreur lors du retrait de la chanson de la playlist');
+  }
+
+  return (await res.json()) as Playlist;
+}
+
 export async function reorderPlaylist(tagId: string, songIds: string[], token: string): Promise<Playlist> {
   const res = await fetch(`${API_BASE_URL}/api/playlists/${tagId}`, {
     method: 'PUT',
