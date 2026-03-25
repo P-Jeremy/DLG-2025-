@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import SongItem from './SongItem';
 import SortToggle from './SortToggle';
 import TagFilter from './TagFilter';
-import { fetchSongs, fetchSongsByTag } from '../api/songs';
+import { fetchSongs, fetchSongsByTag, deleteSong } from '../api/songs';
 import { fetchTags } from '../api/tags';
 import { useSocket } from '../hooks/useSocket';
+import { useAuth } from '../contexts/AuthContext';
 import type { Song, SortField } from '../types/song';
 import type { Tag } from '../api/tags';
 import './SongList.scss';
@@ -12,6 +13,7 @@ import './SongList.scss';
 const REFRESH_EVENT = 'refresh';
 
 const SongList: React.FC = () => {
+  const { isAdmin, token } = useAuth();
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,12 @@ const SongList: React.FC = () => {
     void loadSongs();
   }, [loadSongs]);
 
+  const handleDeleteSong = useCallback(async (songId: string) => {
+    if (!token) return;
+    await deleteSong(songId, token);
+    setSongs((prev) => prev.filter((s) => s.id !== songId));
+  }, [token]);
+
   useSocket(REFRESH_EVENT, handleRefresh);
 
   if (loading) return <div className="song-list-bg"><img src="/vinyl.png" className="vinyl-loader" alt="Chargement..." /></div>;
@@ -72,7 +80,12 @@ const SongList: React.FC = () => {
       ) : (
         <div className="song-list">
           {songs.map(song => (
-            <SongItem key={song.id} song={song} />
+            <SongItem
+              key={song.id}
+              song={song}
+              isAdmin={isAdmin}
+              onDelete={isAdmin ? handleDeleteSong : undefined}
+            />
           ))}
         </div>
       )}

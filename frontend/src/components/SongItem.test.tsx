@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SongItem from './SongItem';
 import type { Song } from '../types/song';
 
@@ -67,6 +67,89 @@ describe('Integration | Component | SongItem', () => {
 
       // then
       expect(screen.queryByAltText('Tablature')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('admin delete feature', () => {
+    it('does not show delete button when isAdmin is false', () => {
+      // given
+      const onDelete = jest.fn();
+      render(<SongItem song={song} isAdmin={false} onDelete={onDelete} />);
+
+      // then
+      expect(screen.queryByRole('button', { name: /Supprimer la chanson/i })).not.toBeInTheDocument();
+    });
+
+    it('does not show delete button when onDelete is not provided', () => {
+      // given
+      render(<SongItem song={song} isAdmin={true} />);
+
+      // then
+      expect(screen.queryByRole('button', { name: /Supprimer la chanson/i })).not.toBeInTheDocument();
+    });
+
+    it('shows delete button when isAdmin is true and onDelete is provided', () => {
+      // given
+      const onDelete = jest.fn();
+      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+
+      // then
+      expect(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i })).toBeInTheDocument();
+    });
+
+    it('shows inline confirmation when delete button is clicked', () => {
+      // given
+      const onDelete = jest.fn();
+      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+
+      // when
+      fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));
+
+      // then
+      expect(screen.getByText('Supprimer cette chanson ?')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Confirmer/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Annuler/i })).toBeInTheDocument();
+    });
+
+    it('does not expand the card when the delete button is clicked', () => {
+      // given
+      const onDelete = jest.fn();
+      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+
+      // when
+      fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));
+
+      // then
+      expect(screen.queryByText('Tablature')).not.toBeInTheDocument();
+    });
+
+    it('calls onDelete with the song id when confirmed', async () => {
+      // given
+      const onDelete = jest.fn().mockResolvedValue(undefined);
+      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+
+      // when
+      fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Confirmer/i }));
+
+      // then
+      await waitFor(() => {
+        expect(onDelete).toHaveBeenCalledWith('1');
+      });
+    });
+
+    it('hides the confirmation and restores the delete button when cancel is clicked', () => {
+      // given
+      const onDelete = jest.fn();
+      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+
+      // when
+      fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Annuler/i }));
+
+      // then
+      expect(screen.queryByText('Supprimer cette chanson ?')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i })).toBeInTheDocument();
     });
   });
 });

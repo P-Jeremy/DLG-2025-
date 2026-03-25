@@ -29,6 +29,18 @@ export interface AddSongPayload {
   selectedTags: string[];
 }
 
+export async function deleteSong(songId: string, token: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/songs/${songId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const body = await res.json() as { message?: string };
+    throw new Error(body.message ?? 'Erreur lors de la suppression de la chanson');
+  }
+}
+
 export async function addSong(payload: AddSongPayload, token: string): Promise<Song> {
   const formData = new FormData();
   formData.append('title', payload.title);
