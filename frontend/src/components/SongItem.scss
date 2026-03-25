@@ -92,3 +92,20 @@
     }
   }
 }
+
+.song-tab-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+
+  &--loading {
+    display: none;
+  }
+}
+
+.song-tab-loading {
+  color: $color-text;
+  font-size: 0.9em;
+  padding: 1rem 0;
+  opacity: 0.6;
+}

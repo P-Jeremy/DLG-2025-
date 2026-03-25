@@ -11,6 +11,7 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
   const [open, setOpen] = useState(false);
   const [showTab, setShowTab] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
+  const [tabLoaded, setTabLoaded] = useState(false);
 
   const toggleAll = () => {
     setOpen(o => !o);
@@ -72,10 +73,12 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
             <div className="song-section">
               <div className="song-section-title">Tablature</div>
               <div className="song-section-content song-section-content--centered">
+                {!tabLoaded && <div className="song-tab-loading">Chargement…</div>}
                 <img
                   src={song.tab}
                   alt="Tablature"
-                  style={{ maxWidth: '100%', height: 'auto', borderRadius: 4 }}
+                  className={`song-tab-img${tabLoaded ? '' : ' song-tab-img--loading'}`}
+                  onLoad={() => setTabLoaded(true)}
                 />
               </div>
             </div>
