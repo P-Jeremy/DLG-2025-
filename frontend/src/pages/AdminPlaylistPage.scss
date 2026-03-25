@@ -129,15 +129,28 @@
   text-align: right;
 }
 
-.admin-playlist-item__title {
+.admin-playlist-item__info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.admin-playlist-item__title {
   font-weight: 600;
   color: $color-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-playlist-item__author {
   color: $color-text-muted;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-playlist-item__controls {

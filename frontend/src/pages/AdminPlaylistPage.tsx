@@ -202,8 +202,10 @@ const AdminPlaylistPage: React.FC = () => {
                 >
                   <span className="admin-playlist-item__drag-handle" aria-hidden="true">⋮⋮</span>
                   <span className="admin-playlist-item__position">{index + 1}</span>
-                  <span className="admin-playlist-item__title">{song.title}</span>
-                  <span className="admin-playlist-item__author">{song.author}</span>
+                  <div className="admin-playlist-item__info">
+                    <span className="admin-playlist-item__title">{song.title}</span>
+                    <span className="admin-playlist-item__author">{song.author}</span>
+                  </div>
                   <div className="admin-playlist-item__controls">
                     <button
                       className="admin-playlist-item__btn"
