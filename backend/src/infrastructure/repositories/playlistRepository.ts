@@ -33,4 +33,11 @@ export class PlaylistRepository implements IPlaylistRepository {
   async deleteByTagId(tagId: string): Promise<void> {
     await PlaylistModel.deleteOne({ tagId }).exec();
   }
+
+  async removeSongFromAll(songId: string): Promise<void> {
+    await PlaylistModel.updateMany(
+      { songIds: songId },
+      { $pull: { songIds: songId } },
+    ).exec();
+  }
 }

@@ -81,3 +81,10 @@ export class SongNotFoundError extends DomainError {
     this.name = 'SongNotFoundError';
   }
 }
+
+export class PlaylistNotFoundError extends DomainError {
+  constructor() {
+    super('Playlist not found');
+    this.name = 'PlaylistNotFoundError';
+  }
+}

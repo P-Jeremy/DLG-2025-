@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import type { IFileUploadService, UploadableFile } from '../../application/interfaces/IFileUploadService';
@@ -44,5 +44,19 @@ export class S3FileUploadService implements IFileUploadService {
     );
 
     return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
+  }
+
+  async delete(url: string): Promise<void> {
+    const bucketPrefix = `https://${this.bucketName}.s3.amazonaws.com/`;
+    if (!url.startsWith(bucketPrefix)) return;
+
+    const key = url.slice(bucketPrefix.length);
+
+    await this.s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      }),
+    );
   }
 }

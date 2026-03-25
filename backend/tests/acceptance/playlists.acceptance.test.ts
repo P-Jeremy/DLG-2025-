@@ -40,6 +40,56 @@ describe('Playlists endpoints (acceptance)', () => {
     });
   });
 
+  describe('DELETE /api/playlists/:tagId/songs/:songId', () => {
+    it('should remove a song from the playlist and clear its tag', async () => {
+      const adminToken = await getAdminToken();
+      const tags = await insertTestTags([{ name: 'remove-test' }]);
+      const tagId = (tags[0] as { _id: { toString(): string } })._id.toString();
+
+      const songs = await insertTestSongs([
+        { title: 'Keep Me', author: 'Artist', lyrics: 'l', tab: 't', tags: [tagId] },
+        { title: 'Remove Me', author: 'Artist', lyrics: 'l', tab: 't', tags: [tagId] },
+      ]);
+
+      const keepId = (songs[0] as { _id: { toString(): string } })._id.toString();
+      const removeId = (songs[1] as { _id: { toString(): string } })._id.toString();
+
+      await request(getTypedApp())
+        .post(`/api/playlists/${tagId}/songs`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ songId: keepId });
+
+      await request(getTypedApp())
+        .post(`/api/playlists/${tagId}/songs`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ songId: removeId });
+
+      const { status, body } = await request(getTypedApp())
+        .delete(`/api/playlists/${tagId}/songs/${removeId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(status).toBe(200);
+      expect((body as { songIds: string[] }).songIds).toEqual([keepId]);
+    });
+
+    it('should return 404 when the tag does not exist', async () => {
+      const adminToken = await getAdminToken();
+
+      const { status } = await request(getTypedApp())
+        .delete('/api/playlists/000000000000000000000001/songs/000000000000000000000002')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(status).toBe(404);
+    });
+
+    it('should return 401 for unauthenticated requests', async () => {
+      const { status } = await request(getTypedApp())
+        .delete('/api/playlists/000000000000000000000001/songs/000000000000000000000002');
+
+      expect(status).toBe(401);
+    });
+  });
+
   describe('PUT /api/playlists/:tagId', () => {
     it('should reorder songs in playlist', async () => {
       const adminToken = await getAdminToken();

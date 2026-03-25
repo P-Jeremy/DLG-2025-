@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { GetPlaylist } from '../../../application/usecases/GetPlaylist';
 import type { ReorderPlaylist } from '../../../application/usecases/ReorderPlaylist';
 import type { AddSongToPlaylist } from '../../../application/usecases/AddSongToPlaylist';
+import type { RemoveSongFromPlaylist } from '../../../application/usecases/RemoveSongFromPlaylist';
 import { InvalidPlaylistSongError, TagNotFoundError, SongNotFoundError } from '../../../domain/errors/DomainError';
 
 export class PlaylistsController {
@@ -9,6 +10,7 @@ export class PlaylistsController {
     private readonly getPlaylistUsecase: GetPlaylist,
     private readonly reorderPlaylistUsecase: ReorderPlaylist,
     private readonly addSongToPlaylistUsecase: AddSongToPlaylist,
+    private readonly removeSongFromPlaylistUsecase: RemoveSongFromPlaylist,
   ) {}
 
   async getPlaylist(req: Request, res: Response): Promise<void> {
@@ -68,6 +70,25 @@ export class PlaylistsController {
         return;
       }
       res.status(500).json({ message: 'Failed to add song to playlist' });
+    }
+  }
+
+  async removeSongFromPlaylist(req: Request, res: Response): Promise<void> {
+    const { tagId, songId } = req.params;
+
+    try {
+      const { playlist } = await this.removeSongFromPlaylistUsecase.execute({ tagId, songId });
+      res.status(200).json(playlist);
+    } catch (error) {
+      if (error instanceof TagNotFoundError) {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+      if (error instanceof SongNotFoundError) {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+      res.status(500).json({ message: 'Failed to remove song from playlist' });
     }
   }
 }

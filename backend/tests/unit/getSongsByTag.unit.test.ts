@@ -17,14 +17,17 @@ const buildMockSongRepository = (songs: ISong[]): ISongRepository => ({
   findByTagId: jest.fn().mockResolvedValue(songs),
   findById: jest.fn().mockResolvedValue(null),
   removeTagFromAll: jest.fn().mockResolvedValue(undefined),
+  removeTagFromSong: jest.fn().mockResolvedValue(undefined),
   setTag: jest.fn().mockResolvedValue(undefined),
   save: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
+  deleteById: jest.fn().mockResolvedValue(undefined),
 });
 
 const buildMockPlaylistRepository = (playlist: IPlaylist | null): IPlaylistRepository => ({
   findByTagId: jest.fn().mockResolvedValue(playlist),
   save: jest.fn().mockImplementation((pl: IPlaylist) => Promise.resolve(pl)),
   deleteByTagId: jest.fn().mockResolvedValue(undefined),
+  removeSongFromAll: jest.fn().mockResolvedValue(undefined),
 });
 
 describe('GetSongsByTag use case', () => {

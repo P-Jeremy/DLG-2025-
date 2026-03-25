@@ -9,4 +9,6 @@ export interface ISongRepository {
   removeTagFromAll(tagId: string): Promise<void>;
   setTag(songId: string, tagId: string): Promise<void>;
   save(song: ISong): Promise<ISong>;
+  deleteById(id: string): Promise<void>;
+  removeTagFromSong(songId: string): Promise<void>;
 }

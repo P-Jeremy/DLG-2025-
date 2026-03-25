@@ -22,8 +22,10 @@ const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISon
   findByTagId: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
   removeTagFromAll: jest.fn().mockResolvedValue(undefined),
+  removeTagFromSong: jest.fn().mockResolvedValue(undefined),
   setTag: jest.fn().mockResolvedValue(undefined),
   save: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
+  deleteById: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 
@@ -31,6 +33,7 @@ const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {
   findByTagId: jest.fn().mockResolvedValue(null),
   save: jest.fn().mockImplementation((pl: IPlaylist) => Promise.resolve(pl)),
   deleteByTagId: jest.fn().mockResolvedValue(undefined),
+  removeSongFromAll: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 

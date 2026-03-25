@@ -7,4 +7,5 @@ export interface UploadableFile {
 
 export interface IFileUploadService {
   upload(file: UploadableFile): Promise<string>;
+  delete(url: string): Promise<void>;
 }

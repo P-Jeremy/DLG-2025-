@@ -33,6 +33,14 @@ export class SongRepository implements ISongRepository {
     ).exec();
   }
 
+  async deleteById(id: string): Promise<void> {
+    await SongModel.findByIdAndDelete(id).exec();
+  }
+
+  async removeTagFromSong(songId: string): Promise<void> {
+    await SongModel.findByIdAndUpdate(songId, { tags: [] }).exec();
+  }
+
   async save(song: ISong): Promise<Song> {
     const tagIds = song.tags ? song.tags.map((tag) => tag.id).filter(Boolean) : [];
     const doc = new SongModel({
