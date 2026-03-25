@@ -12,7 +12,7 @@ jobs:
 
     steps:
       # -------------------------
-      # Checkout
+      # Checkout main
       # -------------------------
       - name: Checkout main
         uses: actions/checkout@v4
@@ -64,15 +64,15 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.PAT_DEPLOY }}@github.com/${{ github.repository }}
 
       # -------------------------
-      # Merge main → prod
+      # Sync prod = main (RESET)
       # -------------------------
       - name: Fetch prod
         run: git fetch origin prod
 
-      - name: Merge main → prod
+      - name: Reset prod to main
         run: |
           git checkout prod
-          git merge origin/main --no-ff -m "🚀 Deploy production"
+          git reset --hard origin/main
 
       # -------------------------
       # Tag version
@@ -87,7 +87,7 @@ jobs:
       # -------------------------
       - name: Push to prod
         run: |
-          git push origin prod
+          git push origin prod --force
           git push origin --tags
 
       # -------------------------
