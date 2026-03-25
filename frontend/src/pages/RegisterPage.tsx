@@ -104,15 +104,15 @@ const RegisterPage: React.FC = () => {
               />
             </div>
             <div className="auth-actions">
-              <button className="auth-button" type="submit" disabled={loading}>
-                {loading ? 'Inscription...' : "S'inscrire"}
-              </button>
               <button
                 className="auth-button auth-button--secondary"
                 type="button"
-                onClick={() => navigate('/')}
+                onClick={() => void navigate('/')}
               >
                 Annuler
+              </button>
+              <button className="auth-button" type="submit" disabled={loading}>
+                {loading ? 'Inscription...' : "S'inscrire"}
               </button>
             </div>
           </form>

@@ -58,9 +58,18 @@ const LoginPage: React.FC = () => {
               autoComplete="current-password"
             />
           </div>
-          <button className="auth-button" type="submit" disabled={loading}>
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
+          <div className="auth-actions">
+            <button
+              className="auth-button auth-button--secondary"
+              type="button"
+              onClick={() => void navigate('/')}
+            >
+              Retour à l&apos;accueil
+            </button>
+            <button className="auth-button" type="submit" disabled={loading}>
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </button>
+          </div>
         </form>
         <div className="auth-links">
           <Link className="auth-link" to="/forgot-password">
