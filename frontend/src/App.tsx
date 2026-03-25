@@ -8,6 +8,9 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
 import AddSongPage from './pages/AddSongPage';
+import AdminTagsPage from './pages/AdminTagsPage';
+import AdminPlaylistsIndexPage from './pages/AdminPlaylistsIndexPage';
+import AdminPlaylistPage from './pages/AdminPlaylistPage';
 
 const App: React.FC = () => {
   return (
@@ -21,6 +24,9 @@ const App: React.FC = () => {
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/activate/:token" element={<ActivateAccountPage />} />
           <Route path="/songs/add" element={<AddSongPage />} />
+          <Route path="/admin/tags" element={<AdminTagsPage />} />
+          <Route path="/admin/playlists" element={<AdminPlaylistsIndexPage />} />
+          <Route path="/admin/playlists/:tagId" element={<AdminPlaylistPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

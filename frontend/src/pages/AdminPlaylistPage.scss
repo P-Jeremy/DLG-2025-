@@ -1,0 +1,195 @@
+@use '../styles/variables' as *;
+
+.admin-playlist-page {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  min-height: 100vh;
+}
+
+.admin-playlist-card {
+  background: #fff;
+  border-radius: $border-radius-card;
+  box-shadow: $shadow-card;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 700px;
+  height: fit-content;
+}
+
+.admin-playlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-playlist-title {
+  color: $color-primary;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+}
+
+.admin-playlist-back {
+  background: none;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: $color-text-muted;
+  transition: border-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.admin-playlist-error {
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-radius: $border-radius-button;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-playlist-success {
+  background: $color-success-bg;
+  color: $color-success-dark;
+  border-radius: $border-radius-button;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-playlist-loading,
+.admin-playlist-empty,
+.admin-playlist-forbidden {
+  text-align: center;
+  color: $color-text-muted;
+  padding: 2rem;
+}
+
+.admin-playlist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-playlist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-tag;
+  background: $color-surface-alt;
+  cursor: grab;
+  transition: opacity $transition-fast, border-color $transition-fast, background $transition-fast;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &--dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+  }
+
+  &--drag-over {
+    border-color: $color-primary;
+    background: $color-primary-bg;
+  }
+}
+
+.admin-playlist-item__drag-handle {
+  color: $color-text-muted;
+  font-size: 0.85rem;
+  letter-spacing: -0.1em;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.admin-playlist-item__position {
+  font-weight: 700;
+  color: $color-text-muted;
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.admin-playlist-item__title {
+  flex: 1;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.admin-playlist-item__author {
+  color: $color-text-muted;
+  font-size: 0.9rem;
+}
+
+.admin-playlist-item__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-playlist-item__btn {
+  background: none;
+  border: 1px solid $color-border-default;
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  color: $color-text-muted;
+  line-height: 1;
+  transition: border-color $transition-fast, color $transition-fast;
+
+  &:hover:not(:disabled) {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.admin-playlist-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-playlist-save-btn {
+  background: $color-primary;
+  color: #fff;
+  border: none;
+  border-radius: $border-radius-button;
+  padding: 0.6rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
