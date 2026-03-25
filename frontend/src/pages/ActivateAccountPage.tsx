@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { activateAccount } from '../api/auth';
+import AppBackground from '../components/AppBackground';
 
 type ActivationState = 'loading' | 'success' | 'error';
 
@@ -35,6 +36,7 @@ const ActivateAccountPage: React.FC = () => {
   }, [token]);
 
   return (
+    <AppBackground>
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">DLG</h1>
@@ -58,6 +60,7 @@ const ActivateAccountPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </AppBackground>
   );
 };
 

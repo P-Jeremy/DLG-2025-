@@ -7,6 +7,7 @@ import { addSong } from '../api/songs';
 import { fetchTags } from '../api/tags';
 import type { Tag } from '../api/tags';
 import RichTextToolbar from '../components/RichTextToolbar';
+import AppBackground from '../components/AppBackground';
 import './AddSongPage.scss';
 
 const AddSongPage: React.FC = () => {
@@ -37,7 +38,7 @@ const AddSongPage: React.FC = () => {
 
   const toggleTag = (tagId: string) => {
     setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
+      prev.includes(tagId) ? [] : [tagId],
     );
   };
 
@@ -87,13 +88,16 @@ const AddSongPage: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="add-song-page">
-        <div className="add-song-forbidden">Accès réservé aux administrateurs.</div>
-      </div>
+      <AppBackground>
+        <div className="add-song-page">
+          <div className="add-song-forbidden">Accès réservé aux administrateurs.</div>
+        </div>
+      </AppBackground>
     );
   }
 
   return (
+    <AppBackground>
     <div className="add-song-page">
       <div className="add-song-card">
         <h1 className="add-song-title">Ajouter une chanson</h1>
@@ -187,6 +191,7 @@ const AddSongPage: React.FC = () => {
         </form>
       </div>
     </div>
+    </AppBackground>
   );
 };
 

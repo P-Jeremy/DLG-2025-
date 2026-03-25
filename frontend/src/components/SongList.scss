@@ -1,11 +1,5 @@
 @use '../styles/variables' as *;
 
-.app-bg {
-  background: transparent;
-  min-height: 100vh;
-  width: 100vw;
-}
-
 .app-header {
   width: 100vw;
   display: flex;
@@ -30,6 +24,25 @@
   min-height: 100vh;
   padding: 0;
   background: transparent;
+}
+
+.song-list-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 700px;
+  padding: 1.25rem 1.5rem 0.5rem;
+  box-sizing: border-box;
+
+  @media (max-width: $breakpoint-md) {
+    padding: 1rem 1rem 0.5rem;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    padding: 1rem 0.75rem 0.5rem;
+  }
 }
 
 .song-list {
