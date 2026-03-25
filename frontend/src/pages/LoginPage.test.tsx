@@ -46,6 +46,20 @@ describe('Integration | Page | LoginPage', () => {
     expect(screen.getByText(/Mot de passe oublié/)).toBeInTheDocument();
   });
 
+  it('renders back to home button', () => {
+    renderLoginPage();
+
+    expect(screen.getByRole('button', { name: "Retour à l'accueil" })).toBeInTheDocument();
+  });
+
+  it('navigates to / when back to home button is clicked', () => {
+    renderLoginPage();
+
+    fireEvent.click(screen.getByRole('button', { name: "Retour à l'accueil" }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/');
+  });
+
   it('disables the submit button while loading', async () => {
     (globalThis as GlobalWithFetch).fetch = jest.fn().mockReturnValue(new Promise(() => undefined));
 
