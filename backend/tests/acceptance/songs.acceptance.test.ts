@@ -3,6 +3,7 @@ import app from '../../src/index';
 import { insertTestSongs } from '../helpers/insertTestSongs';
 import { insertTestTags } from '../helpers/insertTestTags';
 import { ITag } from '../../src/domain/interfaces/Tags';
+import { PlaylistModel } from '../../src/infrastructure/models/playlistModel';
 
 describe('GET /api/songs (acceptance)', () => {
   it('should return a list of songs with and without tags', async () => {
@@ -77,5 +78,34 @@ describe('GET /api/songs (acceptance)', () => {
       status: 200,
       body: expected.sort(sortByTitle),
     });
+  });
+});
+
+describe('GET /api/songs?tagId=xxx (acceptance)', () => {
+  it('should return songs ordered by playlist when tagId is provided', async () => {
+    const insertedTags = await insertTestTags([{ name: 'playlist-tag' }]);
+    const tagId = (insertedTags[0] as { _id: { toString(): string } })._id.toString();
+
+    const insertedSongs = await insertTestSongs([
+      { title: 'Song Alpha', author: 'Artist', lyrics: 'l', tab: 't', tags: [tagId] },
+      { title: 'Song Beta', author: 'Artist', lyrics: 'l', tab: 't', tags: [tagId] },
+      { title: 'Song Gamma', author: 'Artist', lyrics: 'l', tab: 't', tags: [tagId] },
+    ]);
+
+    const songAlphaId = (insertedSongs[0] as { _id: { toString(): string } })._id.toString();
+    const songBetaId = (insertedSongs[1] as { _id: { toString(): string } })._id.toString();
+    const songGammaId = (insertedSongs[2] as { _id: { toString(): string } })._id.toString();
+
+    await PlaylistModel.create({ tagId, songIds: [songGammaId, songAlphaId, songBetaId] });
+
+    function getTypedApp(): import('express').Application {
+      return app as import('express').Application;
+    }
+
+    const res = await request(getTypedApp()).get(`/api/songs?tagId=${tagId}`);
+    const { status, body } = res as { status: number; body: { id: string; title: string }[] };
+
+    expect(status).toBe(200);
+    expect(body.map((s) => s.title)).toEqual(['Song Gamma', 'Song Alpha', 'Song Beta']);
   });
 });
