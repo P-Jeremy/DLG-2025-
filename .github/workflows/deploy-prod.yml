@@ -89,3 +89,12 @@ jobs:
         run: |
           git push origin prod
           git push origin --tags
+
+      # -------------------------
+      # Trigger deployments
+      # -------------------------
+      - name: Trigger Vercel Deploy
+        run: curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
+
+      - name: Trigger Render Deploy
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
