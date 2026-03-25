@@ -42,7 +42,7 @@ export class TagsController {
   }
 
   async deleteTag(req: Request, res: Response): Promise<void> {
-    const { id } = req.params;
+    const id = req.params['id'] as string;
 
     try {
       await this.deleteTagUsecase.execute({ tagId: id });
@@ -57,7 +57,7 @@ export class TagsController {
   }
 
   async renameTag(req: Request, res: Response): Promise<void> {
-    const { id } = req.params;
+    const id = req.params['id'] as string;
     const { name } = req.body as { name?: string };
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
