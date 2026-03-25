@@ -1,0 +1,91 @@
+name: 🚀 Deploy to Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+      # -------------------------
+      # Checkout
+      # -------------------------
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.PAT_DEPLOY }}
+          fetch-depth: 0
+
+      # -------------------------
+      # Install dependencies
+      # -------------------------
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install backend dependencies
+        run: cd backend && npm install
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      # -------------------------
+      # Tests
+      # -------------------------
+      - name: Test backend
+        run: cd backend && npm run test
+
+      - name: Test frontend
+        run: cd frontend && npm test
+
+      # -------------------------
+      # Build
+      # -------------------------
+      - name: Build backend
+        run: cd backend && npm run build
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+      # -------------------------
+      # Git config
+      # -------------------------
+      - name: Configure git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Use PAT for push
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_DEPLOY }}@github.com/${{ github.repository }}
+
+      # -------------------------
+      # Merge main → prod
+      # -------------------------
+      - name: Fetch prod
+        run: git fetch origin prod
+
+      - name: Merge main → prod
+        run: |
+          git checkout prod
+          git merge origin/main --no-ff -m "🚀 Deploy production"
+
+      # -------------------------
+      # Tag version
+      # -------------------------
+      - name: Tag version
+        run: |
+          VERSION=$(date +'%Y.%m.%d-%H%M')
+          git tag "prod-$VERSION"
+
+      # -------------------------
+      # Push
+      # -------------------------
+      - name: Push to prod
+        run: |
+          git push origin prod
+          git push origin --tags
