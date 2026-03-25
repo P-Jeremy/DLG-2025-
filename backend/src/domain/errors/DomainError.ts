@@ -53,3 +53,31 @@ export class InvalidResetTokenError extends DomainError {
     this.name = 'InvalidResetTokenError';
   }
 }
+
+export class DuplicateTagError extends DomainError {
+  constructor() {
+    super('Tag already exists');
+    this.name = 'DuplicateTagError';
+  }
+}
+
+export class TagNotFoundError extends DomainError {
+  constructor() {
+    super('Tag not found');
+    this.name = 'TagNotFoundError';
+  }
+}
+
+export class InvalidPlaylistSongError extends DomainError {
+  constructor() {
+    super('One or more songs do not belong to this tag');
+    this.name = 'InvalidPlaylistSongError';
+  }
+}
+
+export class SongNotFoundError extends DomainError {
+  constructor() {
+    super('Song not found');
+    this.name = 'SongNotFoundError';
+  }
+}

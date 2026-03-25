@@ -20,6 +20,10 @@ const buildMockFile = (overrides: Partial<UploadableFile> = {}): UploadableFile 
 
 const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISongRepository => ({
   getAll: jest.fn().mockResolvedValue([]),
+  findByTagId: jest.fn().mockResolvedValue([]),
+  findById: jest.fn().mockResolvedValue(null),
+  removeTagFromAll: jest.fn().mockResolvedValue(undefined),
+  setTag: jest.fn().mockResolvedValue(undefined),
   save: jest.fn().mockImplementation((song: ISong) =>
     Promise.resolve({ ...song, id: 'saved-song-id' }),
   ),
