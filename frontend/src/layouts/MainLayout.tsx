@@ -14,8 +14,8 @@ const MainLayout: React.FC = () => {
   useEffect(() => {
     let rafId: number;
     const handleScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
+      window.cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(() => {
         if (parallaxBgRef.current) {
           const offset = window.scrollY * 0.2;
           parallaxBgRef.current.style.backgroundPositionY = `calc(50% + ${offset}px)`;
@@ -25,7 +25,7 @@ const MainLayout: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      cancelAnimationFrame(rafId);
+      window.cancelAnimationFrame(rafId);
     };
   }, []);
 
