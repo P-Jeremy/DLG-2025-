@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SongItem from './SongItem';
 import SortToggle from './SortToggle';
 import TagFilter from './TagFilter';
@@ -14,6 +15,7 @@ const REFRESH_EVENT = 'refresh';
 
 const SongList: React.FC = () => {
   const { isAdmin, token } = useAuth();
+  const navigate = useNavigate();
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +59,10 @@ const SongList: React.FC = () => {
     setSongs((prev) => prev.filter((s) => s.id !== songId));
   }, [token]);
 
+  const handleEditSong = useCallback((songId: string) => {
+    void navigate(`/songs/${songId}/edit`);
+  }, [navigate]);
+
   useSocket(REFRESH_EVENT, handleRefresh);
 
   if (loading) return (
@@ -94,6 +100,7 @@ const SongList: React.FC = () => {
               song={song}
               isAdmin={isAdmin}
               onDelete={isAdmin ? handleDeleteSong : undefined}
+              onEdit={isAdmin ? handleEditSong : undefined}
               isOpen={openSongId === song.id}
               onOpen={setOpenSongId}
             />

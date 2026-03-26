@@ -1,0 +1,210 @@
+@use '../styles/variables' as *;
+@use '../styles/shared-forms' as *;
+
+.edit-song-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1.5rem;
+  min-height: calc(100dvh - 60px);
+}
+
+.edit-song-card {
+  background: #fff;
+  border-radius: $border-radius-card;
+  box-shadow: $shadow-card;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 720px;
+}
+
+.edit-song-title {
+  color: $color-primary;
+  text-align: center;
+  margin: 0 0 2rem 0;
+  font-size: 1.75rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+}
+
+.edit-song-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.edit-song-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+.edit-song-input {
+  width: 100%;
+  border: 1.5px solid $color-border-default;
+  border-radius: $border-radius-content;
+  padding: 0.6em 0.9em;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+  color: $color-text;
+  transition: border-color $transition-fast;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+
+  &--error {
+    border-color: $color-primary;
+  }
+}
+
+.edit-song-label--required::after {
+  content: ' *';
+  color: $color-primary;
+  font-size: 0.85rem;
+}
+
+.edit-song-field-error {
+  font-size: 0.78rem;
+  color: $color-primary;
+  font-weight: 500;
+  margin-top: 0.1rem;
+}
+
+.edit-song-editor {
+  border: 1.5px solid $color-border-default;
+  border-radius: $border-radius-content;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+  color: $color-text;
+  cursor: text;
+  transition: border-color $transition-fast;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: $color-primary;
+  }
+
+  .ProseMirror {
+    outline: none;
+    min-height: 140px;
+    padding: 0.6em 0.9em;
+
+    ul, ol {
+      padding-left: 1.5em;
+    }
+  }
+}
+
+.edit-song-current-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.edit-song-current-tab-img {
+  max-width: 220px;
+  max-height: 160px;
+  border-radius: $border-radius-content;
+  border: 1.5px solid $color-border-default;
+  object-fit: contain;
+}
+
+.edit-song-current-tab-label {
+  font-size: 0.72rem;
+  color: $color-text-muted;
+}
+
+.edit-song-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.edit-song-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25em 0.7em;
+  border-radius: $border-radius-tag;
+  border: 1.5px solid $color-border-default;
+  background: $color-surface-alt;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background-color $transition-fast, border-color $transition-fast, color $transition-fast;
+  user-select: none;
+
+  &--selected {
+    background: $color-primary-bg;
+    border-color: $color-primary;
+    color: $color-primary;
+    font-weight: 600;
+  }
+}
+
+.edit-song-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.edit-song-cancel {
+  @include secondary-button;
+}
+
+.edit-song-submit {
+  @include primary-button;
+  margin-top: 0.5rem;
+}
+
+.edit-song-error {
+  @include feedback-error;
+}
+
+.edit-song-success {
+  @include feedback-success;
+}
+
+.edit-song-forbidden,
+.edit-song-loading,
+.edit-song-not-found {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $color-text-muted;
+  font-size: 1.1rem;
+}
+
+.edit-song-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: $color-success-dark;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+@media (max-width: $breakpoint-sm) {
+  .edit-song-page {
+    padding: 1.5rem 1rem;
+    align-items: flex-start;
+  }
+
+  .edit-song-card {
+    padding: 1.5rem 1rem;
+  }
+}

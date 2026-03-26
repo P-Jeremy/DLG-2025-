@@ -10,11 +10,12 @@ interface SongItemProps {
   song: Song;
   isAdmin?: boolean;
   onDelete?: (songId: string) => Promise<void>;
+  onEdit?: (songId: string) => void;
   isOpen: boolean;
   onOpen: (songId: string | null) => void;
 }
 
-const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, isOpen, onOpen }) => {
+const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, onEdit, isOpen, onOpen }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [showTab, setShowTab] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -98,6 +99,16 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, is
       <div className="song-title">
         <span>{song.title}</span>
         <div className="song-title__actions">
+          {isAdmin && onEdit && (
+            <button
+              className="song-edit-btn"
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onEdit(song.id); }}
+              aria-label={`Modifier la chanson ${song.title}`}
+            >
+              <span className="material-icons">edit</span>
+            </button>
+          )}
           {isAdmin && onDelete && (
             confirmDelete ? (
               <div

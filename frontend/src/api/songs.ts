@@ -41,6 +41,38 @@ export async function deleteSong(songId: string, token: string): Promise<void> {
   }
 }
 
+export interface UpdateSongPayload {
+  title: string;
+  author: string;
+  lyrics: string;
+  tab?: File;
+  selectedTags: string[];
+}
+
+export async function updateSong(songId: string, payload: UpdateSongPayload, token: string): Promise<Song> {
+  const formData = new FormData();
+  formData.append('title', payload.title);
+  formData.append('author', payload.author);
+  formData.append('lyrics', payload.lyrics);
+  if (payload.tab) {
+    formData.append('tab', payload.tab);
+  }
+  formData.append('selectedTags', JSON.stringify(payload.selectedTags));
+
+  const res = await fetch(`${API_BASE_URL}/api/songs/${songId}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json() as { message?: string };
+    throw new Error(body.message ?? 'Erreur lors de la modification de la chanson');
+  }
+
+  return (await res.json()) as Song;
+}
+
 export async function addSong(payload: AddSongPayload, token: string): Promise<Song> {
   const formData = new FormData();
   formData.append('title', payload.title);
