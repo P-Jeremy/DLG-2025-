@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import DOMPurify from 'dompurify';
 import type { Song } from '../types/song';
 import './SongItem.scss';
@@ -17,6 +17,16 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, is
   const [showTab, setShowTab] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [tabLoaded, setTabLoaded] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [lightboxOpen]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -189,11 +199,38 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, is
                 <img
                   src={song.tab}
                   alt="Tablature"
-                  className={`song-tab-img${tabLoaded ? '' : ' song-tab-img--loading'}`}
+                  className={`song-tab-img${tabLoaded ? ' song-tab-img--zoomable' : ' song-tab-img--loading'}`}
                   onLoad={() => setTabLoaded(true)}
+                  onClick={() => tabLoaded && setLightboxOpen(true)}
                 />
               </div>
             </div>
+          )}
+
+          {lightboxOpen && song.tab && createPortal(
+            <div
+              className="tab-lightbox"
+              onClick={() => setLightboxOpen(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Tablature en plein écran"
+            >
+              <button
+                className="tab-lightbox__close"
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setLightboxOpen(false)}
+              >
+                <span className="material-icons">close</span>
+              </button>
+              <img
+                src={song.tab}
+                alt="Tablature"
+                className="tab-lightbox__img"
+                onClick={e => e.stopPropagation()}
+              />
+            </div>,
+            document.body,
           )}
 
           {showLyrics && song.lyrics && (
