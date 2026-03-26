@@ -20,6 +20,7 @@ const SongList: React.FC = () => {
   const [sortField, setSortField] = useState<SortField>('title');
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const [openSongId, setOpenSongId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTags()
@@ -58,22 +59,30 @@ const SongList: React.FC = () => {
 
   useSocket(REFRESH_EVENT, handleRefresh);
 
-  if (loading) return <div className="song-list-bg"><img src="/vinyl.png" className="vinyl-loader" alt="Chargement..." /></div>;
+  if (loading) return (
+    <div className="song-list-bg">
+      <div className="vinyl-loader-container">
+        <img src="/vinyl.png" className="vinyl-loader" alt="Chargement..." />
+      </div>
+    </div>
+  );
   if (error) return <div className="song-list-bg"><div className="song-list-error">Erreur : {error}</div></div>;
 
   return (
     <div className="song-list-bg">
       <div className="song-list-controls">
-        {tags.length > 0 && (
-          <TagFilter
-            tags={tags}
-            selectedTagId={selectedTagId}
-            onSelect={setSelectedTagId}
-          />
-        )}
-        {!selectedTagId && (
-          <SortToggle sortField={sortField} onToggle={setSortField} />
-        )}
+        <div className="song-list-controls-card">
+          {tags.length > 0 && (
+            <TagFilter
+              tags={tags}
+              selectedTagId={selectedTagId}
+              onSelect={setSelectedTagId}
+            />
+          )}
+          {!selectedTagId && (
+            <SortToggle sortField={sortField} onToggle={setSortField} />
+          )}
+        </div>
       </div>
       {songs.length === 0 ? (
         <div className="song-list-message">Aucune chanson trouvée.</div>
@@ -85,6 +94,8 @@ const SongList: React.FC = () => {
               song={song}
               isAdmin={isAdmin}
               onDelete={isAdmin ? handleDeleteSong : undefined}
+              isOpen={openSongId === song.id}
+              onOpen={setOpenSongId}
             />
           ))}
         </div>
