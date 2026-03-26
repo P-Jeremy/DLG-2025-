@@ -115,6 +115,7 @@
   letter-spacing: -0.1em;
   cursor: grab;
   user-select: none;
+  touch-action: none;
   flex-shrink: 0;
 
   &:active {
