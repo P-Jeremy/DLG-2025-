@@ -83,6 +83,10 @@
     outline: none;
     border-color: $color-primary;
   }
+
+  &:user-invalid {
+    border-bottom-color: $color-primary;
+  }
 }
 
 .auth-button {
