@@ -20,9 +20,15 @@ const buildMockFile = (overrides: Partial<UploadableFile> = {}): UploadableFile 
 
 const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISongRepository => ({
   getAll: jest.fn().mockResolvedValue([]),
+  findByTagId: jest.fn().mockResolvedValue([]),
+  findById: jest.fn().mockResolvedValue(null),
+  removeTagFromAll: jest.fn().mockResolvedValue(undefined),
+  removeTagFromSong: jest.fn().mockResolvedValue(undefined),
+  setTag: jest.fn().mockResolvedValue(undefined),
   save: jest.fn().mockImplementation((song: ISong) =>
     Promise.resolve({ ...song, id: 'saved-song-id' }),
   ),
+  deleteById: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 
@@ -46,6 +52,7 @@ const buildMockEmailService = (overrides: Partial<IEmailService> = {}): IEmailSe
 
 const buildMockFileUploadService = (overrides: Partial<IFileUploadService> = {}): IFileUploadService => ({
   upload: jest.fn().mockResolvedValue('https://bucket.s3.amazonaws.com/uuid.png'),
+  delete: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 

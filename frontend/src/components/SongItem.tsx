@@ -5,20 +5,47 @@ import './SongItem.scss';
 
 interface SongItemProps {
   song: Song;
+  isAdmin?: boolean;
+  onDelete?: (songId: string) => Promise<void>;
 }
 
-const SongItem: React.FC<SongItemProps> = ({ song }) => {
+const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete }) => {
   const [open, setOpen] = useState(false);
   const [showTab, setShowTab] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [tabLoaded, setTabLoaded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const toggleAll = () => {
+    if (confirmDelete) return;
     setOpen(o => !o);
     if (!open) {
       setShowTab(true);
       setShowLyrics(true);
     }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onDelete) return;
+    setDeleting(true);
+    try {
+      await onDelete(song.id);
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
+  const handleCancelDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDelete(false);
   };
 
   return (
@@ -28,9 +55,49 @@ const SongItem: React.FC<SongItemProps> = ({ song }) => {
     >
       <div className="song-title">
         <span>{song.title}</span>
-        <span className="song-chevron">
-          {open ? '▲' : '▼'}
-        </span>
+        <div className="song-title__actions">
+          {isAdmin && onDelete && (
+            confirmDelete ? (
+              <div
+                className="song-delete-confirm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="song-delete-confirm__label">Supprimer cette chanson ?</span>
+                <button
+                  className="song-delete-confirm__confirm-btn"
+                  type="button"
+                  disabled={deleting}
+                  onClick={(e) => void handleConfirmDelete(e)}
+                  aria-label="Confirmer la suppression"
+                >
+                  Confirmer
+                </button>
+                <button
+                  className="song-delete-confirm__cancel-btn"
+                  type="button"
+                  disabled={deleting}
+                  onClick={handleCancelDelete}
+                  aria-label="Annuler la suppression"
+                >
+                  Annuler
+                </button>
+              </div>
+            ) : (
+              <button
+                className="song-delete-btn"
+                type="button"
+                disabled={deleting}
+                onClick={handleDeleteClick}
+                aria-label={`Supprimer la chanson ${song.title}`}
+              >
+                <span className="material-icons">delete</span>
+              </button>
+            )
+          )}
+          <span className="song-chevron">
+            {open ? '▲' : '▼'}
+          </span>
+        </div>
       </div>
 
       {song.tags && song.tags.length > 0 && (

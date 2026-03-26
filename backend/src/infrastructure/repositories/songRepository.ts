@@ -11,6 +11,36 @@ export class SongRepository implements ISongRepository {
     return docs.map((doc) => this.toDomain(doc));
   }
 
+  async findByTagId(tagId: string): Promise<Song[]> {
+    const docs = await SongModel.find({ tags: tagId }).populate('tags').exec();
+    return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async findById(id: string): Promise<Song | null> {
+    const doc = await SongModel.findById(id).populate('tags').exec();
+    if (!doc) return null;
+    return this.toDomain(doc);
+  }
+
+  async removeTagFromAll(tagId: string): Promise<void> {
+    await SongModel.updateMany({ tags: tagId }, { $pull: { tags: tagId } }).exec();
+  }
+
+  async setTag(songId: string, tagId: string): Promise<void> {
+    await SongModel.findByIdAndUpdate(
+      songId,
+      { tags: [tagId] },
+    ).exec();
+  }
+
+  async deleteById(id: string): Promise<void> {
+    await SongModel.findByIdAndDelete(id).exec();
+  }
+
+  async removeTagFromSong(songId: string): Promise<void> {
+    await SongModel.findByIdAndUpdate(songId, { tags: [] }).exec();
+  }
+
   async save(song: ISong): Promise<Song> {
     const tagIds = song.tags ? song.tags.map((tag) => tag.id).filter(Boolean) : [];
     const doc = new SongModel({

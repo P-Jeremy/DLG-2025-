@@ -1,6 +1,13 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SongList from './SongList';
+import { AuthProvider } from '../contexts/AuthContext';
+
+const renderSongList = () => render(
+  <AuthProvider>
+    <SongList />
+  </AuthProvider>,
+);
 
 jest.mock('socket.io-client', () => ({
   io: () => ({
@@ -9,6 +16,15 @@ jest.mock('socket.io-client', () => ({
     disconnect: jest.fn(),
   }),
 }));
+
+jest.mock('../api/tags', () => ({
+  fetchTags: jest.fn().mockResolvedValue([]),
+}));
+
+beforeEach(() => {
+  const { fetchTags } = jest.requireMock('../api/tags') as { fetchTags: jest.Mock };
+  fetchTags.mockResolvedValue([]);
+});
 
 const songsSortedByTitle = [
   { id: '2', title: 'Angie', author: 'Rolling Stones' },
@@ -38,7 +54,7 @@ describe('Integration | Component | SongList', () => {
     it('calls the backend with sortBy=title by default', async () => {
       mockFetchReturning(songsSortedByTitle);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
@@ -50,7 +66,7 @@ describe('Integration | Component | SongList', () => {
     it('displays songs in the order returned by the backend (sorted by title)', async () => {
       mockFetchReturning(songsSortedByTitle);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
@@ -65,7 +81,7 @@ describe('Integration | Component | SongList', () => {
     it('displays the toggle unchecked (sort by title active) by default', async () => {
       mockFetchReturning(songsSortedByTitle);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
@@ -79,7 +95,7 @@ describe('Integration | Component | SongList', () => {
     it('calls the backend with sortBy=author after toggling', async () => {
       mockFetchReturning(songsSortedByTitle);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
@@ -96,7 +112,7 @@ describe('Integration | Component | SongList', () => {
     it('displays songs in the order returned by the backend (sorted by artist)', async () => {
       mockFetchReturning(songsSortedByTitle);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
@@ -116,7 +132,7 @@ describe('Integration | Component | SongList', () => {
     it('displays the toggle checked after selecting Artist', async () => {
       mockFetchReturning(songsSortedByTitle);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
@@ -135,7 +151,7 @@ describe('Integration | Component | SongList', () => {
     it('displays the error message when fetch rejects', async () => {
       (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn().mockRejectedValue(new Error('Network error'));
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Erreur : Network error')).toBeInTheDocument();
@@ -148,7 +164,7 @@ describe('Integration | Component | SongList', () => {
         json: () => Promise.resolve([]),
       } as Response);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Erreur : Erreur lors du chargement des chansons')).toBeInTheDocument();
@@ -163,7 +179,7 @@ describe('Integration | Component | SongList', () => {
         json: () => Promise.resolve([]),
       } as Response);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Aucune chanson trouvée.')).toBeInTheDocument();
@@ -175,7 +191,7 @@ describe('Integration | Component | SongList', () => {
     it('calls the backend with sortBy=title after a second toggle back to Title', async () => {
       mockFetchReturning(songsSortedByTitle);
 
-      render(<SongList />);
+      renderSongList();
 
       await waitFor(() => {
         expect(screen.getByText('Angie')).toBeInTheDocument();

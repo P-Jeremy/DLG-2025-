@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../api/auth';
 import { useAuth } from '../contexts/AuthContext';
+import AppBackground from '../components/AppBackground';
 import './LoginPage.scss';
 
 const LoginPage: React.FC = () => {
@@ -29,6 +30,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
+    <AppBackground>
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">DLG</h1>
@@ -81,6 +83,7 @@ const LoginPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </AppBackground>
   );
 };
 

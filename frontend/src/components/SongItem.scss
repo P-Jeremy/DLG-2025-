@@ -24,13 +24,127 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .song-title__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
   }
 
   .song-chevron {
     font-size: 1.2em;
     color: $color-primary;
-    margin-left: 8px;
+    margin-left: 4px;
     user-select: none;
+  }
+
+  .song-delete-btn {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: $color-text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $border-radius-button;
+    min-width: 40px;
+    min-height: 40px;
+    transition: color $transition-fast, background $transition-fast;
+
+    .material-icons {
+      font-size: 1.25rem;
+    }
+
+    &:hover:not(:disabled) {
+      color: $color-primary;
+      background: $color-primary-bg;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+
+  .song-delete-confirm {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .song-delete-confirm__label {
+    font-size: 0.85rem;
+    color: $color-primary;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .song-delete-confirm__confirm-btn {
+    background: $color-primary;
+    color: #fff;
+    border: none;
+    border-radius: $border-radius-button;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background $transition-fast;
+    white-space: nowrap;
+    min-width: 40px;
+    min-height: 40px;
+
+    &:hover:not(:disabled) {
+      background: $color-primary-dark;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .song-delete-confirm__cancel-btn {
+    background: none;
+    border: 1px solid $color-border-default;
+    border-radius: $border-radius-button;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    color: $color-text-muted;
+    cursor: pointer;
+    transition: border-color $transition-fast, color $transition-fast;
+    white-space: nowrap;
+    min-width: 40px;
+    min-height: 40px;
+
+    &:hover:not(:disabled) {
+      border-color: $color-text;
+      color: $color-text;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-text-muted;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   .song-tags {

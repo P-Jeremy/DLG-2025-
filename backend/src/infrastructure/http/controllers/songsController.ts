@@ -1,18 +1,31 @@
 import type { Request, Response } from 'express';
 import type { GetSongsUsecase } from '../../../application/usecases/GetSongs';
+import type { GetSongsByTag } from '../../../application/usecases/GetSongsByTag';
 import type { AddSong } from '../../../application/usecases/AddSong';
+import type { DeleteSong } from '../../../application/usecases/DeleteSong';
 import { SongDeserializer, MissingFieldError, InvalidTagsError } from '../deserializers/SongDeserializer';
+import { SongNotFoundError } from '../../../domain/errors/DomainError';
 
 export class SongsController {
   private readonly deserializer = new SongDeserializer();
 
   constructor(
     private readonly getSongsUsecase: GetSongsUsecase,
+    private readonly getSongsByTagUsecase: GetSongsByTag,
     private readonly addSongUsecase: AddSong,
+    private readonly deleteSongUsecase: DeleteSong,
   ) {}
 
   async getSongs(req: Request, res: Response): Promise<void> {
     try {
+      const tagId = typeof req.query.tagId === 'string' ? req.query.tagId : undefined;
+
+      if (tagId) {
+        const songs = await this.getSongsByTagUsecase.execute({ tagId });
+        res.json(songs);
+        return;
+      }
+
       const sortBy = this.deserializer.deserializeSortField(req.query.sortBy);
       const songs = await this.getSongsUsecase.execute(sortBy);
       res.json(songs);
@@ -38,6 +51,21 @@ export class SongsController {
       }
       const message = error instanceof Error ? error.message : 'Failed to add song';
       res.status(500).json({ message });
+    }
+  }
+
+  async deleteSong(req: Request, res: Response): Promise<void> {
+    const id = req.params['id'] as string;
+
+    try {
+      await this.deleteSongUsecase.execute({ songId: id });
+      res.status(204).send();
+    } catch (error) {
+      if (error instanceof SongNotFoundError) {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+      res.status(500).json({ message: 'Failed to delete song' });
     }
   }
 }

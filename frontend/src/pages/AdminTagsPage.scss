@@ -1,0 +1,274 @@
+@use '../styles/variables' as *;
+
+.admin-tags-page {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  min-height: 100vh;
+}
+
+.admin-tags-card {
+  background: #fff;
+  border-radius: $border-radius-card;
+  box-shadow: $shadow-card;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 600px;
+  height: fit-content;
+}
+
+.admin-tags-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-tags-title {
+  color: $color-primary;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+}
+
+.admin-tags-back {
+  background: none;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: $color-text-muted;
+  transition: border-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.admin-tags-error {
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-radius: $border-radius-button;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-tags-success {
+  background: $color-success-bg;
+  color: $color-success-dark;
+  border-radius: $border-radius-button;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-tags-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.admin-tags-input {
+  flex: 1;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  color: $color-text;
+  transition: border-color $transition-fast;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+}
+
+.admin-tags-create-btn {
+  background: $color-primary;
+  color: #fff;
+  border: none;
+  border-radius: $border-radius-button;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.admin-tags-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-tags-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-tag;
+  background: $color-surface-alt;
+}
+
+.admin-tags-item__name {
+  font-weight: 600;
+  color: $color-text;
+}
+
+.admin-tags-item__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.admin-tags-item__playlist-link {
+  font-size: 0.85rem;
+  color: $color-primary;
+  text-decoration: none;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid $color-primary;
+  border-radius: $border-radius-button;
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $color-primary;
+    color: #fff;
+  }
+}
+
+.admin-tags-item__rename-btn {
+  background: transparent;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text;
+  cursor: pointer;
+  transition: border-color $transition-fast, color $transition-fast, background $transition-fast;
+  flex-shrink: 0;
+
+  .material-icons {
+    font-size: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $color-button-hover-border;
+    color: $color-button-hover-border;
+    background: $color-button-hover-bg;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.admin-tags-item__delete-btn {
+  background: transparent;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-primary;
+  cursor: pointer;
+  transition: border-color $transition-fast, color $transition-fast, background $transition-fast;
+  flex-shrink: 0;
+
+  .material-icons {
+    font-size: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $color-primary;
+    background: $color-primary-bg;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.admin-tags-empty {
+  color: $color-text-muted;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.admin-tags-forbidden {
+  color: $color-primary;
+  text-align: center;
+  padding: 2rem;
+}
+
+@media (max-width: $breakpoint-sm) {
+  .admin-tags-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .admin-tags-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .admin-tags-form {
+    flex-direction: column;
+  }
+
+  .admin-tags-create-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .admin-tags-item {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .admin-tags-item__name {
+    width: 100%;
+  }
+
+  .admin-tags-item__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-tags-item__playlist-link {
+    flex: 1;
+    text-align: center;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-tags-item__rename-btn,
+  .admin-tags-item__delete-btn {
+    width: 40px;
+    height: 40px;
+  }
+}

@@ -1,0 +1,51 @@
+@use '../styles/variables' as *;
+
+.tag-delete-confirm {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.tag-delete-confirm__confirm-btn {
+  background: $color-primary;
+  color: #fff;
+  border: none;
+  border-radius: $border-radius-button;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background $transition-fast;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.tag-delete-confirm__cancel-btn {
+  background: none;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  color: $color-text-muted;
+  cursor: pointer;
+  transition: border-color $transition-fast, color $transition-fast;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: $color-text;
+    color: $color-text;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

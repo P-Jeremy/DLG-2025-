@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../api/auth';
+import AppBackground from '../components/AppBackground';
 import './ForgotPasswordPage.scss';
 
 const ForgotPasswordPage: React.FC = () => {
@@ -24,6 +25,7 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
+    <AppBackground>
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">DLG</h1>
@@ -58,6 +60,7 @@ const ForgotPasswordPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </AppBackground>
   );
 };
 
