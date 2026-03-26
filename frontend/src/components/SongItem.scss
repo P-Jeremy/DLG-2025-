@@ -256,7 +256,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.88);
+  background: $color-overlay;
   display: flex;
   align-items: center;
   justify-content: center;

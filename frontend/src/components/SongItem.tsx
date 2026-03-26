@@ -4,6 +4,8 @@ import DOMPurify from 'dompurify';
 import type { Song } from '../types/song';
 import './SongItem.scss';
 
+const NAVBAR_HEIGHT_PX = 60;
+
 interface SongItemProps {
   song: Song;
   isAdmin?: boolean;
@@ -19,6 +21,9 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, is
   const [tabLoaded, setTabLoaded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     if (!lightboxOpen) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -27,8 +32,6 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, is
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [lightboxOpen]);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -47,15 +50,13 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, is
     }
   };
 
-  const NAVBAR_HEIGHT = 60;
-
   const scrollCardIntoView = () => {
     const card = cardRef.current;
     if (!card) return;
     const cardTop = card.getBoundingClientRect().top;
-    if (cardTop < NAVBAR_HEIGHT) {
+    if (cardTop < NAVBAR_HEIGHT_PX) {
       window.scrollTo({
-        top: window.scrollY + cardTop - NAVBAR_HEIGHT - 8,
+        top: window.scrollY + cardTop - NAVBAR_HEIGHT_PX - 8,
         behavior: 'smooth',
       });
     }
