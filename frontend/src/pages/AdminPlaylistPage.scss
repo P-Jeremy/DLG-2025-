@@ -3,8 +3,9 @@
 .admin-playlist-page {
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 2rem 1.5rem;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .admin-playlist-card {
@@ -240,5 +241,16 @@
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .admin-playlist-page {
+    padding: 1.5rem 0.75rem;
+    align-items: flex-start;
+  }
+
+  .admin-playlist-card {
+    padding: 1.5rem 1rem;
   }
 }

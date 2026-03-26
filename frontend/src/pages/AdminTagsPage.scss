@@ -3,8 +3,9 @@
 .admin-tags-page {
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 2rem 1.5rem;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .admin-tags-card {
@@ -227,7 +228,8 @@
 
 @media (max-width: $breakpoint-sm) {
   .admin-tags-page {
-    padding: 1rem 0.75rem;
+    padding: 1.5rem 0.75rem;
+    align-items: flex-start;
   }
 
   .admin-tags-card {
