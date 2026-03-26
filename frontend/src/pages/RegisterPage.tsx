@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../api/auth';
 import AppBackground from '../components/AppBackground';
+import PasswordInput from '../components/PasswordInput';
 import './RegisterPage.scss';
 
 const RegisterPage: React.FC = () => {
@@ -71,10 +72,9 @@ const RegisterPage: React.FC = () => {
             </div>
             <div className="auth-field">
               <label htmlFor="password">Mot de passe</label>
-              <input
+              <PasswordInput
                 id="password"
                 className="auth-input"
-                type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
@@ -83,10 +83,9 @@ const RegisterPage: React.FC = () => {
             </div>
             <div className="auth-field">
               <label htmlFor="passwordConfirm">Confirmer le mot de passe</label>
-              <input
+              <PasswordInput
                 id="passwordConfirm"
                 className="auth-input"
-                type="password"
                 value={passwordConfirm}
                 onChange={e => setPasswordConfirm(e.target.value)}
                 required
@@ -95,10 +94,9 @@ const RegisterPage: React.FC = () => {
             </div>
             <div className="auth-field">
               <label htmlFor="apiKey">Clé d&apos;accès</label>
-              <input
+              <PasswordInput
                 id="apiKey"
                 className="auth-input"
-                type="password"
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
                 required

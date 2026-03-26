@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { resetPassword } from '../api/auth';
 import AppBackground from '../components/AppBackground';
+import PasswordInput from '../components/PasswordInput';
 import './ResetPasswordPage.scss';
 
 const ResetPasswordPage: React.FC = () => {
@@ -36,10 +37,9 @@ const ResetPasswordPage: React.FC = () => {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
             <label htmlFor="newPassword">Nouveau mot de passe</label>
-            <input
+            <PasswordInput
               id="newPassword"
               className="auth-input"
-              type="password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               required
