@@ -93,7 +93,7 @@ describe('AddSongPage', () => {
   it('renders the add song form for admins', async () => {
     await renderAsAdmin();
 
-    expect(screen.getByText('Ajouter une chanson')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Ajouter une chanson' })).toBeInTheDocument();
     expect(screen.getByLabelText('Titre')).toBeInTheDocument();
     expect(screen.getByLabelText('Artiste')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ajouter la chanson' })).toBeInTheDocument();

@@ -5,6 +5,7 @@ import { fetchPlaylist, reorderPlaylist, addSongToPlaylist, removeSongFromPlayli
 import { fetchSongs } from '../api/songs';
 import type { Song } from '../types/song';
 import AppBackground from '../components/AppBackground';
+import Navbar from '../components/Navbar';
 import SongSearchInput from '../components/SongSearchInput';
 import PlaylistSongRemoveConfirm from '../components/PlaylistSongRemoveConfirm';
 import './AdminPlaylistPage.scss';
@@ -197,6 +198,7 @@ const AdminPlaylistPage: React.FC = () => {
   if (!isAdmin) {
     return (
       <AppBackground>
+        <Navbar />
         <div className="admin-playlist-page">
           <div className="admin-playlist-forbidden">Accès réservé aux administrateurs.</div>
         </div>
@@ -207,6 +209,7 @@ const AdminPlaylistPage: React.FC = () => {
   if (loading) {
     return (
       <AppBackground>
+        <Navbar />
         <div className="admin-playlist-page">
           <div className="admin-playlist-loading">Chargement...</div>
         </div>
@@ -218,6 +221,7 @@ const AdminPlaylistPage: React.FC = () => {
 
   return (
     <AppBackground>
+    <Navbar />
     <div className="admin-playlist-page">
       <div className="admin-playlist-card">
         <div className="admin-playlist-header">

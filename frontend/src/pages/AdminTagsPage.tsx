@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { fetchTags, createTag, deleteTag, renameTag } from '../api/tags';
 import type { Tag } from '../api/tags';
 import AppBackground from '../components/AppBackground';
+import Navbar from '../components/Navbar';
 import TagDeleteConfirm from '../components/TagDeleteConfirm';
 import TagRenameInput from '../components/TagRenameInput';
 import './AdminTagsPage.scss';
@@ -107,6 +108,7 @@ const AdminTagsPage: React.FC = () => {
   if (!isAdmin) {
     return (
       <AppBackground>
+        <Navbar />
         <div className="admin-tags-page">
           <div className="admin-tags-forbidden">Accès réservé aux administrateurs.</div>
         </div>
@@ -116,6 +118,7 @@ const AdminTagsPage: React.FC = () => {
 
   return (
     <AppBackground>
+    <Navbar />
     <div className="admin-tags-page">
       <div className="admin-tags-card">
         <div className="admin-tags-header">
