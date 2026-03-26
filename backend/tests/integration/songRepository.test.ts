@@ -2,6 +2,7 @@ import { Song } from '../../src/domain/models/Song';
 import { SongRepository } from '../../src/infrastructure/repositories/songRepository';
 import { insertTestSongs } from '../helpers/insertTestSongs';
 import { insertTestTags } from '../helpers/insertTestTags';
+import { SongNotFoundError } from '../../src/domain/errors/DomainError';
 
 describe('SongRepository integration test', () => {
   let songRepository: SongRepository;
@@ -69,5 +70,50 @@ describe('SongRepository integration test', () => {
     const songs = await songRepository.getAll('author');
 
     expect(songs.map((s) => s.author)).toEqual(['Apple Artist', 'Mango Artist', 'Zebra Artist']);
+  });
+});
+
+describe('SongRepository.update() integration test', () => {
+  let songRepository: SongRepository;
+
+  beforeAll(() => {
+    songRepository = new SongRepository();
+  });
+
+  it('successfully updates a song fields', async () => {
+    const inserted = await insertTestSongs([
+      { title: 'Original Title', author: 'Original Artist', tab: 'https://s3/original.png', lyrics: '<p>original</p>' },
+    ]);
+    const insertedSong = inserted[0] as { _id: { toString(): string } };
+    const songId = insertedSong._id.toString();
+
+    const updated = await songRepository.update({
+      id: songId,
+      title: 'Updated Title',
+      author: 'Updated Artist',
+      lyrics: '<p>updated</p>',
+      tab: 'https://s3/updated.png',
+      tags: [],
+    });
+
+    expect(updated instanceof Song).toBe(true);
+    expect(updated.id).toBe(songId);
+    expect(updated.title).toBe('Updated Title');
+    expect(updated.author).toBe('Updated Artist');
+    expect(updated.lyrics).toBe('<p>updated</p>');
+    expect(updated.tab).toBe('https://s3/updated.png');
+  });
+
+  it('throws SongNotFoundError when updating a non-existent song', async () => {
+    await expect(
+      songRepository.update({
+        id: '000000000000000000000099',
+        title: 'T',
+        author: 'A',
+        lyrics: 'L',
+        tab: 'https://s3/file.png',
+        tags: [],
+      }),
+    ).rejects.toThrow(SongNotFoundError);
   });
 });

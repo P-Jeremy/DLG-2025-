@@ -1,5 +1,6 @@
 import sanitizeHtml from 'sanitize-html';
 import type { AddSongInput } from '../../../application/usecases/AddSong';
+import type { UpdateSongInput } from '../../../application/usecases/UpdateSong';
 import type { UploadableFile } from '../../../application/interfaces/IFileUploadService';
 import type { SongSortField } from '../../../domain/interfaces/ISongRepository';
 
@@ -8,6 +9,13 @@ const VALID_SORT_FIELDS: SongSortField[] = ['title', 'author'];
 const DEFAULT_SORT_FIELD: SongSortField = 'title';
 
 export interface RawAddSongBody {
+  title?: string;
+  author?: string;
+  lyrics?: string;
+  selectedTags?: string;
+}
+
+export interface RawUpdateSongBody {
   title?: string;
   author?: string;
   lyrics?: string;
@@ -42,6 +50,23 @@ export class SongDeserializer {
     if (!lyrics) throw new MissingFieldError('lyrics');
 
     return {
+      title,
+      author,
+      lyrics: this.sanitizeLyrics(lyrics),
+      tabFile: file,
+      tagIds: this.parseTagIds(selectedTags),
+    };
+  }
+
+  deserializeUpdateSong(songId: string, body: RawUpdateSongBody, file?: UploadableFile): UpdateSongInput {
+    const { title, author, lyrics, selectedTags } = body;
+
+    if (!title) throw new MissingFieldError('title');
+    if (!author) throw new MissingFieldError('author');
+    if (!lyrics) throw new MissingFieldError('lyrics');
+
+    return {
+      songId,
       title,
       author,
       lyrics: this.sanitizeLyrics(lyrics),

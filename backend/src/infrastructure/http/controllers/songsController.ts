@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { GetSongsUsecase } from '../../../application/usecases/GetSongs';
 import type { GetSongsByTag } from '../../../application/usecases/GetSongsByTag';
 import type { AddSong } from '../../../application/usecases/AddSong';
+import type { UpdateSong } from '../../../application/usecases/UpdateSong';
 import type { DeleteSong } from '../../../application/usecases/DeleteSong';
 import { SongDeserializer, MissingFieldError, InvalidTagsError } from '../deserializers/SongDeserializer';
 import { SongNotFoundError } from '../../../domain/errors/DomainError';
@@ -13,6 +14,7 @@ export class SongsController {
     private readonly getSongsUsecase: GetSongsUsecase,
     private readonly getSongsByTagUsecase: GetSongsByTag,
     private readonly addSongUsecase: AddSong,
+    private readonly updateSongUsecase: UpdateSong,
     private readonly deleteSongUsecase: DeleteSong,
   ) {}
 
@@ -50,6 +52,31 @@ export class SongsController {
         return;
       }
       const message = error instanceof Error ? error.message : 'Failed to add song';
+      res.status(500).json({ message });
+    }
+  }
+
+  async updateSong(req: Request, res: Response): Promise<void> {
+    const id = req.params['id'] as string;
+
+    try {
+      const input = this.deserializer.deserializeUpdateSong(
+        id,
+        req.body as Record<string, string>,
+        req.file,
+      );
+      const { song } = await this.updateSongUsecase.execute(input);
+      res.status(200).json(song);
+    } catch (error) {
+      if (error instanceof SongNotFoundError) {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+      if (error instanceof MissingFieldError || error instanceof InvalidTagsError) {
+        res.status(400).json({ message: error.message });
+        return;
+      }
+      const message = error instanceof Error ? error.message : 'Failed to update song';
       res.status(500).json({ message });
     }
   }

@@ -4,6 +4,7 @@ import { SongsController } from '../controllers/songsController';
 import { GetSongsUsecase } from '../../../application/usecases/GetSongs';
 import { GetSongsByTag } from '../../../application/usecases/GetSongsByTag';
 import { AddSong } from '../../../application/usecases/AddSong';
+import { UpdateSong } from '../../../application/usecases/UpdateSong';
 import { DeleteSong } from '../../../application/usecases/DeleteSong';
 import { SongRepository } from '../../repositories/songRepository';
 import { PlaylistRepository } from '../../repositories/playlistRepository';
@@ -34,12 +35,14 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
     fileUploadService,
     eventEmitter,
   );
+  const updateSongUsecase = new UpdateSong(songRepository, fileUploadService, eventEmitter);
   const deleteSongUsecase = new DeleteSong(songRepository, playlistRepository, fileUploadService);
 
   const controller = new SongsController(
     getSongsUsecase,
     getSongsByTagUsecase,
     addSongUsecase,
+    updateSongUsecase,
     deleteSongUsecase,
   );
 
@@ -54,6 +57,16 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
     upload.single('tab'),
     async (req: Request, res: Response) => {
       await controller.addSong(req, res);
+    },
+  );
+
+  router.put(
+    '/songs/:id',
+    authenticate,
+    requireAdmin,
+    upload.single('tab'),
+    async (req: Request, res: Response) => {
+      await controller.updateSong(req, res);
     },
   );
 

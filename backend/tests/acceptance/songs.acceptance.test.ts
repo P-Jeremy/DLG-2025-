@@ -6,6 +6,13 @@ import { insertTestAdmin } from '../helpers/insertTestAdmin';
 import { ITag } from '../../src/domain/interfaces/Tags';
 import { PlaylistModel } from '../../src/infrastructure/models/playlistModel';
 
+jest.mock('../../src/infrastructure/services/S3FileUploadService', () => ({
+  S3FileUploadService: jest.fn().mockImplementation(() => ({
+    upload: jest.fn().mockResolvedValue('https://bucket.s3.amazonaws.com/mocked-new-tab.png'),
+    delete: jest.fn().mockResolvedValue(undefined),
+  })),
+}));
+
 describe('GET /api/songs (acceptance)', () => {
   it('should return a list of songs with and without tags', async () => {
     const tags = [
@@ -180,5 +187,96 @@ describe('GET /api/songs?tagId=xxx (acceptance)', () => {
 
     expect(status).toBe(200);
     expect(body.map((s) => s.title)).toEqual(['Song Gamma', 'Song Alpha', 'Song Beta']);
+  });
+});
+
+describe('PUT /api/songs/:id (acceptance)', () => {
+  function getTypedApp(): import('express').Application {
+    return app as import('express').Application;
+  }
+
+  async function getAdminToken(): Promise<string> {
+    const { email, password } = await insertTestAdmin();
+    const res = await request(getTypedApp())
+      .post('/api/auth/login')
+      .send({ email, password });
+    return (res.body as { token: string }).token;
+  }
+
+  it('should return 401 when not authenticated', async () => {
+    const { status } = await request(getTypedApp())
+      .put('/api/songs/000000000000000000000001')
+      .field('title', 'T')
+      .field('author', 'A')
+      .field('lyrics', '<p>L</p>');
+
+    expect(status).toBe(401);
+  });
+
+  it('should return 404 when song does not exist', async () => {
+    const adminToken = await getAdminToken();
+
+    const { status } = await request(getTypedApp())
+      .put('/api/songs/000000000000000000000099')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .field('title', 'T')
+      .field('author', 'A')
+      .field('lyrics', '<p>L</p>');
+
+    expect(status).toBe(404);
+  });
+
+  it('should return 400 when required fields are missing', async () => {
+    const adminToken = await getAdminToken();
+    const songs = await insertTestSongs([
+      { title: 'Song To Edit', author: 'Artist', lyrics: '<p>lyrics</p>', tab: 'https://s3/tab.png' },
+    ]);
+    const songId = (songs[0] as { _id: { toString(): string } })._id.toString();
+
+    const { status } = await request(getTypedApp())
+      .put(`/api/songs/${songId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .field('author', 'A')
+      .field('lyrics', '<p>L</p>');
+
+    expect(status).toBe(400);
+  });
+
+  it('should return 200 with updated song when valid input without new tab file', async () => {
+    const adminToken = await getAdminToken();
+    const songs = await insertTestSongs([
+      { title: 'Original Title', author: 'Original Artist', lyrics: '<p>original</p>', tab: 'https://s3/tab.png' },
+    ]);
+    const songId = (songs[0] as { _id: { toString(): string } })._id.toString();
+
+    const { status, body } = await request(getTypedApp())
+      .put(`/api/songs/${songId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .field('title', 'Updated Title')
+      .field('author', 'Updated Artist')
+      .field('lyrics', '<p>updated lyrics</p>');
+
+    expect(status).toBe(200);
+    expect((body as { title: string; author: string }).title).toBe('Updated Title');
+    expect((body as { title: string; author: string }).author).toBe('Updated Artist');
+  });
+
+  it('should return 200 with updated song and new tab URL when valid input with new tab file', async () => {
+    const adminToken = await getAdminToken();
+    const songs = await insertTestSongs([
+      { title: 'Song With Tab', author: 'Artist', lyrics: '<p>lyrics</p>', tab: 'https://s3/old-tab.png' },
+    ]);
+    const songId = (songs[0] as { _id: { toString(): string } })._id.toString();
+
+    const { status, body } = await request(getTypedApp())
+      .put(`/api/songs/${songId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .field('title', 'Song With New Tab')
+      .field('author', 'Artist')
+      .field('lyrics', '<p>lyrics</p>')
+      .attach('tab', Buffer.from('fake-image-data'), { filename: 'tab.png', contentType: 'image/png' });
+
+    expect(status).toBe(200);
+    expect((body as { tab: string }).tab).toBe('https://bucket.s3.amazonaws.com/mocked-new-tab.png');
   });
 });
