@@ -4,6 +4,7 @@ import { Song } from '../../domain/models/Song';
 import { Tag } from '../../domain/models/Tag';
 import type { ISongRepository, SongSortField } from '../../domain/interfaces/ISongRepository';
 import type { ISong } from '../../domain/interfaces/Song';
+import { SongNotFoundError } from '../../domain/errors/DomainError';
 
 export class SongRepository implements ISongRepository {
   async getAll(sortBy: SongSortField): Promise<Song[]> {
@@ -53,6 +54,19 @@ export class SongRepository implements ISongRepository {
     const saved = await doc.save();
     await saved.populate('tags');
     return this.toDomain(saved);
+  }
+
+  async update(song: ISong): Promise<Song> {
+    const tagIds = song.tags ? song.tags.map((tag) => tag.id).filter(Boolean) : [];
+    const updated = await SongModel.findByIdAndUpdate(
+      song.id,
+      { title: song.title, author: song.author, lyrics: song.lyrics, tab: song.tab, tags: tagIds },
+      { new: true },
+    )
+      .populate('tags')
+      .exec();
+    if (!updated) throw new SongNotFoundError();
+    return this.toDomain(updated);
   }
 
   private toDomain(doc: SongDocument): Song {

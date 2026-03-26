@@ -28,6 +28,7 @@ const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISon
   save: jest.fn().mockImplementation((song: ISong) =>
     Promise.resolve({ ...song, id: 'saved-song-id' }),
   ),
+  update: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
   deleteById: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });

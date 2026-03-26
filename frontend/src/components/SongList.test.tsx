@@ -1,12 +1,15 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import SongList from './SongList';
 import { AuthProvider } from '../contexts/AuthContext';
 
 const renderSongList = () => render(
-  <AuthProvider>
-    <SongList />
-  </AuthProvider>,
+  <MemoryRouter>
+    <AuthProvider>
+      <SongList />
+    </AuthProvider>
+  </MemoryRouter>,
 );
 
 jest.mock('socket.io-client', () => ({

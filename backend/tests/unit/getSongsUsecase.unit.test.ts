@@ -17,6 +17,7 @@ const buildMockRepository = (songs: ISong[]): ISongRepository & { receivedSortBy
     save(song: ISong): Promise<ISong> {
       return Promise.resolve(song);
     },
+    update: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
     deleteById: jest.fn().mockResolvedValue(undefined),
   };
   return mock;
