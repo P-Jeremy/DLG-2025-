@@ -55,7 +55,7 @@ export class SongsController {
   }
 
   async deleteSong(req: Request, res: Response): Promise<void> {
-    const { id } = req.params;
+    const id = req.params['id'] as string;
 
     try {
       await this.deleteSongUsecase.execute({ songId: id });
