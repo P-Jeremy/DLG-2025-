@@ -239,6 +239,13 @@ const AdminPlaylistPage: React.FC = () => {
         {addingError && <div className="admin-playlist-error">{addingError}</div>}
         {success && <div className="admin-playlist-success">Playlist sauvegardée avec succès.</div>}
 
+        <SongSearchInput
+          allSongs={allSongs}
+          playlistSongIds={playlistSongIds}
+          onAddSong={(song) => void handleAddSong(song)}
+          disabled={saving}
+        />
+
         {songs.length === 0 ? (
           <div className="admin-playlist-empty">Aucune chanson dans ce tag.</div>
         ) : (
@@ -321,13 +328,6 @@ const AdminPlaylistPage: React.FC = () => {
             </div>
           </>
         )}
-
-        <SongSearchInput
-          allSongs={allSongs}
-          playlistSongIds={playlistSongIds}
-          onAddSong={(song) => void handleAddSong(song)}
-          disabled={saving}
-        />
       </div>
     </div>
     </AppBackground>
