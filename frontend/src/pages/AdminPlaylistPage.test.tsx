@@ -36,9 +36,13 @@ const mockAllSongs = [
   { id: 'song-3', title: 'Gamma', author: 'Artist C' },
 ];
 
+const ADMIN_TOKEN =
+  'header.' +
+  btoa(JSON.stringify({ userId: 'user-1', email: 'admin@test.com', isAdmin: true })) +
+  '.signature';
+
 const renderAsAdmin = async (tagId = 'tag-1') => {
-  localStorage.setItem('dlg_token', 'test-admin-token');
-  localStorage.setItem('dlg_is_admin', 'true');
+  localStorage.setItem('dlg_token', ADMIN_TOKEN);
   localStorage.setItem('dlg_pseudo', 'admin');
 
   await act(async () => {
@@ -79,7 +83,6 @@ describe('AdminPlaylistPage', () => {
 
   it('shows access denied message for non-admin users', async () => {
     localStorage.removeItem('dlg_token');
-    localStorage.removeItem('dlg_is_admin');
 
     await act(async () => {
       render(
@@ -134,7 +137,7 @@ describe('AdminPlaylistPage', () => {
       expect(reorderPlaylist).toHaveBeenCalledWith(
         'tag-1',
         ['song-2', 'song-1'],
-        'test-admin-token',
+        ADMIN_TOKEN,
       );
     });
   });
@@ -186,7 +189,7 @@ describe('AdminPlaylistPage', () => {
     fireEvent.click(screen.getByText('Gamma'));
 
     await waitFor(() => {
-      expect(addSongToPlaylist).toHaveBeenCalledWith('tag-1', 'song-3', 'test-admin-token');
+      expect(addSongToPlaylist).toHaveBeenCalledWith('tag-1', 'song-3', ADMIN_TOKEN);
     });
   });
 
@@ -223,7 +226,7 @@ describe('AdminPlaylistPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Confirmer/i }));
 
     await waitFor(() => {
-      expect(removeSongFromPlaylist).toHaveBeenCalledWith('tag-1', 'song-2', 'test-admin-token');
+      expect(removeSongFromPlaylist).toHaveBeenCalledWith('tag-1', 'song-2', ADMIN_TOKEN);
     });
 
     await waitFor(() => {

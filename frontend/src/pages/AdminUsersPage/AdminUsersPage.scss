@@ -1,0 +1,118 @@
+@use '../../styles/variables' as *;
+
+.admin-users-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1.5rem;
+  min-height: calc(100dvh - 60px);
+}
+
+.admin-users-card {
+  background: #fff;
+  border-radius: $border-radius-card;
+  box-shadow: $shadow-card;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 800px;
+  height: fit-content;
+}
+
+.admin-users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-users-title {
+  color: $color-primary;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+}
+
+.admin-users-back {
+  background: none;
+  border: 1px solid $color-border-default;
+  border-radius: $border-radius-button;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: $color-text-muted;
+  transition: border-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.admin-users-error {
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-left: 3px solid $color-primary;
+  border-radius: $border-radius-content;
+  padding: 0.65em 1em;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.admin-users-loading {
+  text-align: center;
+  color: $color-text-muted;
+  padding: 2rem 0;
+  font-size: 0.95rem;
+}
+
+.admin-users-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.admin-users-table__th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: $color-text-muted;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid $color-border;
+
+  &--center {
+    text-align: center;
+  }
+}
+
+.admin-users-empty {
+  text-align: center;
+  color: $color-text-muted;
+  padding: 1.5rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: $breakpoint-sm) {
+  .admin-users-page {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .admin-users-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .admin-users-title {
+    font-size: 1.35rem;
+  }
+
+  .admin-users-table {
+    font-size: 0.88rem;
+  }
+}

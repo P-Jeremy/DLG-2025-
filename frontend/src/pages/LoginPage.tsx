@@ -21,7 +21,7 @@ const LoginPage: React.FC = () => {
     setError(null);
     try {
       const result = await login({ email, password });
-      authLogin(result.token, result.isAdmin, result.pseudo);
+      authLogin(result.token, result.pseudo);
       void navigate('/');
     } catch (err: unknown) {
       setError((err as Error).message);

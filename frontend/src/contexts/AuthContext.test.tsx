@@ -3,8 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { AuthProvider, useAuth } from './AuthContext';
 
 const TOKEN_KEY = 'dlg_token';
-const IS_ADMIN_KEY = 'dlg_is_admin';
 const PSEUDO_KEY = 'dlg_pseudo';
+
+const ADMIN_TOKEN =
+  'header.' +
+  btoa(JSON.stringify({ userId: 'user-1', email: 'admin@test.com', isAdmin: true })) +
+  '.signature';
+
+const NON_ADMIN_TOKEN =
+  'header.' +
+  btoa(JSON.stringify({ userId: 'user-2', email: 'user@test.com', isAdmin: false })) +
+  '.signature';
 
 const TestConsumer = () => {
   const { token, isAdmin, pseudo, login, logout } = useAuth();
@@ -13,7 +22,7 @@ const TestConsumer = () => {
       <span data-testid="token">{token ?? 'null'}</span>
       <span data-testid="isAdmin">{String(isAdmin)}</span>
       <span data-testid="pseudo">{pseudo ?? 'null'}</span>
-      <button onClick={() => login('tok123', true, 'admin')}>login</button>
+      <button onClick={() => login(ADMIN_TOKEN, 'admin')}>login</button>
       <button onClick={logout}>logout</button>
     </div>
   );
@@ -36,24 +45,31 @@ describe('Unit | Context | AuthContext', () => {
     expect(screen.getByTestId('pseudo')).toHaveTextContent('null');
   });
 
-  it('updates state after calling login', () => {
+  it('updates state after calling login with an admin token', () => {
     render(<AuthProvider><TestConsumer /></AuthProvider>);
 
     fireEvent.click(screen.getByText('login'));
 
-    expect(screen.getByTestId('token')).toHaveTextContent('tok123');
+    expect(screen.getByTestId('token')).toHaveTextContent(ADMIN_TOKEN);
     expect(screen.getByTestId('isAdmin')).toHaveTextContent('true');
     expect(screen.getByTestId('pseudo')).toHaveTextContent('admin');
   });
 
-  it('persists token in localStorage after login', () => {
+  it('persists token and pseudo in localStorage after login', () => {
     render(<AuthProvider><TestConsumer /></AuthProvider>);
 
     fireEvent.click(screen.getByText('login'));
 
-    expect(localStorage.getItem(TOKEN_KEY)).toBe('tok123');
-    expect(localStorage.getItem(IS_ADMIN_KEY)).toBe('true');
+    expect(localStorage.getItem(TOKEN_KEY)).toBe(ADMIN_TOKEN);
     expect(localStorage.getItem(PSEUDO_KEY)).toBe('admin');
+  });
+
+  it('does not persist isAdmin as a separate localStorage entry', () => {
+    render(<AuthProvider><TestConsumer /></AuthProvider>);
+
+    fireEvent.click(screen.getByText('login'));
+
+    expect(localStorage.getItem('dlg_is_admin')).toBeNull();
   });
 
   it('resets state to null after logout', () => {
@@ -67,27 +83,34 @@ describe('Unit | Context | AuthContext', () => {
     expect(screen.getByTestId('pseudo')).toHaveTextContent('null');
   });
 
-  it('removes token from localStorage after logout', () => {
+  it('removes token and pseudo from localStorage after logout', () => {
     render(<AuthProvider><TestConsumer /></AuthProvider>);
 
     fireEvent.click(screen.getByText('login'));
     fireEvent.click(screen.getByText('logout'));
 
     expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
-    expect(localStorage.getItem(IS_ADMIN_KEY)).toBeNull();
     expect(localStorage.getItem(PSEUDO_KEY)).toBeNull();
   });
 
-  it('restores auth state from localStorage on mount', () => {
-    localStorage.setItem(TOKEN_KEY, 'stored-token');
-    localStorage.setItem(IS_ADMIN_KEY, 'true');
+  it('restores auth state from localStorage on mount using JWT payload', () => {
+    localStorage.setItem(TOKEN_KEY, ADMIN_TOKEN);
     localStorage.setItem(PSEUDO_KEY, 'storedUser');
 
     render(<AuthProvider><TestConsumer /></AuthProvider>);
 
-    expect(screen.getByTestId('token')).toHaveTextContent('stored-token');
+    expect(screen.getByTestId('token')).toHaveTextContent(ADMIN_TOKEN);
     expect(screen.getByTestId('isAdmin')).toHaveTextContent('true');
     expect(screen.getByTestId('pseudo')).toHaveTextContent('storedUser');
+  });
+
+  it('restores isAdmin as false when JWT payload has isAdmin false', () => {
+    localStorage.setItem(TOKEN_KEY, NON_ADMIN_TOKEN);
+    localStorage.setItem(PSEUDO_KEY, 'regularUser');
+
+    render(<AuthProvider><TestConsumer /></AuthProvider>);
+
+    expect(screen.getByTestId('isAdmin')).toHaveTextContent('false');
   });
 
   it('throws when useAuth is used outside of AuthProvider', () => {
