@@ -8,19 +8,15 @@ const ALLOWED_LYRICS_TAGS = ['p', 'br', 'strong', 'em', 's', 'ul', 'ol', 'li'];
 const VALID_SORT_FIELDS: SongSortField[] = ['title', 'author'];
 const DEFAULT_SORT_FIELD: SongSortField = 'title';
 
-export interface RawAddSongBody {
+export interface RawSongBody {
   title?: string;
   author?: string;
   lyrics?: string;
   selectedTags?: string;
 }
 
-export interface RawUpdateSongBody {
-  title?: string;
-  author?: string;
-  lyrics?: string;
-  selectedTags?: string;
-}
+export type RawAddSongBody = RawSongBody;
+export type RawUpdateSongBody = RawSongBody;
 
 export class MissingFieldError extends Error {
   constructor(field: string) {
@@ -43,22 +39,14 @@ export class SongDeserializer {
   }
 
   deserializeAddSong(body: RawAddSongBody, file: UploadableFile): AddSongInput {
-    const { title, author, lyrics, selectedTags } = body;
-
-    if (!title) throw new MissingFieldError('title');
-    if (!author) throw new MissingFieldError('author');
-    if (!lyrics) throw new MissingFieldError('lyrics');
-
-    return {
-      title,
-      author,
-      lyrics: this.sanitizeLyrics(lyrics),
-      tabFile: file,
-      tagIds: this.parseTagIds(selectedTags),
-    };
+    return { ...this.deserializeSongFields(body), tabFile: file };
   }
 
   deserializeUpdateSong(songId: string, body: RawUpdateSongBody, file?: UploadableFile): UpdateSongInput {
+    return { songId, ...this.deserializeSongFields(body), tabFile: file };
+  }
+
+  private deserializeSongFields(body: RawSongBody) {
     const { title, author, lyrics, selectedTags } = body;
 
     if (!title) throw new MissingFieldError('title');
@@ -66,11 +54,9 @@ export class SongDeserializer {
     if (!lyrics) throw new MissingFieldError('lyrics');
 
     return {
-      songId,
       title,
       author,
       lyrics: this.sanitizeLyrics(lyrics),
-      tabFile: file,
       tagIds: this.parseTagIds(selectedTags),
     };
   }
