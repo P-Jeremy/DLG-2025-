@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { fetchTags } from '../api/tags';
 import type { Tag } from '../api/tags';
 import AppBackground from '../components/AppBackground';
+import Navbar from '../components/Navbar';
 import './AdminTagsPage.scss';
 
 const AdminPlaylistsIndexPage: React.FC = () => {
@@ -21,6 +22,7 @@ const AdminPlaylistsIndexPage: React.FC = () => {
   if (!isAdmin) {
     return (
       <AppBackground>
+        <Navbar />
         <div className="admin-tags-page">
           <div className="admin-tags-forbidden">Accès réservé aux administrateurs.</div>
         </div>
@@ -30,6 +32,7 @@ const AdminPlaylistsIndexPage: React.FC = () => {
 
   return (
     <AppBackground>
+    <Navbar />
     <div className="admin-tags-page">
       <div className="admin-tags-card">
         <div className="admin-tags-header">

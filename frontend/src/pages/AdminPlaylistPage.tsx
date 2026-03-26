@@ -5,6 +5,7 @@ import { fetchPlaylist, reorderPlaylist, addSongToPlaylist, removeSongFromPlayli
 import { fetchSongs } from '../api/songs';
 import type { Song } from '../types/song';
 import AppBackground from '../components/AppBackground';
+import Navbar from '../components/Navbar';
 import SongSearchInput from '../components/SongSearchInput';
 import PlaylistSongRemoveConfirm from '../components/PlaylistSongRemoveConfirm';
 import './AdminPlaylistPage.scss';
@@ -26,6 +27,8 @@ const AdminPlaylistPage: React.FC = () => {
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
+  const dragOverIndexRef = useRef<number | null>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   const loadPlaylist = useCallback(async () => {
     if (!tagId || !token) return;
@@ -95,7 +98,59 @@ const AdminPlaylistPage: React.FC = () => {
     setDraggedIndex(null);
     setDragOverIndex(null);
     draggedIndexRef.current = null;
+    dragOverIndexRef.current = null;
   };
+
+  const handleTouchStart = (index: number) => {
+    draggedIndexRef.current = index;
+    dragOverIndexRef.current = index;
+    setDraggedIndex(index);
+    setSuccess(false);
+  };
+
+  const finalizeTouchDrop = useCallback(() => {
+    const fromIndex = draggedIndexRef.current;
+    const toIndex = dragOverIndexRef.current;
+    if (fromIndex !== null && toIndex !== null && fromIndex !== toIndex) {
+      setSongs((prev) => {
+        const updated = [...prev];
+        const [removed] = updated.splice(fromIndex, 1);
+        updated.splice(toIndex, 0, removed);
+        return updated;
+      });
+    }
+    draggedIndexRef.current = null;
+    dragOverIndexRef.current = null;
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }, []);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (draggedIndexRef.current === null) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const li = el?.closest<HTMLElement>('[data-drag-index]');
+      if (li) {
+        const idx = parseInt(li.dataset['dragIndex'] ?? '', 10);
+        if (!isNaN(idx)) {
+          dragOverIndexRef.current = idx;
+          setDragOverIndex(idx);
+        }
+      }
+    };
+
+    list.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', finalizeTouchDrop);
+    return () => {
+      list.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', finalizeTouchDrop);
+    };
+  }, [finalizeTouchDrop]);
 
   const handleSave = async () => {
     if (!tagId || !token) return;
@@ -143,6 +198,7 @@ const AdminPlaylistPage: React.FC = () => {
   if (!isAdmin) {
     return (
       <AppBackground>
+        <Navbar />
         <div className="admin-playlist-page">
           <div className="admin-playlist-forbidden">Accès réservé aux administrateurs.</div>
         </div>
@@ -153,6 +209,7 @@ const AdminPlaylistPage: React.FC = () => {
   if (loading) {
     return (
       <AppBackground>
+        <Navbar />
         <div className="admin-playlist-page">
           <div className="admin-playlist-loading">Chargement...</div>
         </div>
@@ -164,6 +221,7 @@ const AdminPlaylistPage: React.FC = () => {
 
   return (
     <AppBackground>
+    <Navbar />
     <div className="admin-playlist-page">
       <div className="admin-playlist-card">
         <div className="admin-playlist-header">
@@ -181,14 +239,22 @@ const AdminPlaylistPage: React.FC = () => {
         {addingError && <div className="admin-playlist-error">{addingError}</div>}
         {success && <div className="admin-playlist-success">Playlist sauvegardée avec succès.</div>}
 
+        <SongSearchInput
+          allSongs={allSongs}
+          playlistSongIds={playlistSongIds}
+          onAddSong={(song) => void handleAddSong(song)}
+          disabled={saving}
+        />
+
         {songs.length === 0 ? (
           <div className="admin-playlist-empty">Aucune chanson dans ce tag.</div>
         ) : (
           <>
-            <ul className="admin-playlist-list">
+            <ul className="admin-playlist-list" ref={listRef}>
               {songs.map((song, index) => (
                 <li
                   key={song.id}
+                  data-drag-index={index}
                   className={[
                     'admin-playlist-item',
                     draggedIndex === index ? 'admin-playlist-item--dragging' : '',
@@ -200,7 +266,11 @@ const AdminPlaylistPage: React.FC = () => {
                   onDrop={(e) => handleDrop(e, index)}
                   onDragEnd={handleDragEnd}
                 >
-                  <span className="admin-playlist-item__drag-handle" aria-hidden="true">⋮⋮</span>
+                  <span
+                    className="admin-playlist-item__drag-handle"
+                    aria-hidden="true"
+                    onTouchStart={() => handleTouchStart(index)}
+                  >⋮⋮</span>
                   <span className="admin-playlist-item__position">{index + 1}</span>
                   <div className="admin-playlist-item__info">
                     <span className="admin-playlist-item__title">{song.title}</span>
@@ -258,13 +328,6 @@ const AdminPlaylistPage: React.FC = () => {
             </div>
           </>
         )}
-
-        <SongSearchInput
-          allSongs={allSongs}
-          playlistSongIds={playlistSongIds}
-          onAddSong={(song) => void handleAddSong(song)}
-          disabled={saving}
-        />
       </div>
     </div>
     </AppBackground>

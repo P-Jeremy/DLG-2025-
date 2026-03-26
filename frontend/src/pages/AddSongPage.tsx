@@ -8,6 +8,7 @@ import { fetchTags } from '../api/tags';
 import type { Tag } from '../api/tags';
 import RichTextToolbar from '../components/RichTextToolbar';
 import AppBackground from '../components/AppBackground';
+import Navbar from '../components/Navbar';
 import './AddSongPage.scss';
 
 const AddSongPage: React.FC = () => {
@@ -89,6 +90,7 @@ const AddSongPage: React.FC = () => {
   if (!isAdmin) {
     return (
       <AppBackground>
+        <Navbar />
         <div className="add-song-page">
           <div className="add-song-forbidden">Accès réservé aux administrateurs.</div>
         </div>
@@ -98,6 +100,7 @@ const AddSongPage: React.FC = () => {
 
   return (
     <AppBackground>
+    <Navbar />
     <div className="add-song-page">
       <div className="add-song-card">
         <h1 className="add-song-title">Ajouter une chanson</h1>
