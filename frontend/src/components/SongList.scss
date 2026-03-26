@@ -20,34 +20,60 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   padding: 0;
   background: transparent;
+}
+
+.vinyl-loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-height: calc(100vh - 60px - env(safe-area-inset-top));
+  width: 100%;
 }
 
 .song-list-controls {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   width: 100%;
-  max-width: 700px;
-  padding: 1.25rem 1.5rem 0.5rem;
+  max-width: 900px;
+  padding: 1.25rem 1.5rem;
   box-sizing: border-box;
 
   @media (max-width: $breakpoint-md) {
-    padding: 1rem 1rem 0.5rem;
+    padding: 1rem;
   }
 
   @media (max-width: $breakpoint-sm) {
-    padding: 1rem 0.75rem 0.5rem;
+    padding: 0.75rem;
+  }
+}
+
+.song-list-controls-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: $border-radius-card;
+  box-shadow: $shadow-card;
+  padding: 1.25rem 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-sizing: border-box;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: 1rem 0.75rem 0.75rem;
   }
 }
 
 .song-list {
   width: 100%;
-  max-width: 700px;
+  max-width: 900px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -72,7 +98,8 @@
 
 .vinyl-loader {
   width: 180px;
-  margin-top: 4rem;
+  will-change: transform;
+  transform: translateZ(0);
   animation: vinyl-spin 0.8s linear infinite;
 }
 

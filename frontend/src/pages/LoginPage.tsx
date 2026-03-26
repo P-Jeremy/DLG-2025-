@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../api/auth';
 import { useAuth } from '../contexts/AuthContext';
 import AppBackground from '../components/AppBackground';
+import PasswordInput from '../components/PasswordInput';
 import './LoginPage.scss';
 
 const LoginPage: React.FC = () => {
@@ -50,10 +51,9 @@ const LoginPage: React.FC = () => {
           </div>
           <div className="auth-field">
             <label htmlFor="password">Mot de passe</label>
-            <input
+            <PasswordInput
               id="password"
               className="auth-input"
-              type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required

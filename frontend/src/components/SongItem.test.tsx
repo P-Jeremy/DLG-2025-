@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useState } from 'react';
 import SongItem from './SongItem';
 import type { Song } from '../types/song';
 
@@ -12,10 +13,25 @@ const song: Song = {
   tags: [{ id: 't1', name: 'Rock' }]
 };
 
+const renderClosed = (props: Partial<Parameters<typeof SongItem>[0]> = {}) =>
+  render(<SongItem song={song} isOpen={false} onOpen={jest.fn()} {...props} />);
+
+const SongItemControlled = (props: Partial<Parameters<typeof SongItem>[0]> = {}) => {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <SongItem
+      song={song}
+      isOpen={openId === song.id}
+      onOpen={setOpenId}
+      {...props}
+    />
+  );
+};
+
 describe('Integration | Component | SongItem', () => {
   it('renders title, author and tags', () => {
     // given
-    render(<SongItem song={song} />);
+    renderClosed();
 
     // then
     expect(screen.getByText('Test Song')).toBeInTheDocument();
@@ -26,7 +42,7 @@ describe('Integration | Component | SongItem', () => {
   describe('when the song details are toggled', () => {
     beforeEach(() => {
       // given
-      render(<SongItem song={song} />);
+      render(<SongItemControlled />);
       // when
       fireEvent.click(screen.getByText('Test Song'));
     });
@@ -62,7 +78,7 @@ describe('Integration | Component | SongItem', () => {
       const songNoTab = { ...song, tab: '' };
 
       // when
-      render(<SongItem song={songNoTab} />);
+      render(<SongItemControlled song={songNoTab} />);
       fireEvent.click(screen.getByText('Test Song'));
 
       // then
@@ -74,7 +90,7 @@ describe('Integration | Component | SongItem', () => {
     it('does not show delete button when isAdmin is false', () => {
       // given
       const onDelete = jest.fn();
-      render(<SongItem song={song} isAdmin={false} onDelete={onDelete} />);
+      renderClosed({ isAdmin: false, onDelete });
 
       // then
       expect(screen.queryByRole('button', { name: /Supprimer la chanson/i })).not.toBeInTheDocument();
@@ -82,7 +98,7 @@ describe('Integration | Component | SongItem', () => {
 
     it('does not show delete button when onDelete is not provided', () => {
       // given
-      render(<SongItem song={song} isAdmin={true} />);
+      renderClosed({ isAdmin: true });
 
       // then
       expect(screen.queryByRole('button', { name: /Supprimer la chanson/i })).not.toBeInTheDocument();
@@ -91,7 +107,7 @@ describe('Integration | Component | SongItem', () => {
     it('shows delete button when isAdmin is true and onDelete is provided', () => {
       // given
       const onDelete = jest.fn();
-      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+      renderClosed({ isAdmin: true, onDelete });
 
       // then
       expect(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i })).toBeInTheDocument();
@@ -100,7 +116,7 @@ describe('Integration | Component | SongItem', () => {
     it('shows inline confirmation when delete button is clicked', () => {
       // given
       const onDelete = jest.fn();
-      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+      renderClosed({ isAdmin: true, onDelete });
 
       // when
       fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));
@@ -114,7 +130,7 @@ describe('Integration | Component | SongItem', () => {
     it('does not expand the card when the delete button is clicked', () => {
       // given
       const onDelete = jest.fn();
-      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+      render(<SongItemControlled isAdmin={true} onDelete={onDelete} />);
 
       // when
       fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));
@@ -126,7 +142,7 @@ describe('Integration | Component | SongItem', () => {
     it('calls onDelete with the song id when confirmed', async () => {
       // given
       const onDelete = jest.fn().mockResolvedValue(undefined);
-      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+      renderClosed({ isAdmin: true, onDelete });
 
       // when
       fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));
@@ -141,7 +157,7 @@ describe('Integration | Component | SongItem', () => {
     it('hides the confirmation and restores the delete button when cancel is clicked', () => {
       // given
       const onDelete = jest.fn();
-      render(<SongItem song={song} isAdmin={true} onDelete={onDelete} />);
+      renderClosed({ isAdmin: true, onDelete });
 
       // when
       fireEvent.click(screen.getByRole('button', { name: /Supprimer la chanson Test Song/i }));

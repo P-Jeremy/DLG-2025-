@@ -23,6 +23,7 @@ const AddSongPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,7 +51,10 @@ const AddSongPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
     setError(null);
+
+    if (!title.trim()) return;
 
     if (!tabFile) {
       setError('Veuillez sélectionner une image pour la tablature.');
@@ -72,6 +76,7 @@ const AddSongPage: React.FC = () => {
     try {
       await addSong({ title, author, lyrics, tab: tabFile, selectedTags: selectedTagIds }, token);
       setSuccess(true);
+      setSubmitted(false);
       setTitle('');
       setAuthor('');
       setTabFile(null);
@@ -117,15 +122,18 @@ const AddSongPage: React.FC = () => {
 
         <form className="add-song-form" onSubmit={handleSubmit} noValidate>
           <div className="add-song-field">
-            <label htmlFor="title">Titre</label>
+            <label htmlFor="title" className="add-song-label--required">Titre</label>
             <input
               id="title"
-              className="add-song-input"
+              className={`add-song-input${submitted && !title.trim() ? ' add-song-input--error' : ''}`}
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
             />
+            {submitted && !title.trim() && (
+              <span className="add-song-field-error">Le titre est requis.</span>
+            )}
           </div>
 
           <div className="add-song-field">
@@ -136,7 +144,6 @@ const AddSongPage: React.FC = () => {
               type="text"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
-              required
             />
           </div>
 

@@ -1,29 +1,70 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal, flushSync } from 'react-dom';
 import DOMPurify from 'dompurify';
 import type { Song } from '../types/song';
 import './SongItem.scss';
+
+const NAVBAR_HEIGHT_PX = 60;
 
 interface SongItemProps {
   song: Song;
   isAdmin?: boolean;
   onDelete?: (songId: string) => Promise<void>;
+  isOpen: boolean;
+  onOpen: (songId: string | null) => void;
 }
 
-const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete }) => {
-  const [open, setOpen] = useState(false);
+const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, isOpen, onOpen }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
   const [showTab, setShowTab] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [tabLoaded, setTabLoaded] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const toggleAll = () => {
-    if (confirmDelete) return;
-    setOpen(o => !o);
-    if (!open) {
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [lightboxOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
       setShowTab(true);
       setShowLyrics(true);
     }
+  }, [isOpen]);
+
+  const withScrollPreserved = (callback: () => void) => {
+    const card = cardRef.current;
+    const prevTop = card?.getBoundingClientRect().top ?? 0;
+    flushSync(callback);
+    if (card) {
+      const delta = card.getBoundingClientRect().top - prevTop;
+      window.scrollBy({ top: delta, behavior: 'instant' });
+    }
+  };
+
+  const scrollCardIntoView = () => {
+    const card = cardRef.current;
+    if (!card) return;
+    const cardTop = card.getBoundingClientRect().top;
+    if (cardTop < NAVBAR_HEIGHT_PX) {
+      window.scrollTo({
+        top: window.scrollY + cardTop - NAVBAR_HEIGHT_PX - 8,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const toggleAll = () => {
+    if (confirmDelete) return;
+    withScrollPreserved(() => onOpen(isOpen ? null : song.id));
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -50,7 +91,8 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete }) 
 
   return (
     <div
-      className={`song-card${open ? ' open' : ''}`}
+      ref={cardRef}
+      className={`song-card${isOpen ? ' open' : ''}`}
       onClick={toggleAll}
     >
       <div className="song-title">
@@ -95,7 +137,7 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete }) 
             )
           )}
           <span className="song-chevron">
-            {open ? '▲' : '▼'}
+            {isOpen ? '▲' : '▼'}
           </span>
         </div>
       </div>
@@ -118,19 +160,33 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete }) 
 
       {song.author && <div className="song-author">{song.author}</div>}
 
-      {open && (
+      {isOpen && (
         <div
           className="song-details"
           onClick={e => e.stopPropagation()}
         >
           <div className="song-details-actions">
             {song.tab && (
-              <button onClick={() => setShowTab(t => !t)}>
+              <button onClick={() => {
+                if (showTab) {
+                  flushSync(() => setShowTab(false));
+                  scrollCardIntoView();
+                } else {
+                  withScrollPreserved(() => setShowTab(true));
+                }
+              }}>
                 {showTab ? 'Masquer la tablature' : 'Afficher la tablature'}
               </button>
             )}
             {song.lyrics && (
-              <button onClick={() => setShowLyrics(l => !l)}>
+              <button onClick={() => {
+                if (showLyrics) {
+                  flushSync(() => setShowLyrics(false));
+                  scrollCardIntoView();
+                } else {
+                  withScrollPreserved(() => setShowLyrics(true));
+                }
+              }}>
                 {showLyrics ? 'Masquer les paroles' : 'Afficher les paroles'}
               </button>
             )}
@@ -144,11 +200,38 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete }) 
                 <img
                   src={song.tab}
                   alt="Tablature"
-                  className={`song-tab-img${tabLoaded ? '' : ' song-tab-img--loading'}`}
+                  className={`song-tab-img${tabLoaded ? ' song-tab-img--zoomable' : ' song-tab-img--loading'}`}
                   onLoad={() => setTabLoaded(true)}
+                  onClick={() => tabLoaded && setLightboxOpen(true)}
                 />
               </div>
             </div>
+          )}
+
+          {lightboxOpen && song.tab && createPortal(
+            <div
+              className="tab-lightbox"
+              onClick={() => setLightboxOpen(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Tablature en plein écran"
+            >
+              <button
+                className="tab-lightbox__close"
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setLightboxOpen(false)}
+              >
+                <span className="material-icons">close</span>
+              </button>
+              <img
+                src={song.tab}
+                alt="Tablature"
+                className="tab-lightbox__img"
+                onClick={e => e.stopPropagation()}
+              />
+            </div>,
+            document.body,
           )}
 
           {showLyrics && song.lyrics && (
