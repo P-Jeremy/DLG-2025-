@@ -1,0 +1,83 @@
+@use '../../styles/variables' as *;
+
+.user-role-row {
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+  }
+}
+
+.user-role-row__email {
+  color: $color-text;
+  font-size: 0.95rem;
+  word-break: break-all;
+}
+
+.user-role-row__pseudo {
+  color: $color-text-muted;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.user-role-row__toggle {
+  text-align: center;
+}
+
+.user-role-row__switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+.user-role-row__slider {
+  position: absolute;
+  inset: 0;
+  background-color: $color-border-default;
+  border-radius: $border-radius-toggle;
+  transition: background-color $transition-toggle;
+
+  &::before {
+    content: '';
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform $transition-toggle;
+  }
+}
+
+.user-role-row__switch input:checked + .user-role-row__slider {
+  background-color: $color-primary;
+}
+
+.user-role-row__switch input:checked + .user-role-row__slider::before {
+  transform: translateX(20px);
+}
+
+.user-role-row__switch input:focus-visible + .user-role-row__slider {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}

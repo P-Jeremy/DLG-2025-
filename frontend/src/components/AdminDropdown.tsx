@@ -70,6 +70,16 @@ const AdminDropdown: React.FC<AdminDropdownProps> = ({ onNavigate, mobileExpande
             Gérer les playlists
           </Link>
         </li>
+        <li role="none">
+          <Link
+            className="admin-dropdown__item"
+            to="/admin/users"
+            onClick={handleLinkClick}
+            role="menuitem"
+          >
+            Gérer les utilisateurs
+          </Link>
+        </li>
       </ul>
     </div>
   );

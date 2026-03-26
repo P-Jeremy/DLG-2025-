@@ -4,6 +4,7 @@ import { Email } from '../../domain/value-objects/Email';
 import { Pseudo } from '../../domain/value-objects/Pseudo';
 import { HashedPassword } from '../../domain/value-objects/HashedPassword';
 import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
+import { UserNotFoundError } from '../../domain/errors/DomainError';
 
 export class UserMongoRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -29,6 +30,25 @@ export class UserMongoRepository implements IUserRepository {
   async findAllWithTitleNotif(): Promise<User[]> {
     const docs = await UserModel.find({ titleNotif: true, isActive: true, isDeleted: false }).exec();
     return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async findAll(): Promise<User[]> {
+    const docs = await UserModel.find({ isDeleted: false }).exec();
+    return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async setAdminRole(userId: string, isAdmin: boolean): Promise<User> {
+    const updated = await UserModel.findByIdAndUpdate(
+      userId,
+      { isAdmin },
+      { new: true },
+    ).exec();
+
+    if (!updated) {
+      throw new UserNotFoundError();
+    }
+
+    return this.toDomain(updated);
   }
 
   async save(user: User): Promise<User> {
@@ -63,7 +83,7 @@ export class UserMongoRepository implements IUserRepository {
     ).exec();
 
     if (!updated) {
-      throw new Error(`User with id ${user.id} not found for update`);
+      throw new UserNotFoundError();
     }
 
     return this.toDomain(updated);
@@ -73,7 +93,7 @@ export class UserMongoRepository implements IUserRepository {
     return new User({
       id: doc._id.toString(),
       email: new Email(doc.email),
-      pseudo: new Pseudo(doc.pseudo),
+      pseudo: new Pseudo(doc.pseudo || doc.email.split('@')[0]),
       password: new HashedPassword(doc.password),
       isAdmin: doc.isAdmin,
       isActive: doc.isActive,

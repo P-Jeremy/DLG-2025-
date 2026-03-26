@@ -39,6 +39,8 @@ const buildMockUserRepository = (overrides: Partial<IUserRepository> = {}): IUse
   findById: jest.fn().mockResolvedValue(null),
   findByResetToken: jest.fn().mockResolvedValue(null),
   findAllWithTitleNotif: jest.fn().mockResolvedValue([]),
+  findAll: jest.fn().mockResolvedValue([]),
+  setAdminRole: jest.fn().mockResolvedValue(null),
   save: jest.fn(),
   update: jest.fn(),
   ...overrides,
@@ -137,6 +139,8 @@ describe('AddSong use case', () => {
     const userTwo = buildUserWithTitleNotif('user2@example.com');
     const userRepository = buildMockUserRepository({
       findAllWithTitleNotif: jest.fn().mockResolvedValue([userOne, userTwo]),
+      findAll: jest.fn().mockResolvedValue([]),
+      setAdminRole: jest.fn().mockResolvedValue(null),
     });
     const emailService = buildMockEmailService();
     const savedSong: ISong = {
@@ -169,6 +173,8 @@ describe('AddSong use case', () => {
   it('should still save the song even if no users need to be notified', async () => {
     const userRepository = buildMockUserRepository({
       findAllWithTitleNotif: jest.fn().mockResolvedValue([]),
+      findAll: jest.fn().mockResolvedValue([]),
+      setAdminRole: jest.fn().mockResolvedValue(null),
     });
     const emailService = buildMockEmailService();
     const songRepository = buildMockSongRepository();
@@ -220,6 +226,8 @@ describe('AddSong use case', () => {
     const userWithNotif = buildUserWithTitleNotif('user@example.com');
     const userRepository = buildMockUserRepository({
       findAllWithTitleNotif: jest.fn().mockResolvedValue([userWithNotif]),
+      findAll: jest.fn().mockResolvedValue([]),
+      setAdminRole: jest.fn().mockResolvedValue(null),
     });
     const emailService = buildMockEmailService({
       sendNewSongNotification: jest.fn().mockRejectedValue(new Error('SMTP failure')),

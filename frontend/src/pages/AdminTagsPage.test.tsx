@@ -21,9 +21,13 @@ jest.mock('../api/tags', () => ({
   renameTag: jest.fn().mockResolvedValue({ id: 'tag-1', name: 'metal' }),
 }));
 
+const ADMIN_TOKEN =
+  'header.' +
+  btoa(JSON.stringify({ userId: 'user-1', email: 'admin@test.com', isAdmin: true })) +
+  '.signature';
+
 const renderAsAdmin = async () => {
-  localStorage.setItem('dlg_token', 'test-admin-token');
-  localStorage.setItem('dlg_is_admin', 'true');
+  localStorage.setItem('dlg_token', ADMIN_TOKEN);
   localStorage.setItem('dlg_pseudo', 'admin');
 
   await act(async () => {
@@ -39,7 +43,6 @@ const renderAsAdmin = async () => {
 
 const renderAsGuest = async () => {
   localStorage.removeItem('dlg_token');
-  localStorage.removeItem('dlg_is_admin');
 
   await act(async () => {
     render(
@@ -101,7 +104,7 @@ describe('AdminTagsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }));
 
     await waitFor(() => {
-      expect(createTag).toHaveBeenCalledWith('jazz', 'test-admin-token');
+      expect(createTag).toHaveBeenCalledWith('jazz', ADMIN_TOKEN);
     });
   });
 
@@ -174,7 +177,7 @@ describe('AdminTagsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
     await waitFor(() => {
-      expect(renameTag).toHaveBeenCalledWith('tag-1', 'metal', 'test-admin-token');
+      expect(renameTag).toHaveBeenCalledWith('tag-1', 'metal', ADMIN_TOKEN);
     });
   });
 

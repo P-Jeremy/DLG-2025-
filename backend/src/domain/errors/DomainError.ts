@@ -88,3 +88,10 @@ export class PlaylistNotFoundError extends DomainError {
     this.name = 'PlaylistNotFoundError';
   }
 }
+
+export class CannotModifyOwnRoleError extends DomainError {
+  constructor() {
+    super('Cannot modify your own role');
+    this.name = 'CannotModifyOwnRoleError';
+  }
+}

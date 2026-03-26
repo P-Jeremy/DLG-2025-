@@ -78,9 +78,13 @@ jest.mock('../api/songs', () => ({
   }),
 }));
 
+const ADMIN_TOKEN =
+  'header.' +
+  btoa(JSON.stringify({ userId: 'user-1', email: 'admin@test.com', isAdmin: true })) +
+  '.signature';
+
 const renderAsAdmin = async (songId = SONG_ID) => {
-  localStorage.setItem('dlg_token', 'test-token');
-  localStorage.setItem('dlg_is_admin', 'true');
+  localStorage.setItem('dlg_token', ADMIN_TOKEN);
   localStorage.setItem('dlg_pseudo', 'admin');
 
   await act(async () => {

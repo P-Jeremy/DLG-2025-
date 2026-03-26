@@ -12,6 +12,8 @@ import EditSongPage from './pages/EditSongPage';
 import AdminTagsPage from './pages/AdminTagsPage';
 import AdminPlaylistsIndexPage from './pages/AdminPlaylistsIndexPage';
 import AdminPlaylistPage from './pages/AdminPlaylistPage';
+import AdminUsersPage from './pages/AdminUsersPage/AdminUsersPage';
+import AdminRoute from './components/AdminRoute/AdminRoute';
 
 const App: React.FC = () => {
   return (
@@ -29,6 +31,14 @@ const App: React.FC = () => {
           <Route path="/admin/tags" element={<AdminTagsPage />} />
           <Route path="/admin/playlists" element={<AdminPlaylistsIndexPage />} />
           <Route path="/admin/playlists/:tagId" element={<AdminPlaylistPage />} />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsersPage />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

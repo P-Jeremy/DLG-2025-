@@ -1,4 +1,7 @@
+import bcrypt from 'bcryptjs';
 import { UserModel } from '../../src/infrastructure/models/userModel';
+
+const BCRYPT_ROUNDS = 10;
 
 export interface TestUserProps {
   email: string;
@@ -12,10 +15,11 @@ export interface TestUserProps {
 }
 
 export const insertTestUser = async (props: TestUserProps): Promise<{ _id: string; email: string; pseudo: string }> => {
+  const hashedPassword = await bcrypt.hash(props.password, BCRYPT_ROUNDS);
   const doc = await UserModel.create({
     email: props.email,
     pseudo: props.pseudo,
-    password: props.password,
+    password: hashedPassword,
     isActive: props.isActive ?? false,
     isAdmin: props.isAdmin ?? false,
     isDeleted: props.isDeleted ?? false,
