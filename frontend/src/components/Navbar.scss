@@ -71,14 +71,28 @@
 .navbar__burger {
   display: none;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 4px;
   width: 26px;
-  height: 20px;
+  height: auto;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   z-index: 101;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  user-select: none;
+
+  &:focus,
+  &:focus-visible,
+  &:hover,
+  &:active {
+    outline: none;
+    box-shadow: none;
+    background-color: transparent;
+    border-color: transparent;
+  }
 
   span {
     display: block;
@@ -88,11 +102,13 @@
     border-radius: 2px;
     transition: transform $transition-toggle, opacity $transition-toggle;
     transform-origin: center;
+    pointer-events: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   &--open {
     span:nth-child(1) {
-      transform: translateY(9px) rotate(45deg);
+      transform: translateY(6px) rotate(45deg);
     }
 
     span:nth-child(2) {
@@ -100,7 +116,7 @@
     }
 
     span:nth-child(3) {
-      transform: translateY(-9px) rotate(-45deg);
+      transform: translateY(-6px) rotate(-45deg);
     }
   }
 }

@@ -321,6 +321,74 @@ describe('Integration | Component | SongList', () => {
     });
   });
 
+  describe('shuffle', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      mockFetchReturning(songsSortedByTitle);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('shows the vinyl loader for 1 second after clicking the shuffle button', async () => {
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole('button', { name: 'Chanson au hasard' }));
+
+      expect(screen.getByAltText('Chargement...')).toBeInTheDocument();
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.queryByAltText('Chargement...')).not.toBeInTheDocument();
+    });
+
+    it('displays a single song and a cancel button after the shuffle delay', async () => {
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole('button', { name: 'Chanson au hasard' }));
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      const visibleTitles = screen.getAllByText(/Angie|Bohemian Rhapsody|Stairway to Heaven/);
+      expect(visibleTitles).toHaveLength(1);
+      expect(screen.getByRole('button', { name: 'Retour à la liste' })).toBeInTheDocument();
+    });
+
+    it('hides the controls card when shuffle is active', async () => {
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole('button', { name: 'Chanson au hasard' }));
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.queryByRole('checkbox', { name: 'Trier par artiste' })).not.toBeInTheDocument();
+    });
+
+    it('restores the full list after clicking "Retour à la liste"', async () => {
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole('button', { name: 'Chanson au hasard' }));
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Retour à la liste' }));
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.getAllByText(/Angie|Bohemian Rhapsody|Stairway to Heaven/)).toHaveLength(3);
+      expect(screen.queryByRole('button', { name: 'Retour à la liste' })).not.toBeInTheDocument();
+    });
+  });
+
   describe('back to sort by title', () => {
     it('calls the backend with sortBy=title after a second toggle back to Title', async () => {
       mockFetchReturning(songsSortedByTitle);

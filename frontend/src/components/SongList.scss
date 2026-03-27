@@ -34,15 +34,15 @@
   gap: 1rem;
   width: 100%;
   max-width: 900px;
-  padding: 1.25rem 1.5rem;
+  padding: 0.5rem 1.5rem 1.25rem;
   box-sizing: border-box;
 
   @media (max-width: $breakpoint-md) {
-    padding: 1rem;
+    padding: 0.5rem 1rem 1.75rem;
   }
 
   @media (max-width: $breakpoint-sm) {
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem 1.5rem;
   }
 }
 
@@ -86,5 +86,29 @@
 .song-list-error {
   text-align: center;
   color: $color-primary;
+}
+
+.song-list-cancel-shuffle {
+  display: block;
+  margin: 1.5rem auto 0;
+  padding: 0.6rem 1.5rem;
+  border-radius: $border-radius-button;
+  background-color: $color-text;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: inherit;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $color-text-dark;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 3px;
+  }
 }
 

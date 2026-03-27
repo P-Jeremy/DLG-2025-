@@ -65,6 +65,10 @@ export default [
         React: "readonly",
         fetch: "readonly",
         console: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
       },
       parser: tsparser,
       parserOptions: {
