@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SongItem from './SongItem';
 import SortToggle from './SortToggle';
 import PlaylistFilter from './PlaylistFilter';
 import VinylLoader from './VinylLoader';
+import ShuffleBar from './ShuffleBar';
 import { fetchSongs, deleteSong } from '../api/songs';
 import { fetchPlaylistsPublic, fetchPlaylistPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
@@ -13,6 +14,11 @@ import type { Playlist } from '../api/playlists';
 import './SongList.scss';
 
 const REFRESH_EVENT = 'refresh';
+const SHUFFLE_DELAY_MS = 500;
+
+function pickRandomSong(songs: Song[]): Song {
+  return songs[Math.floor(Math.random() * songs.length)];
+}
 
 const SongList: React.FC = () => {
   const { isAdmin, token } = useAuth();
@@ -26,6 +32,25 @@ const SongList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('title');
   const [openSongId, setOpenSongId] = useState<string | null>(null);
+  const [shuffledSong, setShuffledSong] = useState<Song | null>(null);
+  const [shuffling, setShuffling] = useState(false);
+  const shuffleTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (shuffleTimerRef.current !== null) clearTimeout(shuffleTimerRef.current);
+    };
+  }, []);
+
+  const withShuffleDelay = useCallback((action: () => void) => {
+    if (shuffleTimerRef.current !== null) clearTimeout(shuffleTimerRef.current);
+    setShuffling(true);
+    shuffleTimerRef.current = window.setTimeout(() => {
+      action();
+      setShuffling(false);
+      shuffleTimerRef.current = null;
+    }, SHUFFLE_DELAY_MS);
+  }, []);
 
   const loadSongs = useCallback(async () => {
     setLoading(true);
@@ -46,11 +71,13 @@ const SongList: React.FC = () => {
 
   useEffect(() => {
     void loadSongs();
+    setShuffledSong(null);
   }, [loadSongs]);
 
   useEffect(() => {
     if (!selectedPlaylistName) {
       setFilteredSongs(songs);
+      setShuffledSong(null);
       return;
     }
     let cancelled = false;
@@ -66,6 +93,7 @@ const SongList: React.FC = () => {
           .map((id) => songs.find((s) => s.id === id))
           .filter((s): s is Song => s !== undefined);
         setFilteredSongs(ordered);
+        setShuffledSong(null);
       })
       .catch((err: unknown) => {
         if (!cancelled) setError((err as Error).message || 'Unknown error');
@@ -88,7 +116,17 @@ const SongList: React.FC = () => {
     void navigate(`/songs/${songId}/edit`);
   }, [navigate]);
 
+  const handleShuffle = useCallback(() => {
+    withShuffleDelay(() => setShuffledSong(pickRandomSong(filteredSongs)));
+  }, [filteredSongs, withShuffleDelay]);
+
+  const handleCancelShuffle = useCallback(() => {
+    withShuffleDelay(() => setShuffledSong(null));
+  }, [withShuffleDelay]);
+
   useSocket(REFRESH_EVENT, handleRefresh);
+
+  const isShuffleActive = shuffledSong !== null;
 
   if (loading) return (
     <div className="song-list-bg">
@@ -99,20 +137,38 @@ const SongList: React.FC = () => {
 
   return (
     <div className="song-list-bg">
-      <div className="song-list-controls">
-        <div className="song-list-controls-card">
-          {playlists.length > 0 && (
-            <PlaylistFilter
-              playlists={playlists}
-              selectedPlaylistName={selectedPlaylistName}
-              onSelect={setSelectedPlaylistName}
-            />
-          )}
-          {!selectedPlaylistName && <SortToggle sortField={sortField} onToggle={setSortField} />}
+      <ShuffleBar onShuffle={handleShuffle} />
+      {!isShuffleActive && !shuffling && (
+        <div className="song-list-controls">
+          <div className="song-list-controls-card">
+            {playlists.length > 0 && (
+              <PlaylistFilter
+                playlists={playlists}
+                selectedPlaylistName={selectedPlaylistName}
+                onSelect={setSelectedPlaylistName}
+              />
+            )}
+            {!selectedPlaylistName && <SortToggle sortField={sortField} onToggle={setSortField} />}
+          </div>
         </div>
-      </div>
-      {playlistLoading ? (
+      )}
+      {playlistLoading || shuffling ? (
         <VinylLoader />
+      ) : isShuffleActive ? (
+        <div className="song-list">
+          <SongItem
+            key={shuffledSong.id}
+            song={shuffledSong}
+            isAdmin={isAdmin}
+            onDelete={isAdmin ? handleDeleteSong : undefined}
+            onEdit={isAdmin ? handleEditSong : undefined}
+            isOpen={openSongId === shuffledSong.id}
+            onOpen={setOpenSongId}
+          />
+          <button className="song-list-cancel-shuffle" onClick={handleCancelShuffle}>
+            Retour à la liste
+          </button>
+        </div>
       ) : filteredSongs.length === 0 ? (
         <div className="song-list-message">Aucune chanson trouvée.</div>
       ) : (

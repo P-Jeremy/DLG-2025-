@@ -18,6 +18,7 @@ const Navbar: React.FC = () => {
         className={`navbar__burger${menuOpen ? ' navbar__burger--open' : ''}`}
         aria-label="Menu"
         aria-expanded={menuOpen}
+        onPointerDown={(e) => e.preventDefault()}
         onClick={() => setMenuOpen(open => !open)}
       >
         <span />
