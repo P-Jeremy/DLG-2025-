@@ -12,7 +12,7 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="navbar">
-      <div className="navbar__brand">DLG</div>
+      <Link className="navbar__brand" to="/">DLG</Link>
 
       <button
         className={`navbar__burger${menuOpen ? ' navbar__burger--open' : ''}`}
