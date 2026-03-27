@@ -161,7 +161,7 @@ export class PlaylistsController {
 
   async removeSongFromPlaylist(req: Request, res: Response): Promise<void> {
     const playlistName = req.params['playlistName'] as string;
-    const songId = req.params['songId'];
+    const songId = req.params['songId'] as string;
 
     try {
       const { playlist } = await this.removeSongFromPlaylistUsecase.execute({ playlistName, songId });
