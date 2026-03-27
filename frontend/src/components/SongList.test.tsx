@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import SongList from './SongList';
 import { AuthProvider } from '../contexts/AuthContext';
@@ -230,7 +230,9 @@ describe('Integration | Component | SongList', () => {
 
       expect(screen.getByAltText('Chargement...')).toBeInTheDocument();
 
-      resolvePlaylist({ ok: true, json: () => Promise.resolve(playlistData) } as Response);
+      await act(async () => {
+        resolvePlaylist({ ok: true, json: () => Promise.resolve(playlistData) } as Response);
+      });
     });
 
     it('displays songs in playlist order after selecting a playlist', async () => {
