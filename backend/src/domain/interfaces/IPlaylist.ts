@@ -1,5 +1,5 @@
 export interface IPlaylist {
   id?: string;
-  tagId: string;
+  name: string;
   songIds: string[];
 }

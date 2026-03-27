@@ -1,7 +1,7 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
 export interface PlaylistProps {
-  tagId: Types.ObjectId;
+  name: string;
   songIds: Types.ObjectId[];
 }
 
@@ -10,7 +10,7 @@ export interface PlaylistDocument extends PlaylistProps, Document {
 }
 
 const PlaylistSchema = new Schema<PlaylistDocument>({
-  tagId: { type: Schema.Types.ObjectId, ref: 'Tag', required: true, unique: true },
+  name: { type: String, required: true, unique: true },
   songIds: [{ type: Schema.Types.ObjectId, ref: 'Song' }],
 });
 

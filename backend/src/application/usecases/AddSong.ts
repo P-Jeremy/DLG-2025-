@@ -12,7 +12,6 @@ export interface AddSongInput {
   author: string;
   lyrics: string;
   tabFile: UploadableFile;
-  tagIds: string[];
 }
 
 export interface AddSongOutput {
@@ -36,7 +35,6 @@ export class AddSong {
       author: input.author,
       lyrics: input.lyrics,
       tab: tabUrl,
-      tags: input.tagIds.map((id) => ({ id, name: '' })),
     };
 
     const savedSong = await this.songRepository.save(songData);

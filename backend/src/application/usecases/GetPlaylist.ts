@@ -4,7 +4,7 @@ import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
 import type { ISong } from '../../domain/interfaces/Song';
 
 export interface GetPlaylistInput {
-  tagId: string;
+  playlistName: string;
 }
 
 export interface GetPlaylistOutput {
@@ -19,15 +19,13 @@ export class GetPlaylist {
   ) {}
 
   async execute(input: GetPlaylistInput): Promise<GetPlaylistOutput> {
-    const [songs, playlist] = await Promise.all([
-      this.songRepository.findByTagId(input.tagId),
-      this.playlistRepository.findByTagId(input.tagId),
-    ]);
+    const playlist = await this.playlistRepository.findByName(input.playlistName);
 
     if (!playlist || playlist.songIds.length === 0) {
-      return { playlist, songs };
+      return { playlist, songs: [] };
     }
 
+    const songs = await this.songRepository.findByIds(playlist.songIds);
     const songMap = new Map(songs.map((song) => [song.id ?? '', song]));
     const orderedSongs: ISong[] = [];
 

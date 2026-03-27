@@ -1,5 +1,4 @@
 import { ISong } from '../interfaces/Song';
-import { ITag } from '../interfaces/Tags';
 
 export class Song implements ISong {
   public id?: string;
@@ -7,7 +6,6 @@ export class Song implements ISong {
   public author: string;
   public lyrics: string;
   public tab: string;
-  public tags?: ITag[];
 
   constructor(props: ISong) {
     this.id = props.id;
@@ -15,6 +13,5 @@ export class Song implements ISong {
     this.author = props.author;
     this.lyrics = props.lyrics;
     this.tab = props.tab;
-    this.tags = props.tags;
   }
 }

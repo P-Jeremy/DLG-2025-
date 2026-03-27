@@ -1,8 +1,10 @@
 import type { IPlaylist } from './IPlaylist';
 
 export interface IPlaylistRepository {
-  findByTagId(tagId: string): Promise<IPlaylist | null>;
+  findByName(name: string): Promise<IPlaylist | null>;
+  findAll(): Promise<IPlaylist[]>;
   save(playlist: IPlaylist): Promise<IPlaylist>;
-  deleteByTagId(tagId: string): Promise<void>;
+  deleteByName(name: string): Promise<void>;
   removeSongFromAll(songId: string): Promise<void>;
+  rename(name: string, newName: string): Promise<IPlaylist>;
 }
