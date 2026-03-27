@@ -36,7 +36,7 @@ export class PlaylistsController {
   }
 
   async getPlaylist(req: Request, res: Response): Promise<void> {
-    const playlistName = req.params['playlistName'];
+    const playlistName = req.params['playlistName'] as string;
 
     try {
       const result = await this.getPlaylistUsecase.execute({ playlistName });
@@ -71,7 +71,7 @@ export class PlaylistsController {
   }
 
   async renamePlaylist(req: Request, res: Response): Promise<void> {
-    const playlistName = req.params['playlistName'];
+    const playlistName = req.params['playlistName'] as string;
     const { newName } = req.body as { newName?: unknown };
 
     if (!newName || typeof newName !== 'string') {
@@ -96,7 +96,7 @@ export class PlaylistsController {
   }
 
   async deletePlaylist(req: Request, res: Response): Promise<void> {
-    const playlistName = req.params['playlistName'];
+    const playlistName = req.params['playlistName'] as string;
 
     try {
       await this.deletePlaylistUsecase.execute({ name: playlistName });
@@ -111,7 +111,7 @@ export class PlaylistsController {
   }
 
   async reorderPlaylist(req: Request, res: Response): Promise<void> {
-    const playlistName = req.params['playlistName'];
+    const playlistName = req.params['playlistName'] as string;
     const { songIds } = req.body as { songIds?: unknown };
 
     if (!Array.isArray(songIds)) {
@@ -139,7 +139,7 @@ export class PlaylistsController {
   }
 
   async addSongToPlaylist(req: Request, res: Response): Promise<void> {
-    const playlistName = req.params['playlistName'];
+    const playlistName = req.params['playlistName'] as string;
     const { songId } = req.body as { songId?: unknown };
 
     if (!songId || typeof songId !== 'string') {
@@ -160,7 +160,7 @@ export class PlaylistsController {
   }
 
   async removeSongFromPlaylist(req: Request, res: Response): Promise<void> {
-    const playlistName = req.params['playlistName'];
+    const playlistName = req.params['playlistName'] as string;
     const songId = req.params['songId'];
 
     try {
