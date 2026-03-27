@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SongItem from './SongItem';
 import SortToggle from './SortToggle';
 import PlaylistFilter from './PlaylistFilter';
+import VinylLoader from './VinylLoader';
 import { fetchSongs, deleteSong } from '../api/songs';
 import { fetchPlaylistsPublic, fetchPlaylistPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
@@ -81,9 +82,7 @@ const SongList: React.FC = () => {
 
   if (loading) return (
     <div className="song-list-bg">
-      <div className="vinyl-loader-container">
-        <img src="/vinyl.png" className="vinyl-loader" alt="Chargement..." />
-      </div>
+      <VinylLoader />
     </div>
   );
   if (error) return <div className="song-list-bg"><div className="song-list-error">Erreur : {error}</div></div>;

@@ -1,0 +1,22 @@
+@use '../styles/variables' as *;
+
+.vinyl-loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-height: calc(100vh - 60px - env(safe-area-inset-top));
+  width: 100%;
+}
+
+.vinyl-loader {
+  width: 180px;
+  will-change: transform;
+  transform: translateZ(0);
+  animation: vinyl-spin 0.8s linear infinite;
+}
+
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

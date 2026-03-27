@@ -173,7 +173,7 @@ const AdminPlaylistsManagePage: React.FC = () => {
                   <div className="admin-playlists-manage-item__actions">
                     <Link
                       className="admin-playlists-manage-item__playlist-link"
-                      to={`/admin/playlists/${playlist.name}`}
+                      to={`/admin/playlists/${encodeURIComponent(playlist.name)}`}
                     >
                       Gérer la playlist
                     </Link>

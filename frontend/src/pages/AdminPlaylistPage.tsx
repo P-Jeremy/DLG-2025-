@@ -8,6 +8,7 @@ import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
 import SongSearchInput from '../components/SongSearchInput';
 import PlaylistSongRemoveConfirm from '../components/PlaylistSongRemoveConfirm';
+import VinylLoader from '../components/VinylLoader';
 import './AdminPlaylistPage.scss';
 
 const AdminPlaylistPage: React.FC = () => {
@@ -211,7 +212,7 @@ const AdminPlaylistPage: React.FC = () => {
       <AppBackground>
         <Navbar />
         <div className="admin-playlist-page">
-          <div className="admin-playlist-loading">Chargement...</div>
+          <VinylLoader />
         </div>
       </AppBackground>
     );

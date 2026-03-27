@@ -8,6 +8,7 @@ import type { Song } from '../types/song';
 import RichTextToolbar from '../components/RichTextToolbar';
 import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
+import VinylLoader from '../components/VinylLoader';
 import './EditSongPage.scss';
 
 const EditSongPage: React.FC = () => {
@@ -121,7 +122,7 @@ const EditSongPage: React.FC = () => {
       <AppBackground>
         <Navbar />
         <div className="edit-song-page">
-          <div className="edit-song-loading">Chargement…</div>
+          <VinylLoader />
         </div>
       </AppBackground>
     );
