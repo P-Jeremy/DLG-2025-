@@ -1,10 +1,9 @@
-import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
 import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
 import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
-import { InvalidPlaylistSongError } from '../../domain/errors/DomainError';
+import { InvalidPlaylistSongError, PlaylistNotFoundError } from '../../domain/errors/DomainError';
 
 export interface ReorderPlaylistInput {
-  tagId: string;
+  playlistName: string;
   songIds: string[];
 }
 
@@ -14,20 +13,21 @@ export interface ReorderPlaylistOutput {
 
 export class ReorderPlaylist {
   constructor(
-    private readonly songRepository: ISongRepository,
     private readonly playlistRepository: IPlaylistRepository,
   ) {}
 
   async execute(input: ReorderPlaylistInput): Promise<ReorderPlaylistOutput> {
-    const songsForTag = await this.songRepository.findByTagId(input.tagId);
-    const validSongIds = new Set(songsForTag.map((song) => song.id ?? ''));
+    const existingPlaylist = await this.playlistRepository.findByName(input.playlistName);
+    if (!existingPlaylist) throw new PlaylistNotFoundError();
+
+    const validSongIds = new Set(existingPlaylist.songIds);
 
     for (const songId of input.songIds) {
       if (!validSongIds.has(songId)) throw new InvalidPlaylistSongError();
     }
 
     const playlist = await this.playlistRepository.save({
-      tagId: input.tagId,
+      name: input.playlistName,
       songIds: input.songIds,
     });
 

@@ -20,11 +20,8 @@ const buildMockFile = (overrides: Partial<UploadableFile> = {}): UploadableFile 
 
 const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISongRepository => ({
   getAll: jest.fn().mockResolvedValue([]),
-  findByTagId: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  removeTagFromAll: jest.fn().mockResolvedValue(undefined),
-  removeTagFromSong: jest.fn().mockResolvedValue(undefined),
-  setTag: jest.fn().mockResolvedValue(undefined),
+  findByIds: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockImplementation((song: ISong) =>
     Promise.resolve({ ...song, id: 'saved-song-id' }),
   ),
@@ -94,7 +91,7 @@ describe('AddSong use case', () => {
     );
 
     const file = buildMockFile();
-    await usecase.execute({ title: 'My Song', author: 'Artist', lyrics: '<p>lyrics</p>', tabFile: file, tagIds: [] });
+    await usecase.execute({ title: 'My Song', author: 'Artist', lyrics: '<p>lyrics</p>', tabFile: file });
 
     expect(fileUploadService.upload).toHaveBeenCalledWith(file);
     expect(songRepository.save).toHaveBeenCalledWith(
@@ -109,7 +106,6 @@ describe('AddSong use case', () => {
       author: 'Artist',
       lyrics: '<p>lyrics</p>',
       tab: 'https://bucket.s3.amazonaws.com/uuid.png',
-      tags: [],
     };
     const songRepository = buildMockSongRepository({
       save: jest.fn().mockResolvedValue(savedSong),
@@ -128,7 +124,6 @@ describe('AddSong use case', () => {
       author: 'Artist',
       lyrics: '<p>lyrics</p>',
       tabFile: buildMockFile(),
-      tagIds: [],
     });
 
     expect(song).toEqual(savedSong);
@@ -149,7 +144,6 @@ describe('AddSong use case', () => {
       author: 'Artist',
       lyrics: '',
       tab: 'https://url',
-      tags: [],
     };
     const songRepository = buildMockSongRepository({
       save: jest.fn().mockResolvedValue(savedSong),
@@ -162,7 +156,6 @@ describe('AddSong use case', () => {
       author: 'Artist',
       lyrics: '',
       tabFile: buildMockFile(),
-      tagIds: [],
     });
 
     expect(emailService.sendNewSongNotification).toHaveBeenCalledTimes(2);
@@ -186,40 +179,10 @@ describe('AddSong use case', () => {
       author: 'Artist',
       lyrics: '',
       tabFile: buildMockFile(),
-      tagIds: [],
     });
 
     expect(songRepository.save).toHaveBeenCalled();
     expect(emailService.sendNewSongNotification).not.toHaveBeenCalled();
-  });
-
-  it('should pass tagIds to the repository as tag objects', async () => {
-    const songRepository = buildMockSongRepository();
-
-    const usecase = new AddSong(
-      songRepository,
-      buildMockUserRepository(),
-      buildMockEmailService(),
-      buildMockFileUploadService(),
-      buildMockEventEmitter(),
-    );
-
-    await usecase.execute({
-      title: 'Tagged Song',
-      author: 'Artist',
-      lyrics: '',
-      tabFile: buildMockFile(),
-      tagIds: ['tag-id-1', 'tag-id-2'],
-    });
-
-    expect(songRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tags: [
-          { id: 'tag-id-1', name: '' },
-          { id: 'tag-id-2', name: '' },
-        ],
-      }),
-    );
   });
 
   it('should not throw if an email notification fails', async () => {
@@ -237,7 +200,7 @@ describe('AddSong use case', () => {
     const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter());
 
     await expect(
-      usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile(), tagIds: [] }),
+      usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile() }),
     ).resolves.not.toThrow();
   });
 
@@ -251,7 +214,7 @@ describe('AddSong use case', () => {
       eventEmitter,
     );
 
-    await usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile(), tagIds: [] });
+    await usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile() });
 
     expect(eventEmitter.emit).toHaveBeenCalledWith('refresh');
   });

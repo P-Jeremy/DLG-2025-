@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { SongsController } from '../controllers/songsController';
 import { GetSongsUsecase } from '../../../application/usecases/GetSongs';
-import { GetSongsByTag } from '../../../application/usecases/GetSongsByTag';
 import { AddSong } from '../../../application/usecases/AddSong';
 import { UpdateSong } from '../../../application/usecases/UpdateSong';
 import { DeleteSong } from '../../../application/usecases/DeleteSong';
@@ -27,7 +26,6 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
   const fileUploadService = new S3FileUploadService();
 
   const getSongsUsecase = new GetSongsUsecase(songRepository);
-  const getSongsByTagUsecase = new GetSongsByTag(songRepository, playlistRepository);
   const addSongUsecase = new AddSong(
     songRepository,
     userRepository,
@@ -40,7 +38,6 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
 
   const controller = new SongsController(
     getSongsUsecase,
-    getSongsByTagUsecase,
     addSongUsecase,
     updateSongUsecase,
     deleteSongUsecase,

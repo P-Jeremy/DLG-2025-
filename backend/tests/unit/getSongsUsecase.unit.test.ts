@@ -9,11 +9,8 @@ const buildMockRepository = (songs: ISong[]): ISongRepository & { receivedSortBy
       mock.receivedSortBy = sortBy;
       return Promise.resolve(songs);
     },
-    findByTagId: jest.fn().mockResolvedValue([]),
     findById: jest.fn().mockResolvedValue(null),
-    removeTagFromAll: jest.fn().mockResolvedValue(undefined),
-    removeTagFromSong: jest.fn().mockResolvedValue(undefined),
-    setTag: jest.fn().mockResolvedValue(undefined),
+    findByIds: jest.fn().mockResolvedValue([]),
     save(song: ISong): Promise<ISong> {
       return Promise.resolve(song);
     },

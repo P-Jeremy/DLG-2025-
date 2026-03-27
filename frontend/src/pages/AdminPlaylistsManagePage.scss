@@ -1,6 +1,6 @@
 @use '../styles/variables' as *;
 
-.admin-tags-page {
+.admin-playlists-manage-page {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,7 +8,7 @@
   min-height: calc(100dvh - 60px);
 }
 
-.admin-tags-card {
+.admin-playlists-manage-card {
   background: #fff;
   border-radius: $border-radius-card;
   box-shadow: $shadow-card;
@@ -18,14 +18,14 @@
   height: fit-content;
 }
 
-.admin-tags-header {
+.admin-playlists-manage-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
 }
 
-.admin-tags-title {
+.admin-playlists-manage-title {
   color: $color-primary;
   margin: 0;
   font-size: 1.75rem;
@@ -33,7 +33,7 @@
   letter-spacing: 0.06em;
 }
 
-.admin-tags-back {
+.admin-playlists-manage-back {
   background: none;
   border: 1px solid $color-border-default;
   border-radius: $border-radius-button;
@@ -49,7 +49,7 @@
   }
 }
 
-.admin-tags-error {
+.admin-playlists-manage-error {
   background: $color-primary-bg;
   color: $color-primary;
   border-radius: $border-radius-button;
@@ -58,7 +58,7 @@
   font-size: 0.9rem;
 }
 
-.admin-tags-success {
+.admin-playlists-manage-success {
   background: $color-success-bg;
   color: $color-success-dark;
   border-radius: $border-radius-button;
@@ -67,13 +67,13 @@
   font-size: 0.9rem;
 }
 
-.admin-tags-form {
+.admin-playlists-manage-form {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 2rem;
 }
 
-.admin-tags-input {
+.admin-playlists-manage-input {
   flex: 1;
   border: 1px solid $color-border-default;
   border-radius: $border-radius-button;
@@ -88,7 +88,7 @@
   }
 }
 
-.admin-tags-create-btn {
+.admin-playlists-manage-create-btn {
   background: $color-primary;
   color: #fff;
   border: none;
@@ -109,7 +109,7 @@
   }
 }
 
-.admin-tags-list {
+.admin-playlists-manage-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -118,7 +118,7 @@
   gap: 0.5rem;
 }
 
-.admin-tags-item {
+.admin-playlists-manage-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -128,18 +128,18 @@
   background: $color-surface-alt;
 }
 
-.admin-tags-item__name {
+.admin-playlists-manage-item__name {
   font-weight: 600;
   color: $color-text;
 }
 
-.admin-tags-item__actions {
+.admin-playlists-manage-item__actions {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-.admin-tags-item__playlist-link {
+.admin-playlists-manage-item__playlist-link {
   font-size: 0.85rem;
   color: $color-primary;
   text-decoration: none;
@@ -154,7 +154,7 @@
   }
 }
 
-.admin-tags-item__rename-btn {
+.admin-playlists-manage-item__rename-btn {
   background: transparent;
   border: 1px solid $color-border-default;
   border-radius: $border-radius-button;
@@ -184,7 +184,7 @@
   }
 }
 
-.admin-tags-item__delete-btn {
+.admin-playlists-manage-item__delete-btn {
   background: transparent;
   border: 1px solid $color-border-default;
   border-radius: $border-radius-button;
@@ -213,53 +213,53 @@
   }
 }
 
-.admin-tags-empty {
+.admin-playlists-manage-empty {
   color: $color-text-muted;
   font-size: 0.9rem;
   text-align: center;
   padding: 1rem;
 }
 
-.admin-tags-forbidden {
+.admin-playlists-manage-forbidden {
   color: $color-primary;
   text-align: center;
   padding: 2rem;
 }
 
 @media (max-width: $breakpoint-sm) {
-  .admin-tags-page {
+  .admin-playlists-manage-page {
     padding: 1.5rem 0.75rem;
     align-items: flex-start;
   }
 
-  .admin-tags-card {
+  .admin-playlists-manage-card {
     padding: 1.5rem 1rem;
   }
 
-  .admin-tags-form {
+  .admin-playlists-manage-form {
     flex-direction: column;
   }
 
-  .admin-tags-create-btn {
+  .admin-playlists-manage-create-btn {
     width: 100%;
     min-height: 44px;
   }
 
-  .admin-tags-item {
+  .admin-playlists-manage-item {
     flex-wrap: wrap;
     gap: 0.5rem;
   }
 
-  .admin-tags-item__name {
+  .admin-playlists-manage-item__name {
     width: 100%;
   }
 
-  .admin-tags-item__actions {
+  .admin-playlists-manage-item__actions {
     width: 100%;
     justify-content: flex-start;
   }
 
-  .admin-tags-item__playlist-link {
+  .admin-playlists-manage-item__playlist-link {
     flex: 1;
     text-align: center;
     min-height: 44px;
@@ -268,8 +268,8 @@
     justify-content: center;
   }
 
-  .admin-tags-item__rename-btn,
-  .admin-tags-item__delete-btn {
+  .admin-playlists-manage-item__rename-btn,
+  .admin-playlists-manage-item__delete-btn {
     width: 40px;
     height: 40px;
   }

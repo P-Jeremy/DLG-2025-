@@ -1,0 +1,58 @@
+@use '../styles/variables' as *;
+
+.playlist-filter {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+
+  &__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: $color-text;
+    text-transform: uppercase;
+  }
+
+  &__select-wrapper {
+    position: relative;
+    width: 280px;
+
+    @media (max-width: $breakpoint-sm) {
+      width: 100%;
+    }
+  }
+
+  &__select {
+    width: 100%;
+    padding: 0.55rem 2.5rem 0.55rem 1.25rem;
+    border: 2px solid $color-primary;
+    border-radius: $border-radius-card;
+    background: transparent;
+    color: $color-primary;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(153, 0, 0, 0.10);
+    outline: none;
+
+    option {
+      color: $color-text-dark;
+      font-weight: 400;
+    }
+  }
+
+  &__arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $color-primary;
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+}

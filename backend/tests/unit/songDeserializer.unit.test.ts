@@ -1,4 +1,4 @@
-import { SongDeserializer, MissingFieldError, InvalidTagsError } from '../../src/infrastructure/http/deserializers/SongDeserializer';
+import { SongDeserializer, MissingFieldError } from '../../src/infrastructure/http/deserializers/SongDeserializer';
 import type { UploadableFile } from '../../src/application/interfaces/IFileUploadService';
 
 const buildFile = (): UploadableFile => ({
@@ -25,7 +25,6 @@ describe('Unit | Deserializer | SongDeserializer', () => {
       expect(result.title).toBe('Bohemian Rhapsody');
       expect(result.author).toBe('Queen');
       expect(result.lyrics).toBe('<p>Is this the real life?</p>');
-      expect(result.tagIds).toEqual([]);
     });
 
     it('throws MissingFieldError when title is absent', () => {
@@ -44,27 +43,6 @@ describe('Unit | Deserializer | SongDeserializer', () => {
       expect(() =>
         deserializer.deserializeAddSong(buildBody({ lyrics: '' }), buildFile()),
       ).toThrow(MissingFieldError);
-    });
-
-    it('parses selectedTags JSON array into tagIds', () => {
-      const result = deserializer.deserializeAddSong(
-        buildBody({ selectedTags: '["id1","id2"]' }),
-        buildFile(),
-      );
-
-      expect(result.tagIds).toEqual(['id1', 'id2']);
-    });
-
-    it('throws InvalidTagsError when selectedTags is not a JSON array', () => {
-      expect(() =>
-        deserializer.deserializeAddSong(buildBody({ selectedTags: '"not-an-array"' }), buildFile()),
-      ).toThrow(InvalidTagsError);
-    });
-
-    it('throws InvalidTagsError when selectedTags is malformed JSON', () => {
-      expect(() =>
-        deserializer.deserializeAddSong(buildBody({ selectedTags: '{invalid}' }), buildFile()),
-      ).toThrow(InvalidTagsError);
     });
 
     it('strips script tags from lyrics before returning', () => {

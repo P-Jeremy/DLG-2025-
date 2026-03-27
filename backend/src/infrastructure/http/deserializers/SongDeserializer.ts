@@ -12,7 +12,6 @@ export interface RawSongBody {
   title?: string;
   author?: string;
   lyrics?: string;
-  selectedTags?: string;
 }
 
 export type RawAddSongBody = RawSongBody;
@@ -21,12 +20,6 @@ export type RawUpdateSongBody = RawSongBody;
 export class MissingFieldError extends Error {
   constructor(field: string) {
     super(`${field} is required`);
-  }
-}
-
-export class InvalidTagsError extends Error {
-  constructor() {
-    super('selectedTags must be a valid JSON array');
   }
 }
 
@@ -47,7 +40,7 @@ export class SongDeserializer {
   }
 
   private deserializeSongFields(body: RawSongBody) {
-    const { title, author, lyrics, selectedTags } = body;
+    const { title, author, lyrics } = body;
 
     if (!title) throw new MissingFieldError('title');
     if (!author) throw new MissingFieldError('author');
@@ -57,7 +50,6 @@ export class SongDeserializer {
       title,
       author,
       lyrics: this.sanitizeLyrics(lyrics),
-      tagIds: this.parseTagIds(selectedTags),
     };
   }
 
@@ -66,17 +58,5 @@ export class SongDeserializer {
       allowedTags: ALLOWED_LYRICS_TAGS,
       allowedAttributes: {},
     });
-  }
-
-  private parseTagIds(selectedTags: string | undefined): string[] {
-    if (!selectedTags) return [];
-    try {
-      const parsed = JSON.parse(selectedTags) as unknown;
-      if (!Array.isArray(parsed)) throw new InvalidTagsError();
-      return parsed.map(String);
-    } catch (e) {
-      if (e instanceof InvalidTagsError) throw e;
-      throw new InvalidTagsError();
-    }
   }
 }

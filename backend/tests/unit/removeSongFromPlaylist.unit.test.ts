@@ -1,11 +1,9 @@
 import { RemoveSongFromPlaylist } from '../../src/application/usecases/RemoveSongFromPlaylist';
 import type { ISongRepository } from '../../src/domain/interfaces/ISongRepository';
-import type { ITagRepository } from '../../src/domain/interfaces/ITagRepository';
 import type { IPlaylistRepository } from '../../src/domain/interfaces/IPlaylistRepository';
 import type { ISong } from '../../src/domain/interfaces/Song';
-import type { ITag } from '../../src/domain/interfaces/Tags';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
-import { TagNotFoundError, SongNotFoundError } from '../../src/domain/errors/DomainError';
+import { PlaylistNotFoundError, SongNotFoundError } from '../../src/domain/errors/DomainError';
 
 const buildSong = (id: string): ISong => ({
   id,
@@ -15,25 +13,10 @@ const buildSong = (id: string): ISong => ({
   tab: '',
 });
 
-const buildTag = (id: string): ITag => ({ id, name: `Tag ${id}` });
-
-const buildMockTagRepository = (overrides: Partial<ITagRepository> = {}): ITagRepository => ({
-  findAll: jest.fn().mockResolvedValue([]),
-  findById: jest.fn().mockResolvedValue(null),
-  findByName: jest.fn().mockResolvedValue(null),
-  save: jest.fn().mockImplementation((tag: ITag) => Promise.resolve({ ...tag, id: 'new-id' })),
-  update: jest.fn().mockResolvedValue(null),
-  delete: jest.fn().mockResolvedValue(undefined),
-  ...overrides,
-});
-
 const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISongRepository => ({
   getAll: jest.fn().mockResolvedValue([]),
-  findByTagId: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  removeTagFromAll: jest.fn().mockResolvedValue(undefined),
-  removeTagFromSong: jest.fn().mockResolvedValue(undefined),
-  setTag: jest.fn().mockResolvedValue(undefined),
+  findByIds: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
   update: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
   deleteById: jest.fn().mockResolvedValue(undefined),
@@ -41,96 +24,78 @@ const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISon
 });
 
 const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {}): IPlaylistRepository => ({
-  findByTagId: jest.fn().mockResolvedValue(null),
+  findByName: jest.fn().mockResolvedValue(null),
+  findAll: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockImplementation((pl: IPlaylist) => Promise.resolve(pl)),
-  deleteByTagId: jest.fn().mockResolvedValue(undefined),
+  deleteByName: jest.fn().mockResolvedValue(undefined),
   removeSongFromAll: jest.fn().mockResolvedValue(undefined),
+  rename: jest.fn().mockResolvedValue(null),
   ...overrides,
 });
 
 describe('RemoveSongFromPlaylist use case', () => {
-  it('should remove the song from the playlist and clear its tag', async () => {
-    const tag = buildTag('tag-1');
+  it('should remove the song from the playlist', async () => {
     const song = buildSong('song-1');
-    const existingPlaylist: IPlaylist = { tagId: 'tag-1', songIds: ['song-1', 'song-2'] };
-    const savedPlaylist: IPlaylist = { tagId: 'tag-1', songIds: ['song-2'] };
+    const existingPlaylist: IPlaylist = { name: 'rock', songIds: ['song-1', 'song-2'] };
+    const savedPlaylist: IPlaylist = { name: 'rock', songIds: ['song-2'] };
 
-    const tagRepository = buildMockTagRepository({ findById: jest.fn().mockResolvedValue(tag) });
     const songRepository = buildMockSongRepository({ findById: jest.fn().mockResolvedValue(song) });
     const playlistRepository = buildMockPlaylistRepository({
-      findByTagId: jest.fn().mockResolvedValue(existingPlaylist),
+      findByName: jest.fn().mockResolvedValue(existingPlaylist),
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new RemoveSongFromPlaylist(tagRepository, songRepository, playlistRepository);
-    const { playlist } = await usecase.execute({ tagId: 'tag-1', songId: 'song-1' });
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
+    const { playlist } = await usecase.execute({ playlistName: 'rock', songId: 'song-1' });
 
-    expect(songRepository.removeTagFromSong).toHaveBeenCalledWith('song-1');
-    expect(playlistRepository.save).toHaveBeenCalledWith({ tagId: 'tag-1', songIds: ['song-2'] });
+    expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: ['song-2'] });
     expect(playlist).toEqual(savedPlaylist);
   });
 
   it('should save an empty playlist when the song was the only entry', async () => {
-    const tag = buildTag('tag-1');
     const song = buildSong('song-1');
-    const existingPlaylist: IPlaylist = { tagId: 'tag-1', songIds: ['song-1'] };
-    const savedPlaylist: IPlaylist = { tagId: 'tag-1', songIds: [] };
+    const existingPlaylist: IPlaylist = { name: 'rock', songIds: ['song-1'] };
+    const savedPlaylist: IPlaylist = { name: 'rock', songIds: [] };
 
-    const tagRepository = buildMockTagRepository({ findById: jest.fn().mockResolvedValue(tag) });
     const songRepository = buildMockSongRepository({ findById: jest.fn().mockResolvedValue(song) });
     const playlistRepository = buildMockPlaylistRepository({
-      findByTagId: jest.fn().mockResolvedValue(existingPlaylist),
+      findByName: jest.fn().mockResolvedValue(existingPlaylist),
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new RemoveSongFromPlaylist(tagRepository, songRepository, playlistRepository);
-    const { playlist } = await usecase.execute({ tagId: 'tag-1', songId: 'song-1' });
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
+    const { playlist } = await usecase.execute({ playlistName: 'rock', songId: 'song-1' });
 
-    expect(playlistRepository.save).toHaveBeenCalledWith({ tagId: 'tag-1', songIds: [] });
+    expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: [] });
     expect(playlist.songIds).toHaveLength(0);
   });
 
-  it('should throw TagNotFoundError when the tag does not exist', async () => {
-    const tagRepository = buildMockTagRepository({ findById: jest.fn().mockResolvedValue(null) });
+  it('should throw PlaylistNotFoundError when the playlist does not exist', async () => {
     const songRepository = buildMockSongRepository();
-    const playlistRepository = buildMockPlaylistRepository();
+    const playlistRepository = buildMockPlaylistRepository({
+      findByName: jest.fn().mockResolvedValue(null),
+    });
 
-    const usecase = new RemoveSongFromPlaylist(tagRepository, songRepository, playlistRepository);
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
 
     await expect(
-      usecase.execute({ tagId: 'nonexistent', songId: 'song-1' }),
-    ).rejects.toThrow(TagNotFoundError);
-    expect(songRepository.removeTagFromSong).not.toHaveBeenCalled();
+      usecase.execute({ playlistName: 'nonexistent', songId: 'song-1' }),
+    ).rejects.toThrow(PlaylistNotFoundError);
+    expect(playlistRepository.save).not.toHaveBeenCalled();
   });
 
   it('should throw SongNotFoundError when the song does not exist', async () => {
-    const tag = buildTag('tag-1');
-    const tagRepository = buildMockTagRepository({ findById: jest.fn().mockResolvedValue(tag) });
+    const existingPlaylist: IPlaylist = { name: 'rock', songIds: ['song-1'] };
     const songRepository = buildMockSongRepository({ findById: jest.fn().mockResolvedValue(null) });
-    const playlistRepository = buildMockPlaylistRepository();
-
-    const usecase = new RemoveSongFromPlaylist(tagRepository, songRepository, playlistRepository);
-
-    await expect(
-      usecase.execute({ tagId: 'tag-1', songId: 'nonexistent' }),
-    ).rejects.toThrow(SongNotFoundError);
-    expect(songRepository.removeTagFromSong).not.toHaveBeenCalled();
-  });
-
-  it('should save playlist with all original songs when playlist is empty', async () => {
-    const tag = buildTag('tag-1');
-    const song = buildSong('song-1');
-
-    const tagRepository = buildMockTagRepository({ findById: jest.fn().mockResolvedValue(tag) });
-    const songRepository = buildMockSongRepository({ findById: jest.fn().mockResolvedValue(song) });
     const playlistRepository = buildMockPlaylistRepository({
-      findByTagId: jest.fn().mockResolvedValue(null),
-      save: jest.fn().mockImplementation((pl: IPlaylist) => Promise.resolve(pl)),
+      findByName: jest.fn().mockResolvedValue(existingPlaylist),
     });
 
-    const usecase = new RemoveSongFromPlaylist(tagRepository, songRepository, playlistRepository);
-    await usecase.execute({ tagId: 'tag-1', songId: 'song-1' });
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
 
-    expect(playlistRepository.save).toHaveBeenCalledWith({ tagId: 'tag-1', songIds: [] });
+    await expect(
+      usecase.execute({ playlistName: 'rock', songId: 'nonexistent' }),
+    ).rejects.toThrow(SongNotFoundError);
+    expect(playlistRepository.save).not.toHaveBeenCalled();
   });
 });

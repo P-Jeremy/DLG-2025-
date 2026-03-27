@@ -11,7 +11,6 @@ const buildSong = (overrides: Partial<ISong> = {}): ISong => ({
   author: 'Original Artist',
   lyrics: '<p>Original lyrics</p>',
   tab: 'https://bucket.s3.amazonaws.com/original.png',
-  tags: [],
   ...overrides,
 });
 
@@ -25,11 +24,8 @@ const buildMockFile = (overrides: Partial<UploadableFile> = {}): UploadableFile 
 
 const buildMockSongRepository = (overrides: Partial<ISongRepository> = {}): ISongRepository => ({
   getAll: jest.fn().mockResolvedValue([]),
-  findByTagId: jest.fn().mockResolvedValue([]),
   findById: jest.fn().mockResolvedValue(null),
-  removeTagFromAll: jest.fn().mockResolvedValue(undefined),
-  removeTagFromSong: jest.fn().mockResolvedValue(undefined),
-  setTag: jest.fn().mockResolvedValue(undefined),
+  findByIds: jest.fn().mockResolvedValue([]),
   save: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
   update: jest.fn().mockImplementation((song: ISong) => Promise.resolve(song)),
   deleteById: jest.fn().mockResolvedValue(undefined),
@@ -56,7 +52,7 @@ describe('UpdateSong use case', () => {
     const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), buildMockEventEmitter());
 
     await expect(
-      usecase.execute({ songId: 'nonexistent', title: 'T', author: 'A', lyrics: 'L', tagIds: [] }),
+      usecase.execute({ songId: 'nonexistent', title: 'T', author: 'A', lyrics: 'L' }),
     ).rejects.toThrow(SongNotFoundError);
 
     expect(songRepository.update).not.toHaveBeenCalled();
@@ -76,7 +72,6 @@ describe('UpdateSong use case', () => {
       title: 'Updated Title',
       author: 'Updated Artist',
       lyrics: '<p>Updated lyrics</p>',
-      tagIds: [],
     });
 
     expect(fileUploadService.upload).not.toHaveBeenCalled();
@@ -113,7 +108,6 @@ describe('UpdateSong use case', () => {
       author: 'Updated Artist',
       lyrics: '<p>lyrics</p>',
       tabFile: newFile,
-      tagIds: [],
     });
 
     expect(fileUploadService.upload).toHaveBeenCalledWith(newFile);
@@ -131,7 +125,7 @@ describe('UpdateSong use case', () => {
 
     const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), eventEmitter);
 
-    await usecase.execute({ songId: 'song-1', title: 'T', author: 'A', lyrics: 'L', tagIds: [] });
+    await usecase.execute({ songId: 'song-1', title: 'T', author: 'A', lyrics: 'L' });
 
     expect(eventEmitter.emit).toHaveBeenCalledWith('refresh');
   });
@@ -143,7 +137,6 @@ describe('UpdateSong use case', () => {
       author: 'Updated Artist',
       lyrics: '<p>Updated lyrics</p>',
       tab: 'https://bucket.s3.amazonaws.com/original.png',
-      tags: [],
     };
 
     const songRepository = buildMockSongRepository({
@@ -158,34 +151,8 @@ describe('UpdateSong use case', () => {
       title: 'Updated Title',
       author: 'Updated Artist',
       lyrics: '<p>Updated lyrics</p>',
-      tagIds: [],
     });
 
     expect(song).toEqual(updatedSong);
-  });
-
-  it('passes tagIds to the repository as tag objects', async () => {
-    const songRepository = buildMockSongRepository({
-      findById: jest.fn().mockResolvedValue(buildSong()),
-    });
-
-    const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), buildMockEventEmitter());
-
-    await usecase.execute({
-      songId: 'song-1',
-      title: 'T',
-      author: 'A',
-      lyrics: 'L',
-      tagIds: ['tag-id-1', 'tag-id-2'],
-    });
-
-    expect(songRepository.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tags: [
-          { id: 'tag-id-1', name: '' },
-          { id: 'tag-id-2', name: '' },
-        ],
-      }),
-    );
   });
 });

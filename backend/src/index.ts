@@ -11,7 +11,6 @@ import helmet from 'helmet';
 import cors from 'cors';
 import authRouter from './infrastructure/http/routes/auth';
 import usersRouter from './infrastructure/http/routes/users';
-import { createTagsRouter } from './infrastructure/http/routes/tags';
 import { createPlaylistsRouter } from './infrastructure/http/routes/playlists';
 import { connectMongo } from './infrastructure/db/mongo';
 import { createSongsRouter } from './infrastructure/http/routes/songs';
@@ -39,7 +38,6 @@ const socketEventEmitter = new SocketEventEmitter(io);
 app.use('/api', createSongsRouter(socketEventEmitter));
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
-app.use('/api', createTagsRouter());
 app.use('/api', createPlaylistsRouter());
 
 export default app;

@@ -8,11 +8,12 @@ import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
 import SongSearchInput from '../components/SongSearchInput';
 import PlaylistSongRemoveConfirm from '../components/PlaylistSongRemoveConfirm';
+import VinylLoader from '../components/VinylLoader';
 import './AdminPlaylistPage.scss';
 
 const AdminPlaylistPage: React.FC = () => {
   const navigate = useNavigate();
-  const { tagId } = useParams<{ tagId: string }>();
+  const { playlistName } = useParams<{ playlistName: string }>();
   const { token, isAdmin } = useAuth();
 
   const [songs, setSongs] = useState<Song[]>([]);
@@ -31,12 +32,12 @@ const AdminPlaylistPage: React.FC = () => {
   const listRef = useRef<HTMLUListElement>(null);
 
   const loadPlaylist = useCallback(async () => {
-    if (!tagId || !token) return;
+    if (!playlistName || !token) return;
     setLoading(true);
     setError(null);
     try {
       const [playlistData, allSongsData] = await Promise.all([
-        fetchPlaylist(tagId, token),
+        fetchPlaylist(playlistName, token),
         fetchSongs('title'),
       ]);
       setSongs(playlistData.songs);
@@ -46,7 +47,7 @@ const AdminPlaylistPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [tagId, token]);
+  }, [playlistName, token]);
 
   useEffect(() => {
     void loadPlaylist();
@@ -153,12 +154,12 @@ const AdminPlaylistPage: React.FC = () => {
   }, [finalizeTouchDrop]);
 
   const handleSave = async () => {
-    if (!tagId || !token) return;
+    if (!playlistName || !token) return;
     setSaving(true);
     setError(null);
     setSuccess(false);
     try {
-      await reorderPlaylist(tagId, songs.map((s) => s.id), token);
+      await reorderPlaylist(playlistName, songs.map((s) => s.id), token);
       setSuccess(true);
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -168,11 +169,11 @@ const AdminPlaylistPage: React.FC = () => {
   };
 
   const handleRemoveSong = async (songId: string) => {
-    if (!tagId || !token) return;
+    if (!playlistName || !token) return;
     setRemovingId(songId);
     setError(null);
     try {
-      await removeSongFromPlaylist(tagId, songId, token);
+      await removeSongFromPlaylist(playlistName, songId, token);
       setSongs((prev) => prev.filter((s) => s.id !== songId));
       setConfirmRemoveId(null);
       setSuccess(false);
@@ -184,10 +185,10 @@ const AdminPlaylistPage: React.FC = () => {
   };
 
   const handleAddSong = async (song: Song) => {
-    if (!tagId || !token) return;
+    if (!playlistName || !token) return;
     setAddingError(null);
     try {
-      await addSongToPlaylist(tagId, song.id, token);
+      await addSongToPlaylist(playlistName, song.id, token);
       setSongs((prev) => [...prev, song]);
       setSuccess(false);
     } catch (err: unknown) {
@@ -211,7 +212,7 @@ const AdminPlaylistPage: React.FC = () => {
       <AppBackground>
         <Navbar />
         <div className="admin-playlist-page">
-          <div className="admin-playlist-loading">Chargement...</div>
+          <VinylLoader />
         </div>
       </AppBackground>
     );
@@ -221,115 +222,115 @@ const AdminPlaylistPage: React.FC = () => {
 
   return (
     <AppBackground>
-    <Navbar />
-    <div className="admin-playlist-page">
-      <div className="admin-playlist-card">
-        <div className="admin-playlist-header">
-          <h1 className="admin-playlist-title">Ordre de la playlist</h1>
-          <button
-            className="admin-playlist-back"
-            type="button"
-            onClick={() => void navigate('/admin/tags')}
-          >
-            Retour aux tags
-          </button>
-        </div>
+      <Navbar />
+      <div className="admin-playlist-page">
+        <div className="admin-playlist-card">
+          <div className="admin-playlist-header">
+            <h1 className="admin-playlist-title">Ordre de la playlist</h1>
+            <button
+              className="admin-playlist-back"
+              type="button"
+              onClick={() => void navigate('/admin/playlists')}
+            >
+              Retour aux playlists
+            </button>
+          </div>
 
-        {error && <div className="admin-playlist-error">{error}</div>}
-        {addingError && <div className="admin-playlist-error">{addingError}</div>}
-        {success && <div className="admin-playlist-success">Playlist sauvegardée avec succès.</div>}
+          {error && <div className="admin-playlist-error">{error}</div>}
+          {addingError && <div className="admin-playlist-error">{addingError}</div>}
+          {success && <div className="admin-playlist-success">Playlist sauvegardée avec succès.</div>}
 
-        <SongSearchInput
-          allSongs={allSongs}
-          playlistSongIds={playlistSongIds}
-          onAddSong={(song) => void handleAddSong(song)}
-          disabled={saving}
-        />
+          <SongSearchInput
+            allSongs={allSongs}
+            playlistSongIds={playlistSongIds}
+            onAddSong={(song) => void handleAddSong(song)}
+            disabled={saving}
+          />
 
-        {songs.length === 0 ? (
-          <div className="admin-playlist-empty">Aucune chanson dans ce tag.</div>
-        ) : (
-          <>
-            <ul className="admin-playlist-list" ref={listRef}>
-              {songs.map((song, index) => (
-                <li
-                  key={song.id}
-                  data-drag-index={index}
-                  className={[
-                    'admin-playlist-item',
-                    draggedIndex === index ? 'admin-playlist-item--dragging' : '',
-                    dragOverIndex === index && draggedIndex !== index ? 'admin-playlist-item--drag-over' : '',
-                  ].filter(Boolean).join(' ')}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDrop={(e) => handleDrop(e, index)}
-                  onDragEnd={handleDragEnd}
+          {songs.length === 0 ? (
+            <div className="admin-playlist-empty">Aucune chanson dans cette playlist.</div>
+          ) : (
+            <>
+              <ul className="admin-playlist-list" ref={listRef}>
+                {songs.map((song, index) => (
+                  <li
+                    key={song.id}
+                    data-drag-index={index}
+                    className={[
+                      'admin-playlist-item',
+                      draggedIndex === index ? 'admin-playlist-item--dragging' : '',
+                      dragOverIndex === index && draggedIndex !== index ? 'admin-playlist-item--drag-over' : '',
+                    ].filter(Boolean).join(' ')}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <span
+                      className="admin-playlist-item__drag-handle"
+                      aria-hidden="true"
+                      onTouchStart={() => handleTouchStart(index)}
+                    >⋮⋮</span>
+                    <span className="admin-playlist-item__position">{index + 1}</span>
+                    <div className="admin-playlist-item__info">
+                      <span className="admin-playlist-item__title">{song.title}</span>
+                      <span className="admin-playlist-item__author">{song.author}</span>
+                    </div>
+                    <div className="admin-playlist-item__controls">
+                      <button
+                        className="admin-playlist-item__btn"
+                        type="button"
+                        disabled={index === 0 || saving}
+                        onClick={() => moveSong(index, 'up')}
+                        aria-label="Monter"
+                      >
+                        ▲
+                      </button>
+                      <button
+                        className="admin-playlist-item__btn"
+                        type="button"
+                        disabled={index === songs.length - 1 || saving}
+                        onClick={() => moveSong(index, 'down')}
+                        aria-label="Descendre"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                    {confirmRemoveId === song.id ? (
+                      <PlaylistSongRemoveConfirm
+                        onConfirm={() => void handleRemoveSong(song.id)}
+                        onCancel={() => setConfirmRemoveId(null)}
+                        disabled={removingId === song.id}
+                      />
+                    ) : (
+                      <button
+                        className="admin-playlist-item__remove-btn"
+                        type="button"
+                        disabled={saving || removingId !== null}
+                        onClick={(e) => { e.stopPropagation(); setConfirmRemoveId(song.id); }}
+                        aria-label={`Retirer ${song.title} de la playlist`}
+                      >
+                        <span className="material-icons">delete</span>
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <div className="admin-playlist-actions">
+                <button
+                  className="admin-playlist-save-btn"
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void handleSave()}
                 >
-                  <span
-                    className="admin-playlist-item__drag-handle"
-                    aria-hidden="true"
-                    onTouchStart={() => handleTouchStart(index)}
-                  >⋮⋮</span>
-                  <span className="admin-playlist-item__position">{index + 1}</span>
-                  <div className="admin-playlist-item__info">
-                    <span className="admin-playlist-item__title">{song.title}</span>
-                    <span className="admin-playlist-item__author">{song.author}</span>
-                  </div>
-                  <div className="admin-playlist-item__controls">
-                    <button
-                      className="admin-playlist-item__btn"
-                      type="button"
-                      disabled={index === 0 || saving}
-                      onClick={() => moveSong(index, 'up')}
-                      aria-label="Monter"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      className="admin-playlist-item__btn"
-                      type="button"
-                      disabled={index === songs.length - 1 || saving}
-                      onClick={() => moveSong(index, 'down')}
-                      aria-label="Descendre"
-                    >
-                      ▼
-                    </button>
-                  </div>
-                  {confirmRemoveId === song.id ? (
-                    <PlaylistSongRemoveConfirm
-                      onConfirm={() => void handleRemoveSong(song.id)}
-                      onCancel={() => setConfirmRemoveId(null)}
-                      disabled={removingId === song.id}
-                    />
-                  ) : (
-                    <button
-                      className="admin-playlist-item__remove-btn"
-                      type="button"
-                      disabled={saving || removingId !== null}
-                      onClick={(e) => { e.stopPropagation(); setConfirmRemoveId(song.id); }}
-                      aria-label={`Retirer ${song.title} de la playlist`}
-                    >
-                      <span className="material-icons">delete</span>
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <div className="admin-playlist-actions">
-              <button
-                className="admin-playlist-save-btn"
-                type="button"
-                disabled={saving}
-                onClick={() => void handleSave()}
-              >
-                {saving ? 'Sauvegarde...' : 'Sauvegarder'}
-              </button>
-            </div>
-          </>
-        )}
+                  {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
     </AppBackground>
   );
 };

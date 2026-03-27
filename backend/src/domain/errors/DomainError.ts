@@ -54,23 +54,23 @@ export class InvalidResetTokenError extends DomainError {
   }
 }
 
-export class DuplicateTagError extends DomainError {
+export class DuplicatePlaylistError extends DomainError {
   constructor() {
-    super('Tag already exists');
-    this.name = 'DuplicateTagError';
+    super('Playlist already exists');
+    this.name = 'DuplicatePlaylistError';
   }
 }
 
-export class TagNotFoundError extends DomainError {
+export class PlaylistNotFoundError extends DomainError {
   constructor() {
-    super('Tag not found');
-    this.name = 'TagNotFoundError';
+    super('Playlist not found');
+    this.name = 'PlaylistNotFoundError';
   }
 }
 
 export class InvalidPlaylistSongError extends DomainError {
   constructor() {
-    super('One or more songs do not belong to this tag');
+    super('One or more songs do not belong to this playlist');
     this.name = 'InvalidPlaylistSongError';
   }
 }
@@ -79,13 +79,6 @@ export class SongNotFoundError extends DomainError {
   constructor() {
     super('Song not found');
     this.name = 'SongNotFoundError';
-  }
-}
-
-export class PlaylistNotFoundError extends DomainError {
-  constructor() {
-    super('Playlist not found');
-    this.name = 'PlaylistNotFoundError';
   }
 }
 

@@ -9,8 +9,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
 import AddSongPage from './pages/AddSongPage';
 import EditSongPage from './pages/EditSongPage';
-import AdminTagsPage from './pages/AdminTagsPage';
-import AdminPlaylistsIndexPage from './pages/AdminPlaylistsIndexPage';
+import AdminPlaylistsManagePage from './pages/AdminPlaylistsManagePage';
 import AdminPlaylistPage from './pages/AdminPlaylistPage';
 import AdminUsersPage from './pages/AdminUsersPage/AdminUsersPage';
 import AdminRoute from './components/AdminRoute/AdminRoute';
@@ -28,9 +27,8 @@ const App: React.FC = () => {
           <Route path="/activate/:token" element={<ActivateAccountPage />} />
           <Route path="/songs/add" element={<AddSongPage />} />
           <Route path="/songs/:id/edit" element={<EditSongPage />} />
-          <Route path="/admin/tags" element={<AdminTagsPage />} />
-          <Route path="/admin/playlists" element={<AdminPlaylistsIndexPage />} />
-          <Route path="/admin/playlists/:tagId" element={<AdminPlaylistPage />} />
+          <Route path="/admin/playlists" element={<AdminPlaylistsManagePage />} />
+          <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
           <Route
             path="/admin/users"
             element={
