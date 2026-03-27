@@ -192,6 +192,133 @@ describe('Integration | Component | SongList', () => {
     });
   });
 
+  describe('playlist filter', () => {
+    const playlists = [{ name: 'Rock', songIds: ['1', '2'] }];
+    const playlistData = { playlist: { name: 'Rock', songIds: ['1', '2'] }, songs: [] };
+
+    const mockFetchWithPlaylists = () => {
+      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
+        const urlStr = String(url);
+        if (urlStr.includes('/api/playlists/')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlistData) } as Response);
+        }
+        if (urlStr.includes('/api/playlists')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlists) } as Response);
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(songsSortedByTitle) } as Response);
+      });
+    };
+
+    it('shows the vinyl loader while the playlist fetch is in flight', async () => {
+      let resolvePlaylist!: (value: Response) => void;
+      const playlistPromise = new Promise<Response>((resolve) => { resolvePlaylist = resolve; });
+
+      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
+        const urlStr = String(url);
+        if (urlStr.includes('/api/playlists/')) return playlistPromise;
+        if (urlStr.includes('/api/playlists')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlists) } as Response);
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(songsSortedByTitle) } as Response);
+      });
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Rock')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      expect(screen.getByAltText('Chargement...')).toBeInTheDocument();
+
+      resolvePlaylist({ ok: true, json: () => Promise.resolve(playlistData) } as Response);
+    });
+
+    it('displays songs in playlist order after selecting a playlist', async () => {
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await waitFor(() => {
+        const titles = screen.getAllByText(/Angie|Bohemian Rhapsody/);
+        expect(titles[0]).toHaveTextContent('Bohemian Rhapsody');
+        expect(titles[1]).toHaveTextContent('Angie');
+      });
+    });
+
+    it('restores full list when deselecting the playlist filter', async () => {
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await waitFor(() => expect(screen.queryByText('Stairway to Heaven')).not.toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: '' } });
+
+      await waitFor(() => expect(screen.getByText('Stairway to Heaven')).toBeInTheDocument());
+    });
+
+    it('hides the sort toggle when a playlist is selected', async () => {
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeInTheDocument();
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Trier par artiste' })).not.toBeInTheDocument());
+    });
+
+    it('restores the sort toggle when deselecting the playlist filter', async () => {
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Trier par artiste' })).not.toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: '' } });
+
+      await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeInTheDocument());
+    });
+
+    it('displays error message when the playlist fetch fails', async () => {
+      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
+        const urlStr = String(url);
+        if (urlStr.includes('/api/playlists/')) {
+          return Promise.reject(new Error('Playlist network error'));
+        }
+        if (urlStr.includes('/api/playlists')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlists) } as Response);
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(songsSortedByTitle) } as Response);
+      });
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await waitFor(() => {
+        expect(screen.getByText('Erreur : Playlist network error')).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('back to sort by title', () => {
     it('calls the backend with sortBy=title after a second toggle back to Title', async () => {
       mockFetchReturning(songsSortedByTitle);

@@ -22,6 +22,7 @@ const SongList: React.FC = () => {
   const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null);
   const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
+  const [playlistLoading, setPlaylistLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('title');
   const [openSongId, setOpenSongId] = useState<string | null>(null);
@@ -52,16 +53,25 @@ const SongList: React.FC = () => {
       setFilteredSongs(songs);
       return;
     }
-    void fetchPlaylistPublic(selectedPlaylistName).then(({ playlist }) => {
-      if (!playlist) {
-        setFilteredSongs([]);
-        return;
-      }
-      const ordered = playlist.songIds
-        .map((id) => songs.find((s) => s.id === id))
-        .filter((s): s is Song => s !== undefined);
-      setFilteredSongs(ordered);
-    });
+    let cancelled = false;
+    setPlaylistLoading(true);
+    fetchPlaylistPublic(selectedPlaylistName)
+      .then(({ playlist }) => {
+        if (cancelled) return;
+        if (!playlist) {
+          setFilteredSongs([]);
+          return;
+        }
+        const ordered = playlist.songIds
+          .map((id) => songs.find((s) => s.id === id))
+          .filter((s): s is Song => s !== undefined);
+        setFilteredSongs(ordered);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError((err as Error).message || 'Unknown error');
+      })
+      .finally(() => { if (!cancelled) setPlaylistLoading(false); });
+    return () => { cancelled = true; };
   }, [selectedPlaylistName, songs]);
 
   const handleRefresh = useCallback(() => {
@@ -98,10 +108,12 @@ const SongList: React.FC = () => {
               onSelect={setSelectedPlaylistName}
             />
           )}
-          <SortToggle sortField={sortField} onToggle={setSortField} />
+          {!selectedPlaylistName && <SortToggle sortField={sortField} onToggle={setSortField} />}
         </div>
       </div>
-      {filteredSongs.length === 0 ? (
+      {playlistLoading ? (
+        <VinylLoader />
+      ) : filteredSongs.length === 0 ? (
         <div className="song-list-message">Aucune chanson trouvée.</div>
       ) : (
         <div className="song-list">
