@@ -23,7 +23,7 @@ jest.mock('../api/songs', () => ({
 }));
 
 const mockPlaylistData = {
-  playlist: { id: 'pl-1', tagId: 'tag-1', songIds: ['song-2', 'song-1'] },
+  playlist: { id: 'pl-1', name: 'rock', songIds: ['song-2', 'song-1'] },
   songs: [
     { id: 'song-2', title: 'Beta', author: 'Artist B' },
     { id: 'song-1', title: 'Alpha', author: 'Artist A' },
@@ -41,16 +41,16 @@ const ADMIN_TOKEN =
   btoa(JSON.stringify({ userId: 'user-1', email: 'admin@test.com', isAdmin: true })) +
   '.signature';
 
-const renderAsAdmin = async (tagId = 'tag-1') => {
+const renderAsAdmin = async (playlistName = 'rock') => {
   localStorage.setItem('dlg_token', ADMIN_TOKEN);
   localStorage.setItem('dlg_pseudo', 'admin');
 
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter initialEntries={[`/admin/playlists/${tagId}`]}>
+        <MemoryRouter initialEntries={[`/admin/playlists/${playlistName}`]}>
           <Routes>
-            <Route path="/admin/playlists/:tagId" element={<AdminPlaylistPage />} />
+            <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
           </Routes>
         </MemoryRouter>
       </AuthProvider>,
@@ -69,9 +69,9 @@ describe('AdminPlaylistPage', () => {
       removeSongFromPlaylist: jest.Mock;
     };
     mocks.fetchPlaylist.mockResolvedValue(mockPlaylistData);
-    mocks.reorderPlaylist.mockResolvedValue({ id: 'pl-1', tagId: 'tag-1', songIds: ['song-1', 'song-2'] });
-    mocks.addSongToPlaylist.mockResolvedValue({ id: 'pl-1', tagId: 'tag-1', songIds: ['song-2', 'song-1', 'song-3'] });
-    mocks.removeSongFromPlaylist.mockResolvedValue({ id: 'pl-1', tagId: 'tag-1', songIds: ['song-2'] });
+    mocks.reorderPlaylist.mockResolvedValue({ id: 'pl-1', name: 'rock', songIds: ['song-1', 'song-2'] });
+    mocks.addSongToPlaylist.mockResolvedValue({ id: 'pl-1', name: 'rock', songIds: ['song-2', 'song-1', 'song-3'] });
+    mocks.removeSongFromPlaylist.mockResolvedValue({ id: 'pl-1', name: 'rock', songIds: ['song-2'] });
 
     const songMocks = jest.requireMock('../api/songs') as { fetchSongs: jest.Mock };
     songMocks.fetchSongs.mockResolvedValue(mockAllSongs);
@@ -87,9 +87,9 @@ describe('AdminPlaylistPage', () => {
     await act(async () => {
       render(
         <AuthProvider>
-          <MemoryRouter initialEntries={['/admin/playlists/tag-1']}>
+          <MemoryRouter initialEntries={['/admin/playlists/rock']}>
             <Routes>
-              <Route path="/admin/playlists/:tagId" element={<AdminPlaylistPage />} />
+              <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
             </Routes>
           </MemoryRouter>
         </AuthProvider>,
@@ -135,7 +135,7 @@ describe('AdminPlaylistPage', () => {
 
     await waitFor(() => {
       expect(reorderPlaylist).toHaveBeenCalledWith(
-        'tag-1',
+        'rock',
         ['song-2', 'song-1'],
         ADMIN_TOKEN,
       );
@@ -189,7 +189,7 @@ describe('AdminPlaylistPage', () => {
     fireEvent.click(screen.getByText('Gamma'));
 
     await waitFor(() => {
-      expect(addSongToPlaylist).toHaveBeenCalledWith('tag-1', 'song-3', ADMIN_TOKEN);
+      expect(addSongToPlaylist).toHaveBeenCalledWith('rock', 'song-3', ADMIN_TOKEN);
     });
   });
 
@@ -226,7 +226,7 @@ describe('AdminPlaylistPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Confirmer/i }));
 
     await waitFor(() => {
-      expect(removeSongFromPlaylist).toHaveBeenCalledWith('tag-1', 'song-2', ADMIN_TOKEN);
+      expect(removeSongFromPlaylist).toHaveBeenCalledWith('rock', 'song-2', ADMIN_TOKEN);
     });
 
     await waitFor(() => {

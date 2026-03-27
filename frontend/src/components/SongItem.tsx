@@ -153,22 +153,6 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, on
         </div>
       </div>
 
-      {song.tags && song.tags.length > 0 && (
-        <ul
-          className="song-tags"
-          onClick={e => e.stopPropagation()}
-        >
-          {song.tags.map(tag => (
-            <li
-              className="song-tag"
-              key={tag.id || tag.name}
-            >
-              {tag.name}
-            </li>
-          ))}
-        </ul>
-      )}
-
       {song.author && <div className="song-author">{song.author}</div>}
 
       {isOpen && (

@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SongItem from './SongItem';
 import SortToggle from './SortToggle';
-import TagFilter from './TagFilter';
-import { fetchSongs, fetchSongsByTag, deleteSong } from '../api/songs';
-import { fetchTags } from '../api/tags';
+import PlaylistFilter from './PlaylistFilter';
+import { fetchSongs, deleteSong } from '../api/songs';
+import { fetchPlaylistsPublic, fetchPlaylistPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
 import type { Song, SortField } from '../types/song';
-import type { Tag } from '../api/tags';
+import type { Playlist } from '../api/playlists';
 import './SongList.scss';
 
 const REFRESH_EVENT = 'refresh';
@@ -17,37 +17,51 @@ const SongList: React.FC = () => {
   const { isAdmin, token } = useAuth();
   const navigate = useNavigate();
   const [songs, setSongs] = useState<Song[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null);
+  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('title');
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [openSongId, setOpenSongId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchTags()
-      .then(setTags)
-      .catch(() => {});
-  }, []);
 
   const loadSongs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = selectedTagId
-        ? await fetchSongsByTag(selectedTagId)
-        : await fetchSongs(sortField);
+      const [data, playlistsData] = await Promise.all([
+        fetchSongs(sortField),
+        fetchPlaylistsPublic(),
+      ]);
       setSongs(data);
+      setPlaylists(playlistsData);
     } catch (err: unknown) {
       setError((err as Error).message || 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [sortField, selectedTagId]);
+  }, [sortField]);
 
   useEffect(() => {
     void loadSongs();
   }, [loadSongs]);
+
+  useEffect(() => {
+    if (!selectedPlaylistName) {
+      setFilteredSongs(songs);
+      return;
+    }
+    void fetchPlaylistPublic(selectedPlaylistName).then(({ playlist }) => {
+      if (!playlist) {
+        setFilteredSongs([]);
+        return;
+      }
+      const ordered = playlist.songIds
+        .map((id) => songs.find((s) => s.id === id))
+        .filter((s): s is Song => s !== undefined);
+      setFilteredSongs(ordered);
+    });
+  }, [selectedPlaylistName, songs]);
 
   const handleRefresh = useCallback(() => {
     void loadSongs();
@@ -78,23 +92,21 @@ const SongList: React.FC = () => {
     <div className="song-list-bg">
       <div className="song-list-controls">
         <div className="song-list-controls-card">
-          {tags.length > 0 && (
-            <TagFilter
-              tags={tags}
-              selectedTagId={selectedTagId}
-              onSelect={setSelectedTagId}
+          {playlists.length > 0 && (
+            <PlaylistFilter
+              playlists={playlists}
+              selectedPlaylistName={selectedPlaylistName}
+              onSelect={setSelectedPlaylistName}
             />
           )}
-          {!selectedTagId && (
-            <SortToggle sortField={sortField} onToggle={setSortField} />
-          )}
+          <SortToggle sortField={sortField} onToggle={setSortField} />
         </div>
       </div>
-      {songs.length === 0 ? (
+      {filteredSongs.length === 0 ? (
         <div className="song-list-message">Aucune chanson trouvée.</div>
       ) : (
         <div className="song-list">
-          {songs.map(song => (
+          {filteredSongs.map(song => (
             <SongItem
               key={song.id}
               song={song}

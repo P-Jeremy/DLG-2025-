@@ -1,12 +1,12 @@
 @use '../styles/variables' as *;
 
-.tag-delete-confirm {
+.playlist-delete-confirm {
   display: flex;
   gap: 0.4rem;
   align-items: center;
 }
 
-.tag-delete-confirm__confirm-btn {
+.playlist-delete-confirm__confirm-btn {
   background: $color-primary;
   color: #fff;
   border: none;
@@ -28,7 +28,7 @@
   }
 }
 
-.tag-delete-confirm__cancel-btn {
+.playlist-delete-confirm__cancel-btn {
   background: none;
   border: 1px solid $color-border-default;
   border-radius: $border-radius-button;

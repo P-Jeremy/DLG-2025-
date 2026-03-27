@@ -20,15 +20,6 @@ jest.mock('socket.io-client', () => ({
   }),
 }));
 
-jest.mock('../api/tags', () => ({
-  fetchTags: jest.fn().mockResolvedValue([]),
-}));
-
-beforeEach(() => {
-  const { fetchTags } = jest.requireMock('../api/tags') as { fetchTags: jest.Mock };
-  fetchTags.mockResolvedValue([]);
-});
-
 const songsSortedByTitle = [
   { id: '2', title: 'Angie', author: 'Rolling Stones' },
   { id: '1', title: 'Bohemian Rhapsody', author: 'Queen' },
@@ -42,10 +33,12 @@ const songsSortedByAuthor = [
 ];
 
 const mockFetchReturning = (songs: typeof songsSortedByTitle) => {
-  (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn().mockResolvedValue({
-    ok: true,
-    json: () => Promise.resolve(songs),
-  } as Response);
+  (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
+    if (String(url).includes('/api/playlists')) {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
+    }
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(songs) } as Response);
+  });
 };
 
 describe('Integration | Component | SongList', () => {
@@ -108,7 +101,7 @@ describe('Integration | Component | SongList', () => {
       fireEvent.click(screen.getByText('Artiste'));
 
       await waitFor(() => {
-        expect((globalThis as typeof globalThis & { fetch: jest.Mock }).fetch).toHaveBeenLastCalledWith('/api/songs?sortBy=author');
+        expect((globalThis as typeof globalThis & { fetch: jest.Mock }).fetch).toHaveBeenCalledWith('/api/songs?sortBy=author');
       });
     });
 
@@ -152,7 +145,12 @@ describe('Integration | Component | SongList', () => {
 
   describe('error cases', () => {
     it('displays the error message when fetch rejects', async () => {
-      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn().mockRejectedValue(new Error('Network error'));
+      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
+        if (String(url).includes('/api/playlists')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
+        }
+        return Promise.reject(new Error('Network error'));
+      });
 
       renderSongList();
 
@@ -162,10 +160,12 @@ describe('Integration | Component | SongList', () => {
     });
 
     it('displays the error message when the HTTP response is an error', async () => {
-      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        json: () => Promise.resolve([]),
-      } as Response);
+      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
+        if (String(url).includes('/api/playlists')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
+        }
+        return Promise.resolve({ ok: false, json: () => Promise.resolve([]) } as Response);
+      });
 
       renderSongList();
 
@@ -177,10 +177,12 @@ describe('Integration | Component | SongList', () => {
 
   describe('empty list', () => {
     it('displays "No songs found." when the backend returns an empty array', async () => {
-      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve([]),
-      } as Response);
+      (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
+        if (String(url).includes('/api/playlists')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
+      });
 
       renderSongList();
 
@@ -211,7 +213,7 @@ describe('Integration | Component | SongList', () => {
       fireEvent.click(screen.getByText('Titre'));
 
       await waitFor(() => {
-        expect((globalThis as typeof globalThis & { fetch: jest.Mock }).fetch).toHaveBeenLastCalledWith('/api/songs?sortBy=title');
+        expect((globalThis as typeof globalThis & { fetch: jest.Mock }).fetch).toHaveBeenCalledWith('/api/songs?sortBy=title');
       });
     });
   });

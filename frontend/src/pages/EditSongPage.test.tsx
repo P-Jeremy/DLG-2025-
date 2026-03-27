@@ -12,7 +12,6 @@ const mockSong = {
   author: 'Mon Artiste',
   lyrics: '<p>Paroles existantes</p>',
   tab: 'https://s3.amazonaws.com/bucket/tab.png',
-  tags: [{ id: 'tag-1', name: 'rock' }],
 };
 
 const mockNavigate = jest.fn();
@@ -50,13 +49,6 @@ jest.mock('@tiptap/react', () => {
   };
 });
 
-jest.mock('../api/tags', () => ({
-  fetchTags: jest.fn().mockResolvedValue([
-    { id: 'tag-1', name: 'rock' },
-    { id: 'tag-2', name: 'pop' },
-  ]),
-}));
-
 jest.mock('../api/songs', () => ({
   fetchSongs: jest.fn().mockResolvedValue([
     {
@@ -65,7 +57,6 @@ jest.mock('../api/songs', () => ({
       author: 'Mon Artiste',
       lyrics: '<p>Paroles existantes</p>',
       tab: 'https://s3.amazonaws.com/bucket/tab.png',
-      tags: [{ id: 'tag-1', name: 'rock' }],
     },
   ]),
   updateSong: jest.fn().mockResolvedValue({
@@ -74,7 +65,6 @@ jest.mock('../api/songs', () => ({
     author: 'Mon Artiste',
     lyrics: '<p>Paroles existantes</p>',
     tab: 'https://s3.amazonaws.com/bucket/tab.png',
-    tags: [],
   }),
 }));
 
@@ -128,12 +118,6 @@ describe('EditSongPage', () => {
     };
     fetchSongs.mockResolvedValue([mockSong]);
     updateSong.mockResolvedValue({ ...mockSong, title: 'Ma Chanson Modifiée' });
-
-    const { fetchTags } = jest.requireMock('../api/tags') as { fetchTags: jest.Mock };
-    fetchTags.mockResolvedValue([
-      { id: 'tag-1', name: 'rock' },
-      { id: 'tag-2', name: 'pop' },
-    ]);
   });
 
   it('shows forbidden message when user is not admin', async () => {
@@ -154,18 +138,6 @@ describe('EditSongPage', () => {
 
     const authorInput = screen.getByLabelText('Artiste') as HTMLInputElement;
     expect(authorInput.value).toBe('Mon Artiste');
-  });
-
-  it('loads and displays available tags with existing tag pre-selected', async () => {
-    await renderAsAdmin();
-
-    await waitFor(() => {
-      expect(screen.getByText('rock')).toBeInTheDocument();
-      expect(screen.getByText('pop')).toBeInTheDocument();
-    });
-
-    const rockButton = screen.getByText('rock').closest('button');
-    expect(rockButton).toHaveClass('edit-song-tag--selected');
   });
 
   it('shows not found message when song id does not match any song', async () => {
@@ -191,19 +163,6 @@ describe('EditSongPage', () => {
     });
 
     expect(screen.getByText('Le titre est requis.')).toBeInTheDocument();
-  });
-
-  it('toggles tag selection on click', async () => {
-    await renderAsAdmin();
-
-    await waitFor(() => screen.getByText('pop'));
-
-    const popButton = screen.getByText('pop').closest('button') as HTMLElement;
-    fireEvent.click(popButton);
-    expect(popButton).toHaveClass('edit-song-tag--selected');
-
-    fireEvent.click(popButton);
-    expect(popButton).not.toHaveClass('edit-song-tag--selected');
   });
 
   it('submits the form and shows success message on successful update', async () => {

@@ -36,13 +36,6 @@ jest.mock('@tiptap/react', () => {
   };
 });
 
-jest.mock('../api/tags', () => ({
-  fetchTags: jest.fn().mockResolvedValue([
-    { id: 'tag-1', name: 'rock' },
-    { id: 'tag-2', name: 'pop' },
-  ]),
-}));
-
 const ADMIN_TOKEN =
   'header.' +
   btoa(JSON.stringify({ userId: 'user-1', email: 'admin@test.com', isAdmin: true })) +
@@ -103,15 +96,6 @@ describe('AddSongPage', () => {
     expect(screen.getByRole('button', { name: 'Ajouter la chanson' })).toBeInTheDocument();
   });
 
-  it('loads and displays available tags', async () => {
-    await renderAsAdmin();
-
-    await waitFor(() => {
-      expect(screen.getByText('rock')).toBeInTheDocument();
-      expect(screen.getByText('pop')).toBeInTheDocument();
-    });
-  });
-
   it('shows error when no file is selected on submit', async () => {
     await renderAsAdmin();
 
@@ -125,21 +109,6 @@ describe('AddSongPage', () => {
     expect(screen.getByText('Veuillez sélectionner une image pour la tablature.')).toBeInTheDocument();
   });
 
-  it('toggles tag selection on click', async () => {
-    await renderAsAdmin();
-
-    await waitFor(() => screen.getByText('rock'));
-
-    const rockTag = screen.getByText('rock');
-    fireEvent.click(rockTag);
-
-    expect(rockTag.closest('button')).toHaveClass('add-song-tag--selected');
-
-    fireEvent.click(rockTag);
-
-    expect(rockTag.closest('button')).not.toHaveClass('add-song-tag--selected');
-  });
-
   it('submits the form and shows success message on successful upload', async () => {
     (globalThis as GlobalWithFetch).fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -150,7 +119,6 @@ describe('AddSongPage', () => {
           author: 'Artist',
           lyrics: '<p>Test lyrics</p>',
           tab: 'https://s3.amazonaws.com/bucket/uuid.png',
-          tags: [],
         }),
     } as Response);
 

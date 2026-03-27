@@ -3,10 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useAuth } from '../contexts/AuthContext';
-import { updateSong } from '../api/songs';
-import { fetchSongs } from '../api/songs';
-import { fetchTags } from '../api/tags';
-import type { Tag } from '../api/tags';
+import { updateSong, fetchSongs } from '../api/songs';
 import type { Song } from '../types/song';
 import RichTextToolbar from '../components/RichTextToolbar';
 import AppBackground from '../components/AppBackground';
@@ -22,8 +19,6 @@ const EditSongPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [tabFile, setTabFile] = useState<File | null>(null);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,15 +41,13 @@ const EditSongPage: React.FC = () => {
     const loadData = async () => {
       setLoadingData(true);
       try {
-        const [songs, tags] = await Promise.all([fetchSongs('title'), fetchTags()]);
+        const songs = await fetchSongs('title');
         const found = songs.find((s) => s.id === id) ?? null;
         setSong(found);
-        setAvailableTags(tags);
 
         if (found) {
           setTitle(found.title);
           setAuthor(found.author ?? '');
-          setSelectedTagIds(found.tags?.map((t) => t.id).filter((tagId): tagId is string => Boolean(tagId)) ?? []);
           if (editorRef.current && found.lyrics) {
             editorRef.current.commands.setContent(found.lyrics);
           }
@@ -68,12 +61,6 @@ const EditSongPage: React.FC = () => {
 
     void loadData();
   }, [id]);
-
-  const toggleTag = (tagId: string) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? [] : [tagId],
-    );
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -102,7 +89,7 @@ const EditSongPage: React.FC = () => {
     try {
       await updateSong(
         id,
-        { title, author, lyrics, tab: tabFile ?? undefined, selectedTags: selectedTagIds },
+        { title, author, lyrics, tab: tabFile ?? undefined },
         token,
       );
       setSuccess(true);
@@ -220,24 +207,6 @@ const EditSongPage: React.FC = () => {
                 ref={fileInputRef}
               />
             </div>
-
-            {availableTags.length > 0 && (
-              <div className="edit-song-field">
-                <label>Tags</label>
-                <div className="edit-song-tags">
-                  {availableTags.map((tag) => (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      className={`edit-song-tag${selectedTagIds.includes(tag.id) ? ' edit-song-tag--selected' : ''}`}
-                      onClick={() => toggleTag(tag.id)}
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="edit-song-actions">
               <button
