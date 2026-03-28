@@ -27,8 +27,22 @@ const App: React.FC = () => {
           <Route path="/activate/:token" element={<ActivateAccountPage />} />
           <Route path="/songs/add" element={<AddSongPage />} />
           <Route path="/songs/:id/edit" element={<EditSongPage />} />
-          <Route path="/admin/playlists" element={<AdminPlaylistsManagePage />} />
-          <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
+          <Route
+            path="/admin/playlists"
+            element={
+              <AdminRoute>
+                <AdminPlaylistsManagePage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/playlists/:playlistName"
+            element={
+              <AdminRoute>
+                <AdminPlaylistPage />
+              </AdminRoute>
+            }
+          />
           <Route
             path="/admin/users"
             element={

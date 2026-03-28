@@ -97,7 +97,7 @@ export async function fetchPlaylist(playlistName: string, token: string): Promis
 }
 
 export async function addSongToPlaylist(playlistName: string, songId: string, token: string): Promise<Playlist> {
-  const res = await fetch(`${API_BASE_URL}/api/playlists/${playlistName}/songs`, {
+  const res = await fetch(`${API_BASE_URL}/api/playlists/${encodeURIComponent(playlistName)}/songs`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export async function addSongToPlaylist(playlistName: string, songId: string, to
 }
 
 export async function removeSongFromPlaylist(playlistName: string, songId: string, token: string): Promise<Playlist> {
-  const res = await fetch(`${API_BASE_URL}/api/playlists/${playlistName}/songs/${songId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/playlists/${encodeURIComponent(playlistName)}/songs/${songId}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
