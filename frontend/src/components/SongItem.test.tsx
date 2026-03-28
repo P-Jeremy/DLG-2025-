@@ -72,6 +72,93 @@ describe('Integration | Component | SongItem', () => {
     });
   });
 
+  describe('data-song-letter attribute', () => {
+    it('uses the first letter of title when sortField is "title"', () => {
+      const { container } = renderClosed({ sortField: 'title' });
+
+      expect(container.querySelector('[data-song-letter="T"]')).toBeInTheDocument();
+    });
+
+    it('uses the first letter of author when sortField is "author"', () => {
+      const { container } = renderClosed({ sortField: 'author' });
+
+      expect(container.querySelector('[data-song-letter="T"]')).toBeInTheDocument();
+    });
+  });
+
+  describe('admin edit feature', () => {
+    it('does not show edit button when isAdmin is false', () => {
+      const onEdit = jest.fn();
+      renderClosed({ isAdmin: false, onEdit });
+
+      expect(screen.queryByRole('button', { name: /Modifier la chanson/i })).not.toBeInTheDocument();
+    });
+
+    it('does not show edit button when onEdit is not provided', () => {
+      renderClosed({ isAdmin: true });
+
+      expect(screen.queryByRole('button', { name: /Modifier la chanson/i })).not.toBeInTheDocument();
+    });
+
+    it('calls onEdit with the song id when the edit button is clicked', () => {
+      const onEdit = jest.fn();
+      renderClosed({ isAdmin: true, onEdit });
+
+      fireEvent.click(screen.getByRole('button', { name: /Modifier la chanson Test Song/i }));
+
+      expect(onEdit).toHaveBeenCalledWith('1');
+    });
+
+    it('does not expand the card when the edit button is clicked', () => {
+      const onEdit = jest.fn();
+      render(<SongItemControlled isAdmin={true} onEdit={onEdit} />);
+
+      fireEvent.click(screen.getByRole('button', { name: /Modifier la chanson Test Song/i }));
+
+      expect(screen.queryByText('Tablature')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('lightbox', () => {
+    it('opens the lightbox when clicking the loaded tab image', async () => {
+      render(<SongItemControlled />);
+      fireEvent.click(screen.getByText('Test Song'));
+
+      const img = screen.getByAltText('Tablature');
+      fireEvent.load(img);
+      fireEvent.click(img);
+
+      expect(screen.getByRole('dialog', { name: /Tablature en plein écran/i })).toBeInTheDocument();
+    });
+
+    it('closes the lightbox when clicking the close button', async () => {
+      render(<SongItemControlled />);
+      fireEvent.click(screen.getByText('Test Song'));
+
+      const img = screen.getByAltText('Tablature');
+      fireEvent.load(img);
+      fireEvent.click(img);
+
+      fireEvent.click(screen.getByRole('button', { name: /Fermer/i }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('closes the lightbox when clicking the backdrop', async () => {
+      render(<SongItemControlled />);
+      fireEvent.click(screen.getByText('Test Song'));
+
+      const img = screen.getByAltText('Tablature');
+      fireEvent.load(img);
+      fireEvent.click(img);
+
+      const dialog = screen.getByRole('dialog', { name: /Tablature en plein écran/i });
+      fireEvent.click(dialog);
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
   describe('admin delete feature', () => {
     it('does not show delete button when isAdmin is false', () => {
       const onDelete = jest.fn();

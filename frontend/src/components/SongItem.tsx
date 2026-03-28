@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import DOMPurify from 'dompurify';
-import type { Song } from '../types/song';
+import type { Song, SortField } from '../types/song';
+import { NAVBAR_HEIGHT_PX } from '../constants/layout';
 import './SongItem.scss';
-
-const NAVBAR_HEIGHT_PX = 60;
 
 interface SongItemProps {
   song: Song;
+  sortField?: SortField;
   isAdmin?: boolean;
   onDelete?: (songId: string) => Promise<void>;
   onEdit?: (songId: string) => void;
@@ -15,7 +15,7 @@ interface SongItemProps {
   onOpen: (songId: string | null) => void;
 }
 
-const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, onEdit, isOpen, onOpen }) => {
+const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin = false, onDelete, onEdit, isOpen, onOpen }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [showTab, setShowTab] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -63,6 +63,10 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, on
     }
   };
 
+  const songLetter = sortField === 'author'
+    ? (song.author?.[0]?.toUpperCase() ?? '')
+    : (song.title[0]?.toUpperCase() ?? '');
+
   const toggleAll = () => {
     if (confirmDelete) return;
     withScrollPreserved(() => onOpen(isOpen ? null : song.id));
@@ -95,6 +99,7 @@ const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, on
       ref={cardRef}
       className={`song-card${isOpen ? ' open' : ''}`}
       onClick={toggleAll}
+      data-song-letter={songLetter}
     >
       <div className="song-title">
         <span>{song.title}</span>
