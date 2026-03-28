@@ -42,6 +42,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install root dependencies
+        run: npm install
+
       - name: Install frontend dependencies
         run: cd frontend && npm install
 
@@ -61,6 +64,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Install root dependencies
+        run: npm install
 
       - name: Install backend dependencies
         run: cd backend && npm install
