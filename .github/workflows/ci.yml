@@ -76,3 +76,15 @@ jobs:
 
       - name: Test backend
         run: cd backend && npm run test
+
+  lint-and-test:
+    needs: [lint-test-frontend, lint-test-backend]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check workspace jobs
+        run: |
+          if [ "${{ needs.lint-test-frontend.result }}" = "failure" ] || \
+             [ "${{ needs.lint-test-backend.result }}" = "failure" ]; then
+            exit 1
+          fi
