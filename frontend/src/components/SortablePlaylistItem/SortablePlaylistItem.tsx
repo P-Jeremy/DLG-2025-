@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { Song } from '../../types/song';
 import PlaylistSongRemoveConfirm from '../PlaylistSongRemoveConfirm';
 import './SortablePlaylistItem.scss';
@@ -29,15 +30,20 @@ const SortablePlaylistItem: React.FC<SortablePlaylistItemProps> = ({
   onCancelRemove,
   onRemove,
 }) => {
-  const { attributes, listeners, setNodeRef, isDragging } = useSortable({ id: song.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({ id: song.id });
 
   const itemClassName = [
     'admin-playlist-item',
     isDragging ? 'admin-playlist-item--is-dragging' : '',
+    isOver && !isDragging ? 'admin-playlist-item--is-over' : '',
   ].filter(Boolean).join(' ');
 
   return (
-    <li ref={setNodeRef} className={itemClassName}>
+    <li
+      ref={setNodeRef}
+      className={itemClassName}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+    >
       <span
         className="admin-playlist-item__drag-handle"
         aria-hidden="true"
