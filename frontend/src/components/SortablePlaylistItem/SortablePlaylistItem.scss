@@ -1,0 +1,11 @@
+@use '../../styles/variables' as *;
+
+.admin-playlist-item--is-dragging {
+  opacity: 0.3;
+  cursor: grabbing;
+}
+
+.admin-playlist-item--is-over {
+  border-color: $color-primary;
+  background: $color-primary-bg;
+}

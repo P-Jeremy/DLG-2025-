@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchPlaylist, reorderPlaylist, addSongToPlaylist, removeSongFromPlaylist } from '../api/playlists';
 import { fetchSongs } from '../api/songs';
@@ -7,8 +10,8 @@ import type { Song } from '../types/song';
 import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
 import SongSearchInput from '../components/SongSearchInput';
-import PlaylistSongRemoveConfirm from '../components/PlaylistSongRemoveConfirm';
 import VinylLoader from '../components/VinylLoader';
+import SortablePlaylistItem from '../components/SortablePlaylistItem/SortablePlaylistItem';
 import './AdminPlaylistPage.scss';
 
 const AdminPlaylistPage: React.FC = () => {
@@ -23,13 +26,9 @@ const AdminPlaylistPage: React.FC = () => {
   const [addingError, setAddingError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
-  const draggedIndexRef = useRef<number | null>(null);
-  const dragOverIndexRef = useRef<number | null>(null);
-  const listRef = useRef<HTMLUListElement>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const loadPlaylist = useCallback(async () => {
     if (!playlistName || !token) return;
@@ -64,94 +63,21 @@ const AdminPlaylistPage: React.FC = () => {
     setSuccess(false);
   };
 
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-    draggedIndexRef.current = index;
+  const handleDndStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
     setSuccess(false);
   };
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    setDragOverIndex(index);
-  };
-
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    const fromIndex = draggedIndexRef.current;
-    if (fromIndex === null || fromIndex === dropIndex) {
-      setDraggedIndex(null);
-      setDragOverIndex(null);
-      draggedIndexRef.current = null;
-      return;
-    }
+  const handleDndEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+    if (!over || active.id === over.id) return;
     setSongs((prev) => {
-      const updated = [...prev];
-      const [removed] = updated.splice(fromIndex, 1);
-      updated.splice(dropIndex, 0, removed);
-      return updated;
+      const oldIndex = prev.findIndex((s) => s.id === active.id);
+      const newIndex = prev.findIndex((s) => s.id === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
     });
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-    draggedIndexRef.current = null;
   };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-    draggedIndexRef.current = null;
-    dragOverIndexRef.current = null;
-  };
-
-  const handleTouchStart = (index: number) => {
-    draggedIndexRef.current = index;
-    dragOverIndexRef.current = index;
-    setDraggedIndex(index);
-    setSuccess(false);
-  };
-
-  const finalizeTouchDrop = useCallback(() => {
-    const fromIndex = draggedIndexRef.current;
-    const toIndex = dragOverIndexRef.current;
-    if (fromIndex !== null && toIndex !== null && fromIndex !== toIndex) {
-      setSongs((prev) => {
-        const updated = [...prev];
-        const [removed] = updated.splice(fromIndex, 1);
-        updated.splice(toIndex, 0, removed);
-        return updated;
-      });
-    }
-    draggedIndexRef.current = null;
-    dragOverIndexRef.current = null;
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-  }, []);
-
-  useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (draggedIndexRef.current === null) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
-      const li = el?.closest<HTMLElement>('[data-drag-index]');
-      if (li) {
-        const idx = parseInt(li.dataset['dragIndex'] ?? '', 10);
-        if (!isNaN(idx)) {
-          dragOverIndexRef.current = idx;
-          setDragOverIndex(idx);
-        }
-      }
-    };
-
-    list.addEventListener('touchmove', onTouchMove, { passive: false });
-    window.addEventListener('touchend', finalizeTouchDrop);
-    return () => {
-      list.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', finalizeTouchDrop);
-    };
-  }, [finalizeTouchDrop]);
 
   const handleSave = async () => {
     if (!playlistName || !token) return;
@@ -219,6 +145,7 @@ const AdminPlaylistPage: React.FC = () => {
   }
 
   const playlistSongIds = songs.map((s) => s.id);
+  const activeSong = activeId ? songs.find((s) => s.id === activeId) ?? null : null;
 
   return (
     <AppBackground>
@@ -251,72 +178,42 @@ const AdminPlaylistPage: React.FC = () => {
             <div className="admin-playlist-empty">Aucune chanson dans cette playlist.</div>
           ) : (
             <>
-              <ul className="admin-playlist-list" ref={listRef}>
-                {songs.map((song, index) => (
-                  <li
-                    key={song.id}
-                    data-drag-index={index}
-                    className={[
-                      'admin-playlist-item',
-                      draggedIndex === index ? 'admin-playlist-item--dragging' : '',
-                      dragOverIndex === index && draggedIndex !== index ? 'admin-playlist-item--drag-over' : '',
-                    ].filter(Boolean).join(' ')}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <span
-                      className="admin-playlist-item__drag-handle"
-                      aria-hidden="true"
-                      onTouchStart={() => handleTouchStart(index)}
-                    >⋮⋮</span>
-                    <span className="admin-playlist-item__position">{index + 1}</span>
-                    <div className="admin-playlist-item__info">
-                      <span className="admin-playlist-item__title">{song.title}</span>
-                      <span className="admin-playlist-item__author">{song.author}</span>
-                    </div>
-                    <div className="admin-playlist-item__controls">
-                      <button
-                        className="admin-playlist-item__btn"
-                        type="button"
-                        disabled={index === 0 || saving}
-                        onClick={() => moveSong(index, 'up')}
-                        aria-label="Monter"
-                      >
-                        ▲
-                      </button>
-                      <button
-                        className="admin-playlist-item__btn"
-                        type="button"
-                        disabled={index === songs.length - 1 || saving}
-                        onClick={() => moveSong(index, 'down')}
-                        aria-label="Descendre"
-                      >
-                        ▼
-                      </button>
-                    </div>
-                    {confirmRemoveId === song.id ? (
-                      <PlaylistSongRemoveConfirm
-                        onConfirm={() => void handleRemoveSong(song.id)}
-                        onCancel={() => setConfirmRemoveId(null)}
-                        disabled={removingId === song.id}
+              <DndContext
+                collisionDetection={closestCenter}
+                onDragStart={handleDndStart}
+                onDragEnd={handleDndEnd}
+              >
+                <SortableContext items={songs.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                  <ul className="admin-playlist-list">
+                    {songs.map((song, index) => (
+                      <SortablePlaylistItem
+                        key={song.id}
+                        song={song}
+                        index={index}
+                        totalCount={songs.length}
+                        saving={saving}
+                        confirmRemoveId={confirmRemoveId}
+                        removingId={removingId}
+                        onMove={moveSong}
+                        onConfirmRemove={setConfirmRemoveId}
+                        onCancelRemove={() => setConfirmRemoveId(null)}
+                        onRemove={(id) => void handleRemoveSong(id)}
                       />
-                    ) : (
-                      <button
-                        className="admin-playlist-item__remove-btn"
-                        type="button"
-                        disabled={saving || removingId !== null}
-                        onClick={(e) => { e.stopPropagation(); setConfirmRemoveId(song.id); }}
-                        aria-label={`Retirer ${song.title} de la playlist`}
-                      >
-                        <span className="material-icons">delete</span>
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                    ))}
+                  </ul>
+                </SortableContext>
+                <DragOverlay>
+                  {activeSong && (
+                    <div className="admin-playlist-item admin-playlist-item--overlay">
+                      <span className="admin-playlist-item__drag-handle" aria-hidden="true">⋮⋮</span>
+                      <div className="admin-playlist-item__info">
+                        <span className="admin-playlist-item__title">{activeSong.title}</span>
+                        <span className="admin-playlist-item__author">{activeSong.author}</span>
+                      </div>
+                    </div>
+                  )}
+                </DragOverlay>
+              </DndContext>
               <div className="admin-playlist-actions">
                 <button
                   className="admin-playlist-save-btn"
