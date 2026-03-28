@@ -99,14 +99,9 @@
     cursor: grabbing;
   }
 
-  &--dragging {
-    opacity: 0.4;
-    cursor: grabbing;
-  }
-
-  &--drag-over {
-    border-color: $color-primary;
-    background: $color-primary-bg;
+  &--overlay {
+    box-shadow: $shadow-card;
+    opacity: 0.95;
   }
 }
 

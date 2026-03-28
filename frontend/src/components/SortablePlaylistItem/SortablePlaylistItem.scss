@@ -1,0 +1,6 @@
+@use '../../styles/variables' as *;
+
+.admin-playlist-item--is-dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
