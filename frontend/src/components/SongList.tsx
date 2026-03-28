@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SongItem from './SongItem';
+import AlphabetNav from './AlphabetNav';
 import SortToggle from './SortToggle';
 import PlaylistFilter from './PlaylistFilter';
 import VinylLoader from './VinylLoader';
@@ -172,19 +173,27 @@ const SongList: React.FC = () => {
       ) : filteredSongs.length === 0 ? (
         <div className="song-list-message">Aucune chanson trouvée.</div>
       ) : (
-        <div className="song-list">
-          {filteredSongs.map(song => (
-            <SongItem
-              key={song.id}
-              song={song}
-              isAdmin={isAdmin}
-              onDelete={isAdmin ? handleDeleteSong : undefined}
-              onEdit={isAdmin ? handleEditSong : undefined}
-              isOpen={openSongId === song.id}
-              onOpen={setOpenSongId}
-            />
-          ))}
-        </div>
+        <>
+          {!selectedPlaylistName && (
+            <div className="song-list-alphabet">
+              <AlphabetNav songs={filteredSongs} sortField={sortField} />
+            </div>
+          )}
+          <div className="song-list">
+            {filteredSongs.map(song => (
+              <SongItem
+                key={song.id}
+                song={song}
+                sortField={sortField}
+                isAdmin={isAdmin}
+                onDelete={isAdmin ? handleDeleteSong : undefined}
+                onEdit={isAdmin ? handleEditSong : undefined}
+                isOpen={openSongId === song.id}
+                onOpen={setOpenSongId}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
