@@ -6,6 +6,8 @@ interface SearchContextValue {
   setSearchQuery: (query: string) => void;
   sortField: SortField;
   setSortField: (field: SortField) => void;
+  searchVisible: boolean;
+  setSearchVisible: (visible: boolean) => void;
 }
 
 const SearchContext = createContext<SearchContextValue | null>(null);
@@ -13,10 +15,11 @@ const SearchContext = createContext<SearchContextValue | null>(null);
 export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('title');
+  const [searchVisible, setSearchVisible] = useState(true);
 
   const value = useMemo(
-    () => ({ searchQuery, setSearchQuery, sortField, setSortField }),
-    [searchQuery, sortField],
+    () => ({ searchQuery, setSearchQuery, sortField, setSortField, searchVisible, setSearchVisible }),
+    [searchQuery, sortField, searchVisible],
   );
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;

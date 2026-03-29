@@ -23,7 +23,7 @@ function pickRandomSong(songs: Song[]): Song {
 
 const SongList: React.FC = () => {
   const { isAdmin, token } = useAuth();
-  const { searchQuery, sortField } = useSearch();
+  const { searchQuery, sortField, setSearchVisible } = useSearch();
   const navigate = useNavigate();
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -142,6 +142,10 @@ const SongList: React.FC = () => {
 
   const isShuffleActive = shuffledSong !== null;
 
+  useEffect(() => {
+    setSearchVisible(!isShuffleActive && !selectedPlaylistName);
+  }, [isShuffleActive, selectedPlaylistName, setSearchVisible]);
+
   if (loading) return (
     <div className="song-list-bg">
       <VinylLoader />
@@ -151,7 +155,7 @@ const SongList: React.FC = () => {
 
   return (
     <div className="song-list-bg">
-      <ShuffleBar onShuffle={handleShuffle} />
+      {!selectedPlaylistName && <ShuffleBar onShuffle={handleShuffle} />}
       {!isShuffleActive && !shuffling && (
         <div className="song-list-controls">
           <div className="song-list-controls-card">
