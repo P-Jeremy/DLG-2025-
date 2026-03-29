@@ -66,7 +66,7 @@
     width: 100%;
     justify-content: space-between;
     padding: 0.75em 0;
-    border-bottom: 1px solid $color-border !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 0;
   }
 
@@ -85,12 +85,17 @@
 
   .admin-dropdown__item {
     padding: 0.6em 1rem;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     font-size: 0.9rem;
-    color: $color-text-muted;
+    color: rgba(255, 255, 255, 0.85);
 
     &:last-child {
       border-bottom: none;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
     }
   }
 }

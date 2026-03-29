@@ -43,10 +43,10 @@ const Navbar: React.FC = () => {
             </button>
           ) : (
             <>
-              <Link className="navbar__item" to="/login" onClick={closeMenu}>
+              <Link className="navbar__item navbar__item--register" to="/login" onClick={closeMenu}>
                 Connexion
               </Link>
-              <Link className="navbar__item navbar__item--register" to="/register" onClick={closeMenu}>
+              <Link className="navbar__item" to="/register" onClick={closeMenu}>
                 Inscription
               </Link>
             </>
