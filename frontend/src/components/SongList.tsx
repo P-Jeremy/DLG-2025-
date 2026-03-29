@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SongItem from './SongItem';
 import AlphabetNav from './AlphabetNav';
-import SortToggle from './SortToggle';
 import PlaylistFilter from './PlaylistFilter';
 import VinylLoader from './VinylLoader';
 import ShuffleBar from './ShuffleBar';
@@ -10,7 +9,8 @@ import { fetchSongs, deleteSong } from '../api/songs';
 import { fetchPlaylistsPublic, fetchPlaylistPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
-import type { Song, SortField } from '../types/song';
+import { useSearch } from '../contexts/SearchContext';
+import type { Song } from '../types/song';
 import type { Playlist } from '../api/playlists';
 import './SongList.scss';
 
@@ -23,15 +23,15 @@ function pickRandomSong(songs: Song[]): Song {
 
 const SongList: React.FC = () => {
   const { isAdmin, token } = useAuth();
+  const { searchQuery, sortField } = useSearch();
   const navigate = useNavigate();
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null);
-  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
+  const [playlistSongs, setPlaylistSongs] = useState<Song[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [playlistLoading, setPlaylistLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>('title');
   const [openSongId, setOpenSongId] = useState<string | null>(null);
   const [shuffledSong, setShuffledSong] = useState<Song | null>(null);
   const [shuffling, setShuffling] = useState(false);
@@ -58,7 +58,7 @@ const SongList: React.FC = () => {
     setError(null);
     try {
       const [data, playlistsData] = await Promise.all([
-        fetchSongs(sortField),
+        fetchSongs('title'),
         fetchPlaylistsPublic(),
       ]);
       setSongs(data);
@@ -68,7 +68,7 @@ const SongList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [sortField]);
+  }, []);
 
   useEffect(() => {
     void loadSongs();
@@ -77,7 +77,7 @@ const SongList: React.FC = () => {
 
   useEffect(() => {
     if (!selectedPlaylistName) {
-      setFilteredSongs(songs);
+      setPlaylistSongs(null);
       setShuffledSong(null);
       return;
     }
@@ -87,13 +87,13 @@ const SongList: React.FC = () => {
       .then(({ playlist }) => {
         if (cancelled) return;
         if (!playlist) {
-          setFilteredSongs([]);
+          setPlaylistSongs([]);
           return;
         }
         const ordered = playlist.songIds
           .map((id) => songs.find((s) => s.id === id))
           .filter((s): s is Song => s !== undefined);
-        setFilteredSongs(ordered);
+        setPlaylistSongs(ordered);
         setShuffledSong(null);
       })
       .catch((err: unknown) => {
@@ -102,6 +102,19 @@ const SongList: React.FC = () => {
       .finally(() => { if (!cancelled) setPlaylistLoading(false); });
     return () => { cancelled = true; };
   }, [selectedPlaylistName, songs]);
+
+  const filteredSongs = useMemo(() => {
+    const base = playlistSongs ?? songs;
+    const query = searchQuery.toLowerCase().trim();
+    const getValue = (s: Song) => (s[sortField] ?? '').toLowerCase();
+    const searched = query
+      ? base.filter((s) => getValue(s).startsWith(query))
+      : base;
+    if (playlistSongs) return searched;
+    return [...searched].sort((a, b) =>
+      getValue(a).localeCompare(getValue(b), undefined, { sensitivity: 'base' }),
+    );
+  }, [songs, playlistSongs, searchQuery, sortField]);
 
   const handleRefresh = useCallback(() => {
     void loadSongs();
@@ -149,7 +162,6 @@ const SongList: React.FC = () => {
                 onSelect={setSelectedPlaylistName}
               />
             )}
-            {!selectedPlaylistName && <SortToggle sortField={sortField} onToggle={setSortField} />}
           </div>
         </div>
       )}
