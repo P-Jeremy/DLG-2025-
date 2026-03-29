@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom';
 import AdminPlaylistsManagePage from './AdminPlaylistsManagePage';
 import { AuthProvider } from '../contexts/AuthContext';
+import { SearchProvider } from '../contexts/SearchContext';
 
 const mockNavigate = jest.fn();
 
@@ -44,9 +45,11 @@ const renderAsAdmin = async () => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter>
-          <AdminPlaylistsManagePage />
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter>
+            <AdminPlaylistsManagePage />
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });
@@ -58,9 +61,11 @@ const renderAsGuest = async () => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter>
-          <AdminPlaylistsManagePage />
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter>
+            <AdminPlaylistsManagePage />
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });

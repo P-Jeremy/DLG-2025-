@@ -2,12 +2,17 @@ import '@testing-library/jest-dom';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import SongList from './SongList';
+import NavbarSearch from './NavbarSearch/NavbarSearch';
 import { AuthProvider } from '../contexts/AuthContext';
+import { SearchProvider } from '../contexts/SearchContext';
 
 const renderSongList = () => render(
   <MemoryRouter>
     <AuthProvider>
-      <SongList />
+      <SearchProvider>
+        <NavbarSearch />
+        <SongList />
+      </SearchProvider>
     </AuthProvider>
   </MemoryRouter>,
 );
@@ -26,11 +31,6 @@ const songsSortedByTitle = [
   { id: '3', title: 'Stairway to Heaven', author: 'Led Zeppelin' },
 ];
 
-const songsSortedByAuthor = [
-  { id: '3', title: 'Stairway to Heaven', author: 'Led Zeppelin' },
-  { id: '1', title: 'Bohemian Rhapsody', author: 'Queen' },
-  { id: '2', title: 'Angie', author: 'Rolling Stones' },
-];
 
 const mockFetchReturning = (songs: typeof songsSortedByTitle) => {
   (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
@@ -47,7 +47,7 @@ describe('Integration | Component | SongList', () => {
   });
 
   describe('default sort', () => {
-    it('calls the backend with sortBy=title by default', async () => {
+    it('fetches songs once on mount', async () => {
       mockFetchReturning(songsSortedByTitle);
 
       renderSongList();
@@ -56,10 +56,13 @@ describe('Integration | Component | SongList', () => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
       });
 
-      expect((globalThis as typeof globalThis & { fetch: jest.Mock }).fetch).toHaveBeenCalledWith('/api/songs?sortBy=title');
+      const fetchCalls = (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch.mock.calls
+        .filter((call: unknown[]) => String(call[0]).includes('/api/songs?'));
+      expect(fetchCalls).toHaveLength(1);
+      expect(fetchCalls[0][0]).toBe('/api/songs?sortBy=title');
     });
 
-    it('displays songs in the order returned by the backend (sorted by title)', async () => {
+    it('displays songs sorted by title by default', async () => {
       mockFetchReturning(songsSortedByTitle);
 
       renderSongList();
@@ -88,7 +91,7 @@ describe('Integration | Component | SongList', () => {
   });
 
   describe('sort by artist', () => {
-    it('calls the backend with sortBy=author after toggling', async () => {
+    it('sorts songs by author on the frontend without refetching', async () => {
       mockFetchReturning(songsSortedByTitle);
 
       renderSongList();
@@ -97,24 +100,9 @@ describe('Integration | Component | SongList', () => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
       });
 
-      mockFetchReturning(songsSortedByAuthor);
-      fireEvent.click(screen.getByText('Artiste'));
+      const fetchCallsBefore = (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch.mock.calls
+        .filter((call: unknown[]) => String(call[0]).includes('/api/songs?')).length;
 
-      await waitFor(() => {
-        expect((globalThis as typeof globalThis & { fetch: jest.Mock }).fetch).toHaveBeenCalledWith('/api/songs?sortBy=author');
-      });
-    });
-
-    it('displays songs in the order returned by the backend (sorted by artist)', async () => {
-      mockFetchReturning(songsSortedByTitle);
-
-      renderSongList();
-
-      await waitFor(() => {
-        expect(screen.getByText('Angie')).toBeInTheDocument();
-      });
-
-      mockFetchReturning(songsSortedByAuthor);
       fireEvent.click(screen.getByText('Artiste'));
 
       await waitFor(() => {
@@ -123,6 +111,10 @@ describe('Integration | Component | SongList', () => {
         expect(titles[1]).toHaveTextContent('Bohemian Rhapsody');
         expect(titles[2]).toHaveTextContent('Angie');
       });
+
+      const fetchCallsAfter = (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch.mock.calls
+        .filter((call: unknown[]) => String(call[0]).includes('/api/songs?')).length;
+      expect(fetchCallsAfter).toBe(fetchCallsBefore);
     });
 
     it('displays the toggle checked after selecting Artist', async () => {
@@ -134,7 +126,6 @@ describe('Integration | Component | SongList', () => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
       });
 
-      mockFetchReturning(songsSortedByAuthor);
       fireEvent.click(screen.getByText('Artiste'));
 
       await waitFor(() => {
@@ -267,21 +258,7 @@ describe('Integration | Component | SongList', () => {
       await waitFor(() => expect(screen.getByText('Stairway to Heaven')).toBeInTheDocument());
     });
 
-    it('hides the sort toggle when a playlist is selected', async () => {
-      mockFetchWithPlaylists();
-
-      renderSongList();
-
-      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
-
-      expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeInTheDocument();
-
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
-
-      await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Trier par artiste' })).not.toBeInTheDocument());
-    });
-
-    it('restores the sort toggle when deselecting the playlist filter', async () => {
+    it('hides the alphabet nav when a playlist is selected', async () => {
       mockFetchWithPlaylists();
 
       renderSongList();
@@ -290,11 +267,7 @@ describe('Integration | Component | SongList', () => {
 
       fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
 
-      await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Trier par artiste' })).not.toBeInTheDocument());
-
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: '' } });
-
-      await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByRole('navigation', { name: 'Alphabet' })).not.toBeInTheDocument());
     });
 
     it('displays error message when the playlist fetch fails', async () => {
@@ -368,7 +341,7 @@ describe('Integration | Component | SongList', () => {
 
       await act(async () => { jest.advanceTimersByTime(1000); });
 
-      expect(screen.queryByRole('checkbox', { name: 'Trier par artiste' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Retour à la liste')).toBeInTheDocument();
     });
 
     it('restores the full list after clicking "Retour à la liste"', async () => {
@@ -390,7 +363,7 @@ describe('Integration | Component | SongList', () => {
   });
 
   describe('back to sort by title', () => {
-    it('calls the backend with sortBy=title after a second toggle back to Title', async () => {
+    it('re-sorts by title on the frontend after toggling back', async () => {
       mockFetchReturning(songsSortedByTitle);
 
       renderSongList();
@@ -399,18 +372,19 @@ describe('Integration | Component | SongList', () => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
       });
 
-      mockFetchReturning(songsSortedByAuthor);
       fireEvent.click(screen.getByText('Artiste'));
 
       await waitFor(() => {
         expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeChecked();
       });
 
-      mockFetchReturning(songsSortedByTitle);
       fireEvent.click(screen.getByText('Titre'));
 
       await waitFor(() => {
-        expect((globalThis as typeof globalThis & { fetch: jest.Mock }).fetch).toHaveBeenCalledWith('/api/songs?sortBy=title');
+        const titles = screen.getAllByText(/Angie|Bohemian Rhapsody|Stairway to Heaven/);
+        expect(titles[0]).toHaveTextContent('Angie');
+        expect(titles[1]).toHaveTextContent('Bohemian Rhapsody');
+        expect(titles[2]).toHaveTextContent('Stairway to Heaven');
       });
     });
   });

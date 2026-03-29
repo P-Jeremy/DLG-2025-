@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AdminPlaylistPage from './AdminPlaylistPage';
 import { AuthProvider } from '../contexts/AuthContext';
+import { SearchProvider } from '../contexts/SearchContext';
 
 const mockNavigate = jest.fn();
 
@@ -48,11 +49,13 @@ const renderAsAdmin = async (playlistName = 'rock') => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter initialEntries={[`/admin/playlists/${playlistName}`]}>
-          <Routes>
-            <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
-          </Routes>
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter initialEntries={[`/admin/playlists/${playlistName}`]}>
+            <Routes>
+              <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
+            </Routes>
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });
@@ -87,11 +90,13 @@ describe('AdminPlaylistPage', () => {
     await act(async () => {
       render(
         <AuthProvider>
-          <MemoryRouter initialEntries={['/admin/playlists/rock']}>
-            <Routes>
-              <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
-            </Routes>
-          </MemoryRouter>
+          <SearchProvider>
+            <MemoryRouter initialEntries={['/admin/playlists/rock']}>
+              <Routes>
+                <Route path="/admin/playlists/:playlistName" element={<AdminPlaylistPage />} />
+              </Routes>
+            </MemoryRouter>
+          </SearchProvider>
         </AuthProvider>,
       );
     });

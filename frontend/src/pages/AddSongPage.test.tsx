@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom';
 import AddSongPage from './AddSongPage';
 import { AuthProvider } from '../contexts/AuthContext';
+import { SearchProvider } from '../contexts/SearchContext';
 
 type GlobalWithFetch = typeof globalThis & { fetch: jest.Mock };
 
@@ -48,9 +49,11 @@ const renderAsAdmin = async () => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter>
-          <AddSongPage />
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter>
+            <AddSongPage />
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });
@@ -62,9 +65,11 @@ const renderAsGuest = async () => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter>
-          <AddSongPage />
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter>
+            <AddSongPage />
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });

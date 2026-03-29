@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom';
 import AdminUsersPage from './AdminUsersPage';
 import { AuthProvider } from '../../contexts/AuthContext';
+import { SearchProvider } from '../../contexts/SearchContext';
 
 const mockNavigate = jest.fn();
 
@@ -30,9 +31,11 @@ const renderPage = async () => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter>
-          <AdminUsersPage />
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter>
+            <AdminUsersPage />
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });
@@ -57,9 +60,11 @@ describe('AdminUsersPage', () => {
 
     render(
       <AuthProvider>
-        <MemoryRouter>
-          <AdminUsersPage />
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter>
+            <AdminUsersPage />
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
 
@@ -79,7 +84,9 @@ describe('AdminUsersPage', () => {
       expect(screen.getByText('user')).toBeInTheDocument();
     });
 
-    const toggles = screen.getAllByRole('checkbox');
+    const toggles = screen.getAllByRole('checkbox').filter(
+      (el) => el.getAttribute('aria-label') !== 'Trier par artiste',
+    );
     expect(toggles).toHaveLength(2);
   });
 
