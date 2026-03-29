@@ -13,6 +13,18 @@ const NavbarSearch: React.FC = () => {
 
   const isHidden = !searchVisible || HIDDEN_PATHS.some((prefix) => pathname.startsWith(prefix));
 
+  const handleInputClick = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      inputRef.current?.blur();
+    }
+  };
+
   return (
     <div className={`navbar-search${isHidden ? ' navbar-search--hidden' : ''}`} aria-hidden={isHidden}>
       <input
@@ -22,6 +34,9 @@ const NavbarSearch: React.FC = () => {
         placeholder="Rechercher…"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
+        onMouseDown={handleInputClick}
+        onTouchStart={handleInputClick}
+        onKeyDown={handleKeyDown}
         tabIndex={isHidden ? -1 : 0}
         aria-label="Rechercher une chanson"
       />

@@ -26,6 +26,7 @@
   box-sizing: border-box;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: border-color $transition-fast, box-shadow $transition-fast;
+  pointer-events: auto;
 
   &:focus {
     border-color: $color-primary;
