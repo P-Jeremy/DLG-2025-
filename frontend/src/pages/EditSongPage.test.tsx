@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import EditSongPage from './EditSongPage';
 import { AuthProvider } from '../contexts/AuthContext';
+import { SearchProvider } from '../contexts/SearchContext';
 
 const SONG_ID = 'song-abc-123';
 
@@ -80,11 +81,13 @@ const renderAsAdmin = async (songId = SONG_ID) => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter initialEntries={[`/songs/${songId}/edit`]}>
-          <Routes>
-            <Route path="/songs/:id/edit" element={<EditSongPage />} />
-          </Routes>
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter initialEntries={[`/songs/${songId}/edit`]}>
+            <Routes>
+              <Route path="/songs/:id/edit" element={<EditSongPage />} />
+            </Routes>
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });
@@ -96,11 +99,13 @@ const renderAsGuest = async () => {
   await act(async () => {
     render(
       <AuthProvider>
-        <MemoryRouter initialEntries={[`/songs/${SONG_ID}/edit`]}>
-          <Routes>
-            <Route path="/songs/:id/edit" element={<EditSongPage />} />
-          </Routes>
-        </MemoryRouter>
+        <SearchProvider>
+          <MemoryRouter initialEntries={[`/songs/${SONG_ID}/edit`]}>
+            <Routes>
+              <Route path="/songs/:id/edit" element={<EditSongPage />} />
+            </Routes>
+          </MemoryRouter>
+        </SearchProvider>
       </AuthProvider>,
     );
   });
