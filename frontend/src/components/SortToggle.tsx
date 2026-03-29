@@ -25,20 +25,20 @@ const SortToggle: React.FC<SortToggleProps> = ({ sortField, onToggle }) => {
       />
       <span
         className={`sort-toggle__label sort-toggle__label--left${!isChecked ? ' sort-toggle__label--active' : ''}`}
+        aria-label="Sort by title"
         onClick={() => onToggle('title')}
       >
         <span className="material-icons sort-toggle__icon">audiotrack</span>
-        Titre
       </span>
       <span className="sort-toggle__track">
         <span className="sort-toggle__thumb" />
       </span>
       <span
         className={`sort-toggle__label sort-toggle__label--right${isChecked ? ' sort-toggle__label--active' : ''}`}
+        aria-label="Sort by artist"
         onClick={() => onToggle('author')}
       >
         <span className="material-icons sort-toggle__icon">perm_identity</span>
-        Artiste
       </span>
     </label>
   );

@@ -52,8 +52,12 @@
   padding: 0 1.5rem;
   box-sizing: border-box;
   margin-bottom: 0.75rem;
+  position: sticky;
+  top: $navbar-height + 48px;
+  z-index: 50;
 
   @media (max-width: $breakpoint-md) {
+    top: 148px;
     padding: 0 1rem;
   }
 

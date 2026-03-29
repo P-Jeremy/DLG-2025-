@@ -1,7 +1,7 @@
 @use '../styles/variables' as *;
 
 .song-card {
-  scroll-margin-top: 72px;
+  scroll-margin-top: $navbar-height;
   background: $color-surface;
   border-radius: $border-radius-card;
   border-left: 4px solid $color-primary;
@@ -212,7 +212,7 @@
       display: flex;
       gap: 0.75rem;
       position: sticky;
-      top: calc(72px + env(safe-area-inset-top));
+      top: calc(#{$navbar-height} + env(safe-area-inset-top));
       z-index: 10;
       background: $color-surface;
       padding: 0.75rem 0;

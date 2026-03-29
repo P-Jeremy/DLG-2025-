@@ -6,22 +6,23 @@
   grid-template-areas: 'brand search actions';
   grid-template-columns: minmax(0, 1fr) minmax(0, 420px) minmax(0, 1fr);
   align-items: center;
-  padding: calc(env(safe-area-inset-top) + 0.6rem) 1.5rem 0.6rem;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem 1.5rem;
+  background: $color-primary;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
   position: sticky;
   top: 0;
   z-index: 100;
   box-sizing: border-box;
+  min-height: 64px;
 }
 
 .navbar__brand {
   grid-area: brand;
-  color: $color-primary;
+  color: #fff;
   font-size: 1.5rem;
   font-weight: bold;
   letter-spacing: 0.08em;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.18);
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
   text-decoration: none;
   white-space: nowrap;
   justify-self: start;
@@ -42,7 +43,7 @@
 }
 
 .navbar__item {
-  color: $color-text;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -50,33 +51,42 @@
   border-radius: $border-radius-button;
   transition: background-color $transition-fast, color $transition-fast;
 
-  &:hover {
-    color: $color-primary;
-    background-color: $color-primary-bg;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: #fff;
+      background-color: rgba(255, 255, 255, 0.15);
+    }
   }
 }
 
 .navbar__item--button {
   background: none;
-  border: 1px solid $color-primary;
-  color: $color-primary;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.9rem;
 
-  &:hover {
-    background-color: $color-primary-bg;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+      border-color: #fff;
+    }
   }
 }
 
 .navbar__item--register {
-  background-color: $color-primary;
+  background-color: rgba(255, 255, 255, 0.2);
   color: #fff;
   font-weight: 600;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
 
-  &:hover {
-    background-color: $color-primary-dark;
-    color: #fff;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.35);
+      color: #fff;
+      border-color: #fff;
+    }
   }
 }
 
@@ -111,7 +121,7 @@
     display: block;
     width: 100%;
     height: 2px;
-    background-color: $color-primary;
+    background-color: #fff;
     border-radius: 2px;
     transition: transform $transition-toggle, opacity $transition-toggle;
     transform-origin: center;
@@ -156,8 +166,8 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: $color-primary;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     padding: 0.75rem 1.5rem 1rem;
 
     &--open {
@@ -169,7 +179,8 @@
     width: 100%;
     padding: 0.75em 0;
     border-radius: 0;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
 
     &:last-child {
       border-bottom: none;
@@ -178,21 +189,26 @@
 
   .navbar__item--button {
     border: none;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     text-align: left;
     width: 100%;
     padding: 0.75em 0;
     border-radius: 0;
+    color: #fff;
   }
 
   .navbar__item--register {
     background: none;
-    color: $color-primary;
+    color: #fff;
     font-weight: 600;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 
-    &:hover {
-      background-color: $color-primary-bg;
-      color: $color-primary;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: #fff;
+      }
     }
   }
 }

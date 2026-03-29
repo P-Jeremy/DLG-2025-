@@ -103,7 +103,7 @@ describe('Integration | Component | SongList', () => {
       const fetchCallsBefore = (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch.mock.calls
         .filter((call: unknown[]) => String(call[0]).includes('/api/songs?')).length;
 
-      fireEvent.click(screen.getByText('Artiste'));
+      fireEvent.click(screen.getByLabelText('Sort by artist'));
 
       await waitFor(() => {
         const titles = screen.getAllByText(/Angie|Bohemian Rhapsody|Stairway to Heaven/);
@@ -126,7 +126,7 @@ describe('Integration | Component | SongList', () => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText('Artiste'));
+      fireEvent.click(screen.getByLabelText('Sort by artist'));
 
       await waitFor(() => {
         expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeChecked();
@@ -372,13 +372,13 @@ describe('Integration | Component | SongList', () => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText('Artiste'));
+      fireEvent.click(screen.getByLabelText('Sort by artist'));
 
       await waitFor(() => {
         expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeChecked();
       });
 
-      fireEvent.click(screen.getByText('Titre'));
+      fireEvent.click(screen.getByLabelText('Sort by title'));
 
       await waitFor(() => {
         const titles = screen.getAllByText(/Angie|Bohemian Rhapsody|Stairway to Heaven/);

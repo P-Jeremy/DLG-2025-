@@ -38,7 +38,7 @@
 @mixin secondary-button {
   background-color: transparent;
   color: $color-text;
-  border: 1.5px solid $color-border-default;
+  border: 1.5px solid $color-text;
   border-radius: $border-radius-button;
   padding: 0.85em 1.2em;
   font-size: 0.95rem;

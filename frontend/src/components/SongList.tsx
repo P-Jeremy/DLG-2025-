@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ScrollToTopButton from './ScrollToTopButton';
 import { useNavigate } from 'react-router-dom';
 import SongItem from './SongItem';
 import AlphabetNav from './AlphabetNav';
@@ -155,6 +156,7 @@ const SongList: React.FC = () => {
 
   return (
     <div className="song-list-bg">
+      <ScrollToTopButton />
       {!selectedPlaylistName && <ShuffleBar onShuffle={handleShuffle} />}
       {!isShuffleActive && !shuffling && (
         <div className="song-list-controls">
