@@ -146,15 +146,18 @@
 
 @media (max-width: $breakpoint-md) {
   .navbar {
-    grid-template-areas:
-      'brand actions'
-      'search search';
-    grid-template-columns: 1fr auto;
-    padding-bottom: 0.5rem;
+    grid-template-areas: 'brand actions' 'search search';
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+  }
+
+  .navbar__brand {
+    margin-top: 15px;
   }
 
   .navbar__burger {
     display: flex;
+    margin-top: 15px;
   }
 
   .navbar__menu {
@@ -210,5 +213,15 @@
         color: #fff;
       }
     }
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar__brand {
+    font-size: 1.25rem;
   }
 }
