@@ -52,12 +52,15 @@
   .navbar-search {
     max-width: 360px;
     margin: 0 auto;
-    padding: 0.25rem 0 0.1rem;
+    padding: 0.5rem 0 0.25rem;
+    justify-self: center;
+    width: 100%;
   }
 }
 
 @media (max-width: $breakpoint-sm) {
   .navbar-search {
     max-width: 100%;
+    padding: 0.5rem 0.5rem 0.25rem;
   }
 }
