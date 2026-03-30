@@ -31,6 +31,10 @@ const AdminPlaylistPage: React.FC = () => {
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  const isUserUnauthorized = (admin: boolean): boolean => !admin;
+  const isPageLoading = (pageLoading: boolean): boolean => pageLoading;
+  const isPlaylistEmpty = (playlistSongs: Song[]): boolean => playlistSongs.length === 0;
+
   const loadPlaylist = useCallback(async () => {
     if (!playlistName || !token) return;
     setLoading(true);
@@ -123,7 +127,7 @@ const AdminPlaylistPage: React.FC = () => {
     }
   };
 
-  if (!isAdmin) {
+  if (isUserUnauthorized(isAdmin)) {
     return (
       <AppBackground>
         <Navbar />
@@ -134,7 +138,7 @@ const AdminPlaylistPage: React.FC = () => {
     );
   }
 
-  if (loading) {
+  if (isPageLoading(loading)) {
     return (
       <AppBackground>
         <Navbar />
@@ -175,7 +179,7 @@ const AdminPlaylistPage: React.FC = () => {
             disabled={saving}
           />
 
-          {songs.length === 0 ? (
+          {isPlaylistEmpty(songs) ? (
             <div className="admin-playlist-empty">Aucune chanson dans cette playlist.</div>
           ) : (
             <>

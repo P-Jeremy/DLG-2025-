@@ -23,6 +23,26 @@ function pickRandomSong(songs: Song[]): Song {
   return songs[Math.floor(Math.random() * songs.length)];
 }
 
+type SongListRenderState = 'loading' | 'shuffle-active' | 'empty' | 'songs-list';
+
+function getSongListRenderState(
+  isPlaylistLoading: boolean,
+  isShuffling: boolean,
+  isShuffleActive: boolean,
+  songCount: number,
+): SongListRenderState {
+  const isLoading = isPlaylistLoading || isShuffling;
+  if (isLoading) return 'loading';
+
+  const isShowingShuffledSong = isShuffleActive;
+  if (isShowingShuffledSong) return 'shuffle-active';
+
+  const isPlaylistEmpty = songCount === 0;
+  if (isPlaylistEmpty) return 'empty';
+
+  return 'songs-list';
+}
+
 const SongList: React.FC = () => {
   const { isAdmin, token } = useAuth();
   const { searchQuery, sortField, setSearchVisible } = useSearch();
@@ -78,11 +98,14 @@ const SongList: React.FC = () => {
   }, [loadSongs]);
 
   useEffect(() => {
-    if (!selectedPlaylistName) {
+    const isPlaylistDeselected = selectedPlaylistName === null;
+    
+    if (isPlaylistDeselected) {
       setPlaylistSongs(null);
       setShuffledSong(null);
       return;
     }
+
     let cancelled = false;
     setPlaylistLoading(true);
     fetchPlaylistPublic(selectedPlaylistName)
@@ -155,6 +178,66 @@ const SongList: React.FC = () => {
   );
   if (error) return <div className="song-list-bg"><div className="song-list-error">Erreur : {error}</div></div>;
 
+  const renderState = getSongListRenderState(
+    playlistLoading,
+    shuffling,
+    isShuffleActive,
+    filteredSongs.length,
+  );
+
+  const renderContent = (): React.ReactNode => {
+    switch (renderState) {
+      case 'loading':
+        return <VinylLoader />;
+
+      case 'shuffle-active':
+        return (
+          <div className="song-list">
+            <SongItem
+              key={shuffledSong!.id}
+              song={shuffledSong!}
+              isAdmin={isAdmin}
+              onDelete={isAdmin ? handleDeleteSong : undefined}
+              onEdit={isAdmin ? handleEditSong : undefined}
+              isOpen={openSongId === shuffledSong!.id}
+              onOpen={setOpenSongId}
+            />
+            <button className="song-list-cancel-shuffle" onClick={handleCancelShuffle}>
+              Retour à la liste
+            </button>
+          </div>
+        );
+
+      case 'empty':
+        return <div className="song-list-message">Aucune chanson trouvée.</div>;
+
+      case 'songs-list':
+        return (
+          <>
+            {!selectedPlaylistName && (
+              <div className="song-list-alphabet">
+                <AlphabetNav songs={filteredSongs} sortField={sortField} />
+              </div>
+            )}
+            <div className="song-list">
+              {filteredSongs.map(song => (
+                <SongItem
+                  key={song.id}
+                  song={song}
+                  sortField={sortField}
+                  isAdmin={isAdmin}
+                  onDelete={isAdmin ? handleDeleteSong : undefined}
+                  onEdit={isAdmin ? handleEditSong : undefined}
+                  isOpen={openSongId === song.id}
+                  onOpen={setOpenSongId}
+                />
+              ))}
+            </div>
+          </>
+        );
+    }
+  };
+
   return (
     <div className="song-list-bg">
       <ScrollToTopButton />
@@ -172,48 +255,7 @@ const SongList: React.FC = () => {
           </div>
         </div>
       )}
-      {playlistLoading || shuffling ? (
-        <VinylLoader />
-      ) : isShuffleActive ? (
-        <div className="song-list">
-          <SongItem
-            key={shuffledSong.id}
-            song={shuffledSong}
-            isAdmin={isAdmin}
-            onDelete={isAdmin ? handleDeleteSong : undefined}
-            onEdit={isAdmin ? handleEditSong : undefined}
-            isOpen={openSongId === shuffledSong.id}
-            onOpen={setOpenSongId}
-          />
-          <button className="song-list-cancel-shuffle" onClick={handleCancelShuffle}>
-            Retour à la liste
-          </button>
-        </div>
-      ) : filteredSongs.length === 0 ? (
-        <div className="song-list-message">Aucune chanson trouvée.</div>
-      ) : (
-        <>
-          {!selectedPlaylistName && (
-            <div className="song-list-alphabet">
-              <AlphabetNav songs={filteredSongs} sortField={sortField} />
-            </div>
-          )}
-          <div className="song-list">
-            {filteredSongs.map(song => (
-              <SongItem
-                key={song.id}
-                song={song}
-                sortField={sortField}
-                isAdmin={isAdmin}
-                onDelete={isAdmin ? handleDeleteSong : undefined}
-                onEdit={isAdmin ? handleEditSong : undefined}
-                isOpen={openSongId === song.id}
-                onOpen={setOpenSongId}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {renderContent()}
     </div>
   );
 };
