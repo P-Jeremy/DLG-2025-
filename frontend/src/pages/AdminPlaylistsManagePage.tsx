@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchPlaylists, createPlaylist, renamePlaylist, deletePlaylist } from '../api/playlists';
 import { getErrorMessage } from '../utils/errorHandling';
+import { isInputNotEmpty, getTrimmedInput } from '../utils/validators';
 import type { Playlist } from '../api/playlists';
 import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
@@ -41,12 +42,12 @@ const AdminPlaylistsManagePage: React.FC = () => {
     setActionError(null);
     setActionSuccess(null);
 
-    if (!newPlaylistName.trim()) return;
+    if (!isInputNotEmpty(newPlaylistName)) return;
     if (!token) return;
 
     setLoading(true);
     try {
-      await createPlaylist(newPlaylistName.trim(), token);
+      await createPlaylist(getTrimmedInput(newPlaylistName), token);
       setNewPlaylistName('');
       setActionSuccess('Playlist créée avec succès.');
       loadPlaylists();
@@ -151,63 +152,69 @@ const AdminPlaylistsManagePage: React.FC = () => {
             <button
               className="admin-playlists-manage-create-btn"
               type="submit"
-              disabled={loading || !newPlaylistName.trim()}
+              disabled={loading || !isInputNotEmpty(newPlaylistName)}
             >
               Créer
             </button>
           </form>
 
           <ul className="admin-playlists-manage-list">
-            {playlists.map((playlist) => (
-              <li key={playlist.name} className="admin-playlists-manage-item">
-                {activeAction?.type === 'rename' && activeAction.playlistName === playlist.name ? (
-                  <PlaylistRenameInput
-                    playlist={playlist}
-                    onConfirm={(newName) => handleRenameConfirm(playlist, newName)}
-                    onCancel={handleCancelAction}
-                    disabled={loading}
-                  />
-                ) : (
-                  <span className="admin-playlists-manage-item__name">{playlist.name}</span>
-                )}
-                {!(activeAction?.type === 'rename' && activeAction.playlistName === playlist.name) && (
-                  <div className="admin-playlists-manage-item__actions">
-                    <Link
-                      className="admin-playlists-manage-item__playlist-link"
-                      to={`/admin/playlists/${encodeURIComponent(playlist.name)}`}
-                    >
-                      Gérer la playlist
-                    </Link>
-                    <button
-                      className="admin-playlists-manage-item__rename-btn"
-                      type="button"
+            {playlists.map((playlist) => {
+              const isRenaming = activeAction?.type === 'rename' && activeAction.playlistName === playlist.name;
+              const isDeleting = activeAction?.type === 'delete' && activeAction.playlistName === playlist.name;
+              const shouldShowActions = !isRenaming;
+
+              return (
+                <li key={playlist.name} className="admin-playlists-manage-item">
+                  {isRenaming ? (
+                    <PlaylistRenameInput
+                      playlist={playlist}
+                      onConfirm={(newName) => handleRenameConfirm(playlist, newName)}
+                      onCancel={handleCancelAction}
                       disabled={loading}
-                      aria-label="Renommer la playlist"
-                      onClick={() => handleRenameRequest(playlist)}
-                    >
-                      <span className="material-icons">edit</span>
-                    </button>
-                    {activeAction?.type === 'delete' && activeAction.playlistName === playlist.name ? (
-                      <PlaylistDeleteConfirm
-                        onConfirm={() => void handleDeleteConfirm(playlist)}
-                        onCancel={handleCancelAction}
-                        disabled={loading}
-                      />
-                    ) : (
+                    />
+                  ) : (
+                    <span className="admin-playlists-manage-item__name">{playlist.name}</span>
+                  )}
+                  {shouldShowActions && (
+                    <div className="admin-playlists-manage-item__actions">
+                      <Link
+                        className="admin-playlists-manage-item__playlist-link"
+                        to={`/admin/playlists/${encodeURIComponent(playlist.name)}`}
+                      >
+                        Gérer la playlist
+                      </Link>
                       <button
-                        className="admin-playlists-manage-item__delete-btn"
+                        className="admin-playlists-manage-item__rename-btn"
                         type="button"
                         disabled={loading}
-                        aria-label="Supprimer la playlist"
-                        onClick={() => handleDeleteRequest(playlist)}
+                        aria-label="Renommer la playlist"
+                        onClick={() => handleRenameRequest(playlist)}
                       >
-                        <span className="material-icons">delete</span>
+                        <span className="material-icons">edit</span>
                       </button>
-                    )}
-                  </div>
-                )}
-              </li>
-            ))}
+                      {isDeleting ? (
+                        <PlaylistDeleteConfirm
+                          onConfirm={() => void handleDeleteConfirm(playlist)}
+                          onCancel={handleCancelAction}
+                          disabled={loading}
+                        />
+                      ) : (
+                        <button
+                          className="admin-playlists-manage-item__delete-btn"
+                          type="button"
+                          disabled={loading}
+                          aria-label="Supprimer la playlist"
+                          onClick={() => handleDeleteRequest(playlist)}
+                        >
+                          <span className="material-icons">delete</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
             {playlists.length === 0 && !fetchError && (
               <li className="admin-playlists-manage-empty">Aucune playlist créée.</li>
             )}

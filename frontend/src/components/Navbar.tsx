@@ -11,6 +11,16 @@ const Navbar: React.FC = () => {
 
   const closeMenu = () => setMenuOpen(false);
 
+  const burgerClassName = [
+    'navbar__burger',
+    menuOpen && 'navbar__burger--open',
+  ].filter(Boolean).join(' ');
+
+  const menuClassName = [
+    'navbar__menu',
+    menuOpen && 'navbar__menu--open',
+  ].filter(Boolean).join(' ');
+
   return (
     <header className="navbar">
       <Link className="navbar__brand" to="/">DLG</Link>
@@ -19,7 +29,7 @@ const Navbar: React.FC = () => {
 
       <div className="navbar__actions">
         <button
-          className={`navbar__burger${menuOpen ? ' navbar__burger--open' : ''}`}
+          className={burgerClassName}
           aria-label="Menu"
           aria-expanded={menuOpen}
           onPointerDown={(e) => e.preventDefault()}
@@ -30,7 +40,7 @@ const Navbar: React.FC = () => {
           <span />
         </button>
 
-        <nav className={`navbar__menu${menuOpen ? ' navbar__menu--open' : ''}`}>
+        <nav className={menuClassName}>
           {isAdmin && (
             <AdminDropdown onNavigate={closeMenu} mobileExpanded={menuOpen} />
           )}
