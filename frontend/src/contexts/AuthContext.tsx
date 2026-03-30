@@ -15,12 +15,28 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function isUserAdmin(payload: unknown): boolean {
+  if (payload === null || payload === undefined) return false;
+  if (typeof payload !== 'object') return false;
+
+  const hasAdminFlag = 'isAdmin' in payload;
+  if (!hasAdminFlag) return false;
+
+  return payload.isAdmin === true;
+}
+
 function extractPayload(token: string | null): { userId: string | null; isAdmin: boolean } {
-  if (!token) return { userId: null, isAdmin: false };
+  const isTokenMissing = token === null;
+  if (isTokenMissing) {
+    return { userId: null, isAdmin: false };
+  }
+
   const payload = decodeJwtPayload(token);
+  const userAdminStatus = isUserAdmin(payload);
+
   return {
     userId: payload?.userId ?? null,
-    isAdmin: payload?.isAdmin === true,
+    isAdmin: userAdminStatus,
   };
 }
 

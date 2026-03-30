@@ -10,6 +10,40 @@ import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
 import './AddSongPage.scss';
 
+interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+function validateAddSongFormFields(
+  title: string,
+  tabFile: File | null,
+  token: string | null,
+  lyrics: string,
+): ValidationResult {
+  const isTitleEmpty = !title.trim();
+  if (isTitleEmpty) {
+    return { isValid: false, error: 'Veuillez entrer un titre.' };
+  }
+
+  const isTabFileMissing = !tabFile;
+  if (isTabFileMissing) {
+    return { isValid: false, error: 'Veuillez sélectionner une image pour la tablature.' };
+  }
+
+  const isNotAuthenticated = !token;
+  if (isNotAuthenticated) {
+    return { isValid: false, error: 'Vous devez être connecté.' };
+  }
+
+  const isLyricsEmpty = !lyrics || lyrics === '<p></p>';
+  if (isLyricsEmpty) {
+    return { isValid: false, error: 'Les paroles sont requises.' };
+  }
+
+  return { isValid: true };
+}
+
 const AddSongPage: React.FC = () => {
   const navigate = useNavigate();
   const { token, isAdmin } = useAuth();
@@ -39,27 +73,17 @@ const AddSongPage: React.FC = () => {
     setSubmitted(true);
     setError(null);
 
-    if (!title.trim()) return;
-
-    if (!tabFile) {
-      setError('Veuillez sélectionner une image pour la tablature.');
-      return;
-    }
-
-    if (!token) {
-      setError('Vous devez être connecté.');
-      return;
-    }
-
     const lyrics = editor?.getHTML() ?? '';
-    if (!lyrics || lyrics === '<p></p>') {
-      setError('Les paroles sont requises.');
+    const validation = validateAddSongFormFields(title, tabFile, token, lyrics);
+
+    if (!validation.isValid) {
+      setError(validation.error ?? 'Une erreur est survenue.');
       return;
     }
 
     setLoading(true);
     try {
-      await addSong({ title, author, lyrics, tab: tabFile }, token);
+      await addSong({ title, author, lyrics, tab: tabFile as File }, token as string);
       setSuccess(true);
       setSubmitted(false);
       setTitle('');
