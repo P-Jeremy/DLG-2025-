@@ -64,17 +64,23 @@ describe('Unit | Component | NavbarSearch', () => {
     renderNavbarSearch();
 
     const input = screen.getByRole('searchbox') as HTMLInputElement;
+    const focusSpy = jest.spyOn(input, 'focus');
+
     fireEvent.mouseDown(input);
 
-    expect(document.activeElement).toBe(input);
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+    focusSpy.mockRestore();
   });
 
-  it('focuses the input on touch start', () => {
+  it('focuses the input on touch end for iOS compatibility', () => {
     renderNavbarSearch();
 
     const input = screen.getByRole('searchbox') as HTMLInputElement;
-    fireEvent.touchStart(input);
+    const focusSpy = jest.spyOn(input, 'focus');
 
-    expect(document.activeElement).toBe(input);
+    fireEvent.touchEnd(input);
+
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+    focusSpy.mockRestore();
   });
 });

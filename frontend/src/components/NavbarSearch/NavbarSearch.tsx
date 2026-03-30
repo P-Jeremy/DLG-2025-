@@ -13,9 +13,10 @@ const NavbarSearch: React.FC = () => {
 
   const isHidden = !searchVisible || HIDDEN_PATHS.some((prefix) => pathname.startsWith(prefix));
 
-  const handleInputClick = () => {
+  const handleInputFocus = (e: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
+    e.preventDefault();
     if (inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
     }
   };
 
@@ -34,8 +35,8 @@ const NavbarSearch: React.FC = () => {
         placeholder="Rechercher…"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        onMouseDown={handleInputClick}
-        onTouchStart={handleInputClick}
+        onMouseDown={handleInputFocus}
+        onTouchEnd={handleInputFocus}
         onKeyDown={handleKeyDown}
         tabIndex={isHidden ? -1 : 0}
         aria-label="Rechercher une chanson"

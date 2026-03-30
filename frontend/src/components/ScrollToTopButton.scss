@@ -39,3 +39,21 @@
     outline-offset: 3px;
   }
 }
+
+@media (max-width: $breakpoint-md) {
+  .scroll-to-top {
+    width: 40px;
+    height: 40px;
+    right: 1rem;
+
+    .material-icons {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .scroll-to-top {
+    display: none;
+  }
+}

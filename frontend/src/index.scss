@@ -32,6 +32,12 @@ body {
   width: 100%;
 }
 
+@media (max-width: 900px) {
+  #root {
+    padding-top: 160px;
+  }
+}
+
 button {
   -webkit-appearance: none;
   appearance: none;

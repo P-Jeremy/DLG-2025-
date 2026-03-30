@@ -27,6 +27,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: border-color $transition-fast, box-shadow $transition-fast;
   pointer-events: auto;
+  touch-action: manipulation;
 
   &:focus {
     border-color: $color-primary;
@@ -63,5 +64,9 @@
   .navbar-search {
     max-width: 100%;
     padding: 0.5rem 0.5rem 0.25rem;
+  }
+
+  .navbar-search__input {
+    font-size: 16px;
   }
 }
