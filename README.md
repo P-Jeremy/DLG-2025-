@@ -1,18 +1,46 @@
 # DLG Monorepo
 
-Monorepo pour le projet DLG — React + Express + TypeScript avec architecture hexagonale (DDD).
+Application web moderne de gestion de contenu musical (songs, tablatures), développée dans le cadre de la modernisation d’un ancien projet.
+
+Ce projet a pour objectif de reconstruire une application existante sur des bases techniques solides en appliquant :
+
+* une architecture hexagonale (DDD)
+* TypeScript sur l’ensemble de la stack
+* un développement incrémental et testé
+* l’utilisation d’assistants IA dans le processus de développement
+
+👉 Voir les décisions d’architecture dans le dossier [ADR](./adr)
+
+---
+
+## Contexte
+
+Ce projet est une refonte complète d’une application développée lors de ma reconversion professionnelle.
+
+L’objectif est de repartir d’une base propre, en appliquant les bonnes pratiques acquises depuis :
+
+* architecture hexagonale
+* séparation des responsabilités
+* testabilité
+* maintenabilité
+
+👉 Ancien projet : https://github.com/P-Jeremy/DLG
+
+---
 
 ## Stack technique
 
-| Couche | Technologie |
-|---|---|
-| Frontend | React 19 + Vite + TypeScript |
-| Backend | Express 5 + TypeScript |
-| Base de données | MongoDB (Mongoose) |
-| Tests | Jest + Supertest + mongodb-memory-server |
-| Workspaces | npm workspaces |
-| Déploiement Frontend | Vercel |
-| Déploiement Backend | Render |
+| Couche               | Technologie                              |
+| -------------------- | ---------------------------------------- |
+| Frontend             | React 19 + Vite + TypeScript             |
+| Backend              | Express 5 + TypeScript                   |
+| Base de données      | MongoDB (Mongoose)                       |
+| Tests                | Jest + Supertest + mongodb-memory-server |
+| Workspaces           | npm workspaces                           |
+| Déploiement Frontend | Vercel                                   |
+| Déploiement Backend  | Render                                   |
+
+---
 
 ## Structure
 
@@ -31,10 +59,13 @@ monorepo-dlg/
 │       ├── contexts/
 │       ├── pages/
 │       └── layouts/
+├── adr/                     # Architecture Decision Records
 ├── package.json             # Racine — workspaces + scripts globaux
 ├── CLAUDE.md                # Conventions de développement
 └── README.md                # Ce fichier
 ```
+
+---
 
 ## Démarrage local
 
@@ -54,6 +85,8 @@ cd frontend
 npm run dev
 ```
 
+---
+
 ## Configuration
 
 ### Backend — `backend/.env`
@@ -70,6 +103,8 @@ NODE_ENV=development
 VITE_API_URL=http://localhost:3001
 ```
 
+---
+
 ## Tests
 
 ```bash
@@ -84,6 +119,8 @@ npm test
 npm test
 ```
 
+---
+
 ## Linting
 
 ```bash
@@ -94,30 +131,55 @@ npm run lint
 npm run lint:fix
 ```
 
+---
+
 ## Architecture
 
 ### Principes
 
-- **DDD** : Entités, Value Objects, Repository Pattern
-- **Hexagonale** : Domain → Application → Infrastructure
-- **Clean Code** : Noms explicites, pas de commentaires, fonctions petites et ciblées
-- **Testing** : Tous les tests doivent passer avant chaque commit
+* **DDD** : Entités, Value Objects, Repository Pattern
+* **Hexagonale** : Domain → Application → Infrastructure
+* **Clean Code** : Noms explicites, pas de commentaires, fonctions petites et ciblées
+* **Testing** : Tous les tests doivent passer avant chaque commit
 
-Détails complets dans [CLAUDE.md](./CLAUDE.md).
+👉 Voir [ADR 0001 - Architecture hexagonale](./adr/0001-architecture-hexagonale.md)
+
+---
+
+## Développement assisté par IA
+
+Ce projet est développé avec l’aide d’assistants IA :
+
+* Claude Code
+* GitHub Copilot
+
+Ces outils sont utilisés pour :
+
+* accélérer le développement
+* générer du code et des tests
+* explorer des solutions techniques
+
+Le code produit est systématiquement relu et validé.
+
+👉 Voir [ADR 0004 - Utilisation de l’IA](./adr/0004-utilisation-ia.md)
+
+---
 
 ## Déploiement
 
 ### Frontend (Vercel)
 
-- Déploiement automatique sur chaque push vers `main`
-- Build : `npm run build` depuis `frontend/`
-- Preview sur branches
+* Déploiement automatique sur chaque push vers `main`
+* Build : `npm run build` depuis `frontend/`
+* Preview sur branches
 
 ### Backend (Render)
 
-- Déploiement automatique sur chaque push vers `main`
-- Build : `npm run build` depuis `backend/`
-- Base de données : MongoDB Atlas
+* Déploiement automatique sur chaque push vers `main`
+* Build : `npm run build` depuis `backend/`
+* Base de données : MongoDB Atlas
+
+---
 
 ## Workflow Git
 
@@ -130,16 +192,20 @@ test(songs): add unit tests for SongRepository
 refactor(backend): extract value object for song title
 ```
 
-Les commits sont signés par Copilot lors des PR.
+Les commits peuvent être assistés par Copilot lors des PR.
+
+---
 
 ## Troubleshooting
 
 **MongoDB refuse la connexion locale :**
+
 ```bash
 brew services start mongodb-community
 ```
 
 **Port 3001 ou 5173 déjà utilisé :**
+
 ```bash
 lsof -i :3001
 lsof -i :5173
@@ -147,6 +213,7 @@ kill -9 <PID>
 ```
 
 **Les tests échouent :**
+
 ```bash
 # Réinstaller les dépendances
 npm run clean
