@@ -149,6 +149,10 @@
     grid-template-areas: 'brand actions' 'search search';
     grid-template-columns: minmax(0, 1fr) auto;
     padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+    position: fixed;
+    bottom: auto;
+    left: 0;
+    right: 0;
   }
 
   .navbar__brand {
