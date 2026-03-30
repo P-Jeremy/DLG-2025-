@@ -24,8 +24,7 @@ L’objectif est de repartir d’une base propre, en appliquant les bonnes prati
 * testabilité
 * maintenabilité
 
-👉 Ancien projet : https://github.com/P-Jeremy/DLG
-
+👉 Ancien projet : https://github.com/P-Jeremy/MEAN-DLG-project
 ---
 
 ## Stack technique
