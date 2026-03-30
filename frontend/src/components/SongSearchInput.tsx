@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Song } from '../types/song';
+import { isSearchQueryValid } from '../utils/validators';
 import './SongSearchInput.scss';
 
 interface SongSearchInputProps {
@@ -20,7 +21,7 @@ const SongSearchInput: React.FC<SongSearchInputProps> = ({
   const playlistSongIdSet = useMemo(() => new Set(playlistSongIds), [playlistSongIds]);
 
   const filteredSongs = useMemo(() => {
-    if (!query.trim()) return [];
+    if (!isSearchQueryValid(query)) return [];
     const lowerQuery = query.toLowerCase();
     return allSongs.filter(
       (song) =>

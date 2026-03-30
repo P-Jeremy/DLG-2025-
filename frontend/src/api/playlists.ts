@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config';
+import { handleApiResponseError } from '../utils/apiErrorHandling';
 import type { Song } from '../types/song';
 
 export interface Playlist {
@@ -49,8 +50,7 @@ export async function createPlaylist(name: string, token: string): Promise<Playl
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors de la création de la playlist');
+    await handleApiResponseError(res, 'Erreur lors de la création de la playlist');
   }
 
   return (await res.json()) as Playlist;
@@ -67,8 +67,7 @@ export async function renamePlaylist(playlistName: string, newName: string, toke
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors du renommage de la playlist');
+    await handleApiResponseError(res, 'Erreur lors du renommage de la playlist');
   }
 
   return (await res.json()) as Playlist;
@@ -81,8 +80,7 @@ export async function deletePlaylist(playlistName: string, token: string): Promi
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors de la suppression de la playlist');
+    await handleApiResponseError(res, 'Erreur lors de la suppression de la playlist');
   }
 }
 
@@ -107,8 +105,7 @@ export async function addSongToPlaylist(playlistName: string, songId: string, to
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors de l\'ajout de la chanson à la playlist');
+    await handleApiResponseError(res, 'Erreur lors de l\'ajout de la chanson à la playlist');
   }
 
   return (await res.json()) as Playlist;
@@ -123,8 +120,7 @@ export async function removeSongFromPlaylist(playlistName: string, songId: strin
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors du retrait de la chanson de la playlist');
+    await handleApiResponseError(res, 'Erreur lors du retrait de la chanson de la playlist');
   }
 
   return (await res.json()) as Playlist;
@@ -141,8 +137,7 @@ export async function reorderPlaylist(playlistName: string, songIds: string[], t
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors de la sauvegarde de la playlist');
+    await handleApiResponseError(res, 'Erreur lors de la sauvegarde de la playlist');
   }
 
   return (await res.json()) as Playlist;

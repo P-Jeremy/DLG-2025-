@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useAuth } from '../contexts/AuthContext';
 import { updateSong, fetchSongs } from '../api/songs';
+import { getErrorMessage } from '../utils/errorHandling';
 import type { Song } from '../types/song';
 import RichTextToolbar from '../components/RichTextToolbar';
 import AppBackground from '../components/AppBackground';
@@ -100,7 +101,7 @@ const EditSongPage: React.FC = () => {
         fileInputRef.current.value = '';
       }
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

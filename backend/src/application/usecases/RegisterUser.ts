@@ -61,7 +61,9 @@ export class RegisterUser {
 
     try {
       await this.emailService.sendActivationEmail(email.toString(), activationToken);
-    } catch (_: unknown) {}
+    } catch (error: unknown) {
+      console.error('Failed to send activation email:', error);
+    }
 
     return { userId: savedUser.id! };
   }

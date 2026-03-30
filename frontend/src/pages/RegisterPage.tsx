@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../api/auth';
+import { getErrorMessage } from '../utils/errorHandling';
 import AppBackground from '../components/AppBackground';
 import PasswordInput from '../components/PasswordInput';
 import './RegisterPage.scss';
@@ -28,7 +29,7 @@ const RegisterPage: React.FC = () => {
       await register({ email, pseudo, password, apiKey });
       setSuccess(true);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

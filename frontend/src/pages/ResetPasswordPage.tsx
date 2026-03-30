@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { resetPassword } from '../api/auth';
+import { getErrorMessage } from '../utils/errorHandling';
 import AppBackground from '../components/AppBackground';
 import PasswordInput from '../components/PasswordInput';
 import './ResetPasswordPage.scss';
@@ -22,7 +23,7 @@ const ResetPasswordPage: React.FC = () => {
       await resetPassword({ token, newPassword });
       void navigate('/login');
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@ import { createPortal, flushSync } from 'react-dom';
 import DOMPurify from 'dompurify';
 import type { Song, SortField } from '../types/song';
 import { NAVBAR_HEIGHT_PX } from '../constants/layout';
+import DeleteConfirmButton from './SongItem/DeleteConfirmButton';
 import './SongItem.scss';
 
 interface SongItemProps {
@@ -63,9 +64,15 @@ const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin 
     }
   };
 
+  const extractFirstLetter = (text: string | undefined | null): string => {
+    if (text === null || text === undefined) return '';
+    const firstChar = text[0]?.toUpperCase();
+    return firstChar ?? '';
+  };
+
   const songLetter = sortField === 'author'
-    ? (song.author?.[0]?.toUpperCase() ?? '')
-    : (song.title[0]?.toUpperCase() ?? '');
+    ? extractFirstLetter(song.author)
+    : extractFirstLetter(song.title);
 
   const toggleAll = () => {
     if (confirmDelete) return;
@@ -115,42 +122,14 @@ const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin 
             </button>
           )}
           {isAdmin && onDelete && (
-            confirmDelete ? (
-              <div
-                className="song-delete-confirm"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <span className="song-delete-confirm__label">Supprimer cette chanson ?</span>
-                <button
-                  className="song-delete-confirm__confirm-btn"
-                  type="button"
-                  disabled={deleting}
-                  onClick={(e) => void handleConfirmDelete(e)}
-                  aria-label="Confirmer la suppression"
-                >
-                  Confirmer
-                </button>
-                <button
-                  className="song-delete-confirm__cancel-btn"
-                  type="button"
-                  disabled={deleting}
-                  onClick={handleCancelDelete}
-                  aria-label="Annuler la suppression"
-                >
-                  Annuler
-                </button>
-              </div>
-            ) : (
-              <button
-                className="song-delete-btn"
-                type="button"
-                disabled={deleting}
-                onClick={handleDeleteClick}
-                aria-label={`Supprimer la chanson ${song.title}`}
-              >
-                <span className="material-icons">delete</span>
-              </button>
-            )
+            <DeleteConfirmButton
+              isConfirmingDelete={confirmDelete}
+              isDeleting={deleting}
+              songTitle={song.title}
+              onShowConfirm={handleDeleteClick}
+              onConfirm={handleConfirmDelete}
+              onCancel={handleCancelDelete}
+            />
           )}
           <span className="song-chevron">
             {isOpen ? '▲' : '▼'}

@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { activateAccount } from '../api/auth';
+import { getErrorMessage } from '../utils/errorHandling';
 import AppBackground from '../components/AppBackground';
 
 type ActivationState = 'loading' | 'success' | 'error';
+
+function isLoadingActivation(state: ActivationState): boolean {
+  return state === 'loading';
+}
+
+function isActivationSuccessful(state: ActivationState): boolean {
+  return state === 'success';
+}
+
+function isActivationFailed(state: ActivationState): boolean {
+  return state === 'error';
+}
 
 const ActivateAccountPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -25,7 +38,7 @@ const ActivateAccountPage: React.FC = () => {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setErrorMessage((err as Error).message);
+          setErrorMessage(getErrorMessage(err));
           setState('error');
         }
       });
@@ -40,15 +53,15 @@ const ActivateAccountPage: React.FC = () => {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">DLG</h1>
-        {state === 'loading' && (
+        {isLoadingActivation(state) && (
           <p>Activation en cours...</p>
         )}
-        {state === 'success' && (
+        {isActivationSuccessful(state) && (
           <div className="auth-success">
             Votre compte a été activé avec succès.
           </div>
         )}
-        {state === 'error' && (
+        {isActivationFailed(state) && (
           <div className="auth-error">
             {errorMessage ?? "Une erreur est survenue lors de l'activation."}
           </div>

@@ -1,7 +1,8 @@
 import nodemailer from 'nodemailer';
 import type { IEmailService } from '../../domain/interfaces/IEmailService';
+import { isTestEnvironment } from '../config/environment';
 
-const IS_TEST_ENVIRONMENT = process.env.NODE_ENV === 'test';
+const IS_TEST_ENVIRONMENT = isTestEnvironment;
 
 function escapeHtml(text: string): string {
   return text

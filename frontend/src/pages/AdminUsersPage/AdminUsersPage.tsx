@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchUsers, setUserRole } from '../../api/users';
+import { getErrorMessage } from '../../utils/errorHandling';
 import type { UserItem } from '../../api/users';
 import AppBackground from '../../components/AppBackground';
 import Navbar from '../../components/Navbar';
@@ -33,7 +34,7 @@ const AdminUsersPage: React.FC = () => {
       const updated = await setUserRole(targetUserId, isAdmin, token);
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
     } catch (err: unknown) {
-      setActionError((err as Error).message);
+      setActionError(getErrorMessage(err));
     }
   };
 

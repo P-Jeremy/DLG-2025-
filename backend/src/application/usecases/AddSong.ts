@@ -4,8 +4,9 @@ import type { IEmailService } from '../../domain/interfaces/IEmailService';
 import type { IFileUploadService, UploadableFile } from '../interfaces/IFileUploadService';
 import type { IEventEmitter } from '../interfaces/IEventEmitter';
 import type { ISong } from '../../domain/interfaces/Song';
+import { SONG_EVENTS } from '../constants/events';
 
-const SONG_ADDED_EVENT = 'refresh';
+const SONG_ADDED_EVENT = SONG_EVENTS.REFRESH;
 
 export interface AddSongInput {
   title: string;

@@ -1,14 +1,15 @@
 import type { Song, SortField } from '../types/song';
 import { API_BASE_URL } from './config';
+import { handleApiResponseError } from '../utils/apiErrorHandling';
 
 export async function fetchSongs(sortBy: SortField): Promise<Song[]> {
   const res = await fetch(`${API_BASE_URL}/api/songs?sortBy=${sortBy}`);
   if (!res.ok) throw new Error('Erreur lors du chargement des chansons');
-  const data = await res.json() as unknown;
+  const parsedResponse = await res.json() as unknown;
 
-  if (!Array.isArray(data)) throw new Error('Format incorrect');
+  if (!Array.isArray(parsedResponse)) throw new Error('Format incorrect');
 
-  return data as Song[];
+  return parsedResponse as Song[];
 }
 
 export interface AddSongPayload {
@@ -25,8 +26,7 @@ export async function deleteSong(songId: string, token: string): Promise<void> {
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors de la suppression de la chanson');
+    await handleApiResponseError(res, 'Erreur lors de la suppression de la chanson');
   }
 }
 
@@ -53,8 +53,7 @@ export async function updateSong(songId: string, payload: UpdateSongPayload, tok
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors de la modification de la chanson');
+    await handleApiResponseError(res, 'Erreur lors de la modification de la chanson');
   }
 
   return (await res.json()) as Song;
@@ -74,8 +73,7 @@ export async function addSong(payload: AddSongPayload, token: string): Promise<S
   });
 
   if (!res.ok) {
-    const body = await res.json() as { message?: string };
-    throw new Error(body.message ?? 'Erreur lors de l\'ajout de la chanson');
+    await handleApiResponseError(res, 'Erreur lors de l\'ajout de la chanson');
   }
 
   return (await res.json()) as Song;

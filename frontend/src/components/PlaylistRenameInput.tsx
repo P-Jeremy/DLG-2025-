@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Playlist } from '../api/playlists';
+import { isPlaylistNameNotEmpty, getTrimmedInput } from '../utils/validators';
 import './PlaylistRenameInput.scss';
 
 interface PlaylistRenameInputProps {
@@ -14,12 +15,13 @@ const PlaylistRenameInput: React.FC<PlaylistRenameInputProps> = ({ playlist, onC
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!name.trim() || name.trim() === playlist.name) {
+    const isNameChanged = getTrimmedInput(name) !== playlist.name;
+    if (!isNameChanged) {
       onCancel();
       return;
     }
     setSubmitting(true);
-    await onConfirm(name.trim());
+    await onConfirm(getTrimmedInput(name));
     setSubmitting(false);
   };
 
@@ -37,7 +39,7 @@ const PlaylistRenameInput: React.FC<PlaylistRenameInputProps> = ({ playlist, onC
       <button
         className="playlist-rename-input__validate-btn"
         type="button"
-        disabled={disabled || submitting || !name.trim()}
+        disabled={disabled || submitting || !isPlaylistNameNotEmpty(name)}
         onClick={() => void handleSubmit()}
       >
         Valider

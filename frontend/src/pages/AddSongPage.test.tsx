@@ -147,6 +147,7 @@ describe('AddSongPage', () => {
   it('shows error message when the API call fails', async () => {
     (globalThis as GlobalWithFetch).fetch = jest.fn().mockResolvedValue({
       ok: false,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: () => Promise.resolve({ message: 'Erreur serveur' }),
     } as Response);
 
