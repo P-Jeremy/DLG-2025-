@@ -26,7 +26,7 @@ L’ancien projet, basé sur une stack MEAN, m’a permis d’acquérir les base
 * difficulté à faire évoluer le code
 
 👉 Ancien repository :
-https://github.com/P-Jeremy/DLG
+https://github.com/P-Jeremy/MEAN-DLG-project
 
 Cette nouvelle version a pour objectif de repartir sur des bases solides, en appliquant les bonnes pratiques acquises depuis :
 
