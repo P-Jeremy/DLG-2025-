@@ -25,6 +25,7 @@ L’objectif est de repartir d’une base propre, en appliquant les bonnes prati
 * maintenabilité
 
 👉 Ancien projet : https://github.com/P-Jeremy/MEAN-DLG-project
+
 ---
 
 ## Stack technique
@@ -166,17 +167,36 @@ Le code produit est systématiquement relu et validé.
 
 ## Déploiement
 
+Le déploiement en production est déclenché manuellement via la GitHub Action :
+
+👉 **Deploy to Production**
+
+Le déclenchement manuel permet de découpler les releases des merges.
+
+---
+
 ### Frontend (Vercel)
 
-* Déploiement automatique sur chaque push vers `main`
+* Déployé via la GitHub Action "Deploy to Production"
 * Build : `npm run build` depuis `frontend/`
-* Preview sur branches
+* Hébergement sur Vercel
+
+---
 
 ### Backend (Render)
 
-* Déploiement automatique sur chaque push vers `main`
+* Déployé via la GitHub Action "Deploy to Production"
 * Build : `npm run build` depuis `backend/`
+* Hébergement sur Render
 * Base de données : MongoDB Atlas
+
+---
+
+### Workflow
+
+* Les changements sont mergés sur `main`
+* Le déploiement en production est déclenché manuellement
+* Permet de contrôler précisément les mises en production
 
 ---
 
