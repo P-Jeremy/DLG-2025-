@@ -4,22 +4,13 @@ import { LoginUser } from '../../../application/usecases/LoginUser';
 import { ActivateAccount } from '../../../application/usecases/ActivateAccount';
 import { RequestPasswordReset } from '../../../application/usecases/RequestPasswordReset';
 import { ResetPassword } from '../../../application/usecases/ResetPassword';
-import {
-  DomainError,
-  EmailAlreadyTakenError,
-  PseudoAlreadyTakenError,
-  UserNotFoundError,
-  AccountNotActiveError,
-  InvalidPasswordError,
-  InvalidActivationTokenError,
-  InvalidResetTokenError,
-} from '../../../domain/errors/DomainError';
 import type { IUserRepository } from '../../../domain/interfaces/IUserRepository';
 import type { IEmailService } from '../../../domain/interfaces/IEmailService';
 import type { IPasswordHasher } from '../../../domain/interfaces/IPasswordHasher';
 import type { IJwtService } from '../../../application/interfaces/IJwtService';
 import type { LoginUserInput } from '../../../application/usecases/LoginUser';
 import type { ResetPasswordInput } from '../../../application/usecases/ResetPassword';
+import { getHttpStatusForError, getErrorMessage } from '../utils/errorHandler';
 
 export class AuthController {
   constructor(
@@ -42,19 +33,9 @@ export class AuthController {
       const result = await usecase.execute({ email, pseudo, password });
       res.status(201).json(result);
     } catch (error) {
-      if (error instanceof EmailAlreadyTakenError) {
-        res.status(409).json({ message: error.message });
-        return;
-      }
-      if (error instanceof PseudoAlreadyTakenError) {
-        res.status(409).json({ message: error.message });
-        return;
-      }
-      if (error instanceof DomainError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      res.status(500).json({ message: 'Internal server error' });
+      const status = getHttpStatusForError(error);
+      const message = getErrorMessage(error);
+      res.status(status).json({ message });
     }
   }
 
@@ -64,15 +45,9 @@ export class AuthController {
       const result = await usecase.execute(req.body as LoginUserInput);
       res.json(result);
     } catch (error) {
-      if (error instanceof UserNotFoundError || error instanceof InvalidPasswordError) {
-        res.status(401).json({ message: 'Invalid credentials' });
-        return;
-      }
-      if (error instanceof AccountNotActiveError) {
-        res.status(403).json({ message: error.message });
-        return;
-      }
-      res.status(500).json({ message: 'Internal server error' });
+      const status = getHttpStatusForError(error);
+      const message = getErrorMessage(error, 'Invalid credentials');
+      res.status(status).json({ message });
     }
   }
 
@@ -82,11 +57,9 @@ export class AuthController {
       const result = await usecase.execute({ token: String(req.params.token) });
       res.json(result);
     } catch (error) {
-      if (error instanceof InvalidActivationTokenError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      res.status(500).json({ message: 'Internal server error' });
+      const status = getHttpStatusForError(error);
+      const message = getErrorMessage(error);
+      res.status(status).json({ message });
     }
   }
 
@@ -106,11 +79,9 @@ export class AuthController {
       const result = await usecase.execute(req.body as ResetPasswordInput);
       res.json(result);
     } catch (error) {
-      if (error instanceof InvalidResetTokenError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      res.status(500).json({ message: 'Internal server error' });
+      const status = getHttpStatusForError(error);
+      const message = getErrorMessage(error);
+      res.status(status).json({ message });
     }
   }
 }

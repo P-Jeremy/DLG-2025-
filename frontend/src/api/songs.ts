@@ -4,11 +4,11 @@ import { API_BASE_URL } from './config';
 export async function fetchSongs(sortBy: SortField): Promise<Song[]> {
   const res = await fetch(`${API_BASE_URL}/api/songs?sortBy=${sortBy}`);
   if (!res.ok) throw new Error('Erreur lors du chargement des chansons');
-  const data = await res.json() as unknown;
+  const parsedResponse = await res.json() as unknown;
 
-  if (!Array.isArray(data)) throw new Error('Format incorrect');
+  if (!Array.isArray(parsedResponse)) throw new Error('Format incorrect');
 
-  return data as Song[];
+  return parsedResponse as Song[];
 }
 
 export interface AddSongPayload {

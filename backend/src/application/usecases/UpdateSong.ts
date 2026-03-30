@@ -3,8 +3,9 @@ import type { IFileUploadService, UploadableFile } from '../interfaces/IFileUplo
 import type { IEventEmitter } from '../interfaces/IEventEmitter';
 import type { ISong } from '../../domain/interfaces/Song';
 import { SongNotFoundError } from '../../domain/errors/DomainError';
+import { SONG_EVENTS } from '../constants/events';
 
-const SONG_UPDATED_EVENT = 'refresh';
+const SONG_UPDATED_EVENT = SONG_EVENTS.REFRESH;
 
 export interface UpdateSongInput {
   songId: string;

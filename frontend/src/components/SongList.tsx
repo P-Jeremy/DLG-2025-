@@ -11,11 +11,12 @@ import { fetchPlaylistsPublic, fetchPlaylistPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
 import { useSearch } from '../contexts/SearchContext';
+import { SONG_EVENTS } from '../constants/events';
+import { getErrorMessage } from '../utils/errorHandling';
 import type { Song } from '../types/song';
 import type { Playlist } from '../api/playlists';
 import './SongList.scss';
 
-const REFRESH_EVENT = 'refresh';
 const SHUFFLE_DELAY_MS = 500;
 
 function pickRandomSong(songs: Song[]): Song {
@@ -65,7 +66,7 @@ const SongList: React.FC = () => {
       setSongs(data);
       setPlaylists(playlistsData);
     } catch (err: unknown) {
-      setError((err as Error).message || 'Unknown error');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -98,7 +99,7 @@ const SongList: React.FC = () => {
         setShuffledSong(null);
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError((err as Error).message || 'Unknown error');
+        if (!cancelled) setError(getErrorMessage(err));
       })
       .finally(() => { if (!cancelled) setPlaylistLoading(false); });
     return () => { cancelled = true; };
@@ -139,7 +140,7 @@ const SongList: React.FC = () => {
     withShuffleDelay(() => setShuffledSong(null));
   }, [withShuffleDelay]);
 
-  useSocket(REFRESH_EVENT, handleRefresh);
+  useSocket(SONG_EVENTS.REFRESH, handleRefresh);
 
   const isShuffleActive = shuffledSong !== null;
 

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchPlaylists, createPlaylist, renamePlaylist, deletePlaylist } from '../api/playlists';
+import { getErrorMessage } from '../utils/errorHandling';
 import type { Playlist } from '../api/playlists';
 import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
@@ -50,7 +51,7 @@ const AdminPlaylistsManagePage: React.FC = () => {
       setActionSuccess('Playlist créée avec succès.');
       loadPlaylists();
     } catch (err: unknown) {
-      setActionError((err as Error).message);
+      setActionError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ const AdminPlaylistsManagePage: React.FC = () => {
       setActiveAction(null);
       loadPlaylists();
     } catch (err: unknown) {
-      setActionError((err as Error).message);
+      setActionError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ const AdminPlaylistsManagePage: React.FC = () => {
       setActionSuccess(`Playlist renommée en "${updated.name}".`);
       setActiveAction(null);
     } catch (err: unknown) {
-      setActionError((err as Error).message);
+      setActionError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

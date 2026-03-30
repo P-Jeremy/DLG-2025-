@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../api/auth';
+import { getErrorMessage } from '../utils/errorHandling';
 import AppBackground from '../components/AppBackground';
 import './ForgotPasswordPage.scss';
 
@@ -18,7 +19,7 @@ const ForgotPasswordPage: React.FC = () => {
       await forgotPassword({ email });
       setSuccess(true);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

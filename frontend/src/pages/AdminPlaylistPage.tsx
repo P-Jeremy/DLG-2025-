@@ -6,6 +6,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import { useAuth } from '../contexts/AuthContext';
 import { fetchPlaylist, reorderPlaylist, addSongToPlaylist, removeSongFromPlaylist } from '../api/playlists';
 import { fetchSongs } from '../api/songs';
+import { getErrorMessage } from '../utils/errorHandling';
 import type { Song } from '../types/song';
 import AppBackground from '../components/AppBackground';
 import Navbar from '../components/Navbar';
@@ -42,7 +43,7 @@ const AdminPlaylistPage: React.FC = () => {
       setSongs(playlistData.songs);
       setAllSongs(allSongsData);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -88,7 +89,7 @@ const AdminPlaylistPage: React.FC = () => {
       await reorderPlaylist(playlistName, songs.map((s) => s.id), token);
       setSuccess(true);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -104,7 +105,7 @@ const AdminPlaylistPage: React.FC = () => {
       setConfirmRemoveId(null);
       setSuccess(false);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setRemovingId(null);
     }
@@ -118,7 +119,7 @@ const AdminPlaylistPage: React.FC = () => {
       setSongs((prev) => [...prev, song]);
       setSuccess(false);
     } catch (err: unknown) {
-      setAddingError((err as Error).message);
+      setAddingError(getErrorMessage(err));
     }
   };
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../api/auth';
 import { useAuth } from '../contexts/AuthContext';
+import { getErrorMessage } from '../utils/errorHandling';
 import AppBackground from '../components/AppBackground';
 import PasswordInput from '../components/PasswordInput';
 import './LoginPage.scss';
@@ -24,7 +25,7 @@ const LoginPage: React.FC = () => {
       authLogin(result.token, result.pseudo);
       void navigate('/');
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

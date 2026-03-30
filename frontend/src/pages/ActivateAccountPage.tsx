@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { activateAccount } from '../api/auth';
+import { getErrorMessage } from '../utils/errorHandling';
 import AppBackground from '../components/AppBackground';
 
 type ActivationState = 'loading' | 'success' | 'error';
@@ -25,7 +26,7 @@ const ActivateAccountPage: React.FC = () => {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setErrorMessage((err as Error).message);
+          setErrorMessage(getErrorMessage(err));
           setState('error');
         }
       });
