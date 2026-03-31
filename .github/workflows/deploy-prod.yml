@@ -2,6 +2,16 @@ name: 🚀 Deploy to Production
 
 on:
   workflow_dispatch:
+    inputs:
+      version_type:
+        description: "Type de version"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   deploy:
@@ -12,6 +22,16 @@ jobs:
 
     steps:
       # -------------------------
+      # Vérification de la branche
+      # -------------------------
+      - name: Verify branch
+        run: |
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "::error::This workflow can only be run from the main branch."
+            exit 1
+          fi
+
+      # -------------------------
       # Checkout main
       # -------------------------
       - name: Checkout main
@@ -20,6 +40,29 @@ jobs:
           ref: main
           token: ${{ secrets.PAT_DEPLOY }}
           fetch-depth: 0
+
+      # -------------------------
+      # Vérifier que main est à jour
+      # -------------------------
+      - name: Ensure main is up to date
+        run: |
+          git fetch origin main
+          LOCAL=$(git rev-parse HEAD)
+          REMOTE=$(git rev-parse origin/main)
+
+          if [ "$LOCAL" != "$REMOTE" ]; then
+            echo "::error::Local main is not up to date with origin/main"
+            exit 1
+          fi
+
+      # -------------------------
+      # Cache npm (fix propre)
+      # -------------------------
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
 
       # -------------------------
       # Install dependencies
@@ -43,6 +86,56 @@ jobs:
         run: cd frontend && npm test
 
       # -------------------------
+      # Generate version + changelog
+      # -------------------------
+      - name: Generate version and changelog
+        run: |
+          VERSION_TYPE=${{ github.event.inputs.version_type }}
+
+          if [ "$VERSION_TYPE" = "major" ]; then
+            npx standard-version --release-as major
+          elif [ "$VERSION_TYPE" = "minor" ]; then
+            npx standard-version --release-as minor
+          else
+            npx standard-version --release-as patch
+          fi
+
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # -------------------------
+      # Sync versions to frontend/backend
+      # -------------------------
+      - name: Sync versions to sub-packages
+        run: |
+          VERSION=${{ env.VERSION }}
+
+          # backend
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('./backend/package.json'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('./backend/package.json', JSON.stringify(pkg, null, 2));
+          "
+
+          # frontend
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('./frontend/package.json'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('./frontend/package.json', JSON.stringify(pkg, null, 2));
+          "
+
+          git add backend/package.json frontend/package.json
+
+          # commit seulement si nécessaire (fix safe)
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit --amend --no-edit
+          fi
+
+      # -------------------------
       # Build
       # -------------------------
       - name: Build backend
@@ -64,31 +157,41 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.PAT_DEPLOY }}@github.com/${{ github.repository }}
 
       # -------------------------
-      # Sync prod = main (RESET)
+      # Save release commit
       # -------------------------
-      - name: Fetch prod
-        run: git fetch origin prod
-
-      - name: Reset prod to main
+      - name: Save release commit
         run: |
+          echo "RELEASE_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      # -------------------------
+      # Push main (source of truth)
+      # -------------------------
+      - name: Push main
+        run: |
+          git push origin $RELEASE_SHA:main
+          git push origin --tags
+
+      # -------------------------
+      # Sync prod = main
+      # -------------------------
+      - name: Update prod from main
+        run: |
+          git fetch origin prod
           git checkout prod
           git reset --hard origin/main
-
-      # -------------------------
-      # Tag version
-      # -------------------------
-      - name: Tag version
-        run: |
-          VERSION=$(date +'%Y.%m.%d-%H%M')
-          git tag "prod-$VERSION"
-
-      # -------------------------
-      # Push
-      # -------------------------
-      - name: Push to prod
-        run: |
           git push origin prod --force
-          git push origin --tags
+
+      # -------------------------
+      # Create GitHub Release
+      # -------------------------
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # -------------------------
       # Trigger deployments

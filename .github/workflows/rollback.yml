@@ -1,10 +1,10 @@
-name: ⏪ Rollback to commit
+name: ⏪ Rollback to tag
 
 on:
   workflow_dispatch:
     inputs:
-      commit_sha:
-        description: 'Commit SHA to deploy (full or short)'
+      tag:
+        description: "Tag to rollback to (ex: v1.2.3)"
         required: true
         type: string
 
@@ -16,13 +16,40 @@ jobs:
       name: production
 
     steps:
-      - name: Checkout target commit
+      # -------------------------
+      # Checkout repo
+      # -------------------------
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.commit_sha }}
-          token: ${{ secrets.PAT_DEPLOY }}
           fetch-depth: 0
+          token: ${{ secrets.PAT_DEPLOY }}
 
+      # -------------------------
+      # Validate tag exists
+      # -------------------------
+      - name: Validate tag
+        run: |
+          TAG=${{ github.event.inputs.tag }}
+          git fetch --tags
+
+          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "❌ Tag $TAG does not exist"
+            exit 1
+          fi
+
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      # -------------------------
+      # Checkout target tag
+      # -------------------------
+      - name: Checkout target tag
+        run: |
+          git checkout $TAG
+
+      # -------------------------
+      # Install dependencies
+      # -------------------------
       - name: Install root dependencies
         run: npm install
 
@@ -32,18 +59,27 @@ jobs:
       - name: Install frontend dependencies
         run: cd frontend && npm install
 
+      # -------------------------
+      # Tests
+      # -------------------------
       - name: Test backend
         run: cd backend && npm run test
 
       - name: Test frontend
         run: cd frontend && npm test
 
+      # -------------------------
+      # Build
+      # -------------------------
       - name: Build backend
         run: cd backend && npm run build
 
       - name: Build frontend
         run: cd frontend && npm run build
 
+      # -------------------------
+      # Git config
+      # -------------------------
       - name: Configure git
         run: |
           git config user.name "github-actions"
@@ -53,22 +89,53 @@ jobs:
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.PAT_DEPLOY }}@github.com/${{ github.repository }}
 
-      - name: Reset prod to target commit
+      # -------------------------
+      # Reset prod to tag
+      # -------------------------
+      - name: Reset prod to tag
         run: |
           git fetch origin prod
           git checkout prod
-          git reset --hard ${{ github.event.inputs.commit_sha }}
+          git reset --hard $TAG
 
+      # -------------------------
+      # Create rollback tag
+      # -------------------------
       - name: Tag rollback
         run: |
-          VERSION=$(date +'%Y.%m.%d-%H%M')
-          git tag "rollback-$VERSION-to-${{ github.event.inputs.commit_sha }}"
+          DATE=$(date +'%Y.%m.%d-%H%M')
+          ROLLBACK_TAG="rollback-$DATE-to-$TAG"
 
-      - name: Push to prod
+          git tag "$ROLLBACK_TAG"
+          echo "ROLLBACK_TAG=$ROLLBACK_TAG" >> $GITHUB_ENV
+
+      # -------------------------
+      # Push
+      # -------------------------
+      - name: Push to prod + tags
         run: |
           git push origin prod --force
           git push origin --tags
 
+      # -------------------------
+      # Create GitHub Release (rollback)
+      # -------------------------
+      - name: Create Rollback Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.ROLLBACK_TAG }}
+          name: "Rollback to ${{ env.TAG }}"
+          body: |
+            ⏪ Rollback effectué
+
+            Target version: ${{ env.TAG }}
+            Rollback tag: ${{ env.ROLLBACK_TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # -------------------------
+      # Trigger deployments
+      # -------------------------
       - name: Trigger Vercel Deploy
         run: curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
 

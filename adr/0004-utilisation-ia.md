@@ -17,7 +17,7 @@ Le projet est développé avec l’aide d’assistants IA modernes, notamment :
 * Claude Code
 * GitHub Copilot
 
-Ces outils font partie intégrante de mon environnement de développement et influencent la manière dont je conçois et produis le code.
+Ces outils font partie intégrante de mon environnement de développement et n'influencent pas la manière dont je conçois et produis le code.
 
 ---
 
