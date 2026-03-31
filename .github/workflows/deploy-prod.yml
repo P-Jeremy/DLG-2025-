@@ -1,6 +1,5 @@
 name: 🚀 Deploy to Production
 
-# ✅ FIX CRITIQUE pour la release GitHub
 permissions:
   contents: write
 
@@ -26,7 +25,7 @@ jobs:
 
     steps:
       # -------------------------
-      # Vérification de la branche
+      # Verify branch
       # -------------------------
       - name: Verify branch
         run: |
@@ -46,7 +45,7 @@ jobs:
           fetch-depth: 0
 
       # -------------------------
-      # Vérifier que main est à jour
+      # Ensure main is up to date
       # -------------------------
       - name: Ensure main is up to date
         run: |
@@ -60,7 +59,7 @@ jobs:
           fi
 
       # -------------------------
-      # Cache npm (FIX)
+      # Cache npm
       # -------------------------
       - name: Cache npm
         uses: actions/cache@v3
@@ -102,9 +101,24 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.PAT_DEPLOY }}@github.com/${{ github.repository }}
 
       # -------------------------
-      # Generate version + changelog
+      # Check if last commit is release
+      # -------------------------
+      - name: Check if last commit is a release
+        run: |
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%s)
+          echo "Last commit: $LAST_COMMIT_MSG"
+
+          if echo "$LAST_COMMIT_MSG" | grep -q "chore(release):"; then
+            echo "SKIP_BUMP=true" >> $GITHUB_ENV
+          else
+            echo "SKIP_BUMP=false" >> $GITHUB_ENV
+          fi
+
+      # -------------------------
+      # Generate version (if needed)
       # -------------------------
       - name: Generate version and changelog
+        if: env.SKIP_BUMP != 'true'
         run: |
           VERSION_TYPE=${{ github.event.inputs.version_type }}
 
@@ -120,7 +134,16 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       # -------------------------
-      # Sync versions to frontend/backend
+      # Fallback version if skipped
+      # -------------------------
+      - name: Set version if skipped
+        if: env.SKIP_BUMP == 'true'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # -------------------------
+      # Sync versions to sub-packages
       # -------------------------
       - name: Sync versions to sub-packages
         run: |
