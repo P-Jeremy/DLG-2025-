@@ -1,5 +1,9 @@
 name: 🚀 Deploy to Production
 
+# ✅ FIX CRITIQUE pour la release GitHub
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -56,13 +60,13 @@ jobs:
           fi
 
       # -------------------------
-      # Cache npm
+      # Cache npm (FIX)
       # -------------------------
       - name: Cache npm
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'backend/package-lock.json', 'frontend/package-lock.json') }}
 
       # -------------------------
       # Install dependencies
@@ -86,7 +90,7 @@ jobs:
         run: cd frontend && npm test
 
       # -------------------------
-      # Git config (FIX IMPORTANT)
+      # Git config
       # -------------------------
       - name: Configure git
         run: |
@@ -122,20 +126,17 @@ jobs:
         run: |
           VERSION=${{ env.VERSION }}
 
-          # backend
           node -e "
             const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('./backend/package.json'));
-            pkg.version = '$VERSION';
-            fs.writeFileSync('./backend/package.json', JSON.stringify(pkg, null, 2));
-          "
 
-          # frontend
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('./frontend/package.json'));
-            pkg.version = '$VERSION';
-            fs.writeFileSync('./frontend/package.json', JSON.stringify(pkg, null, 2));
+            const update = (path) => {
+              const pkg = JSON.parse(fs.readFileSync(path));
+              pkg.version = '$VERSION';
+              fs.writeFileSync(path, JSON.stringify(pkg, null, 2));
+            };
+
+            update('./backend/package.json');
+            update('./frontend/package.json');
           "
 
           git add backend/package.json frontend/package.json
@@ -163,7 +164,7 @@ jobs:
           echo "RELEASE_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       # -------------------------
-      # Push main (source of truth)
+      # Push main
       # -------------------------
       - name: Push main
         run: |
