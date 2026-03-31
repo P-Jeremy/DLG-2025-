@@ -10,7 +10,12 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'],
+        includeAssets: [
+          'icons/pwa/icon-192.png',
+          'icons/pwa/icon-512.png',
+          'icons/pwa/icon-512-maskable.png',
+          'icons/pwa/apple-touch-icon.png',
+        ],
         manifest: {
           name: 'DLG',
           short_name: 'DLG',
@@ -19,16 +24,20 @@ export default defineConfig(({ mode }) => {
           orientation: 'portrait',
           background_color: '#f5f5f5',
           theme_color: '#1976d2',
-          description: 'Chansons DLG',
+          description: 'Chansons DLG v2', // 👈 force update PWA
           icons: [
             {
-              src: '/icons/icon-192.png',
+              src: '/icons/pwa/icon-192.png',
               sizes: '192x192',
               type: 'image/png',
-              purpose: 'any',
             },
             {
-              src: '/icons/icon-512.png',
+              src: '/icons/pwa/icon-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+            {
+              src: '/icons/pwa/icon-512-maskable.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
@@ -55,7 +64,9 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     define: {
-      'window.__ENV__': JSON.stringify({ VITE_API_URL: env.VITE_API_URL ?? '' }),
+      'window.__ENV__': JSON.stringify({
+        VITE_API_URL: env.VITE_API_URL ?? '',
+      }),
     },
     server: {
       proxy: {
