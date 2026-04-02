@@ -16,7 +16,7 @@ import {
 } from '../../src/domain/errors/DomainError';
 import { UserMongoRepository } from '../../src/infrastructure/repositories/userRepository';
 import { BcryptPasswordHasher } from '../../src/infrastructure/services/BcryptPasswordHasher';
-import type { IEmailService } from '../../src/domain/interfaces/IEmailService';
+import type { IEmailService } from '../../src/application/interfaces/IEmailService';
 import type { IJwtService, JwtPayload } from '../../src/application/interfaces/IJwtService';
 
 const buildMockEmailService = (): IEmailService => ({

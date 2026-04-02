@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { AuthController } from '../controllers/authController';
 import { UserMongoRepository } from '../../repositories/userRepository';
 import { JwtService } from '../../services/JwtService';
-import { NodemailerEmailService } from '../../services/NodemailerEmailService';
+import { ResendEmailService } from '../../services/ResendEmailService';
 import { BcryptPasswordHasher } from '../../services/BcryptPasswordHasher';
 import { authRateLimiter } from '../middlewares/rateLimiter';
 
@@ -10,7 +10,7 @@ const router = Router();
 
 const userRepository = new UserMongoRepository();
 const jwtService = new JwtService();
-const emailService = new NodemailerEmailService();
+const emailService = new ResendEmailService();
 const passwordHasher = new BcryptPasswordHasher();
 const controller = new AuthController(userRepository, jwtService, emailService, passwordHasher);
 

@@ -1,8 +1,8 @@
 import { RegisterUser } from '../../src/application/usecases/RegisterUser';
 import { EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../src/domain/errors/DomainError';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
-import type { IEmailService } from '../../src/domain/interfaces/IEmailService';
-import type { IPasswordHasher } from '../../src/domain/interfaces/IPasswordHasher';
+import type { IEmailService } from '../../src/application/interfaces/IEmailService';
+import type { IPasswordHasher } from '../../src/application/interfaces/IPasswordHasher';
 import type { User } from '../../src/domain/models/User';
 
 const buildMockUserRepository = (overrides: Partial<IUserRepository> = {}): IUserRepository => ({

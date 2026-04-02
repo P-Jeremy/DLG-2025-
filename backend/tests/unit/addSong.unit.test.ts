@@ -1,7 +1,7 @@
 import { AddSong } from '../../src/application/usecases/AddSong';
 import type { ISongRepository } from '../../src/domain/interfaces/ISongRepository';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
-import type { IEmailService } from '../../src/domain/interfaces/IEmailService';
+import type { IEmailService } from '../../src/application/interfaces/IEmailService';
 import type { IFileUploadService, UploadableFile } from '../../src/application/interfaces/IFileUploadService';
 import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
 import type { ISong } from '../../src/domain/interfaces/Song';
@@ -193,7 +193,7 @@ describe('AddSong use case', () => {
       setAdminRole: jest.fn().mockResolvedValue(null),
     });
     const emailService = buildMockEmailService({
-      sendNewSongNotification: jest.fn().mockRejectedValue(new Error('SMTP failure')),
+      sendNewSongNotification: jest.fn().mockRejectedValue(new Error('Email send failure')),
     });
     const songRepository = buildMockSongRepository();
 

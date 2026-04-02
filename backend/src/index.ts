@@ -17,17 +17,17 @@ import { createSongsRouter } from './infrastructure/http/routes/songs';
 import { SocketEventEmitter } from './infrastructure/services/SocketEventEmitter';
 
 const app = express();
+app.set('trust proxy', 1);
+const allowedOrigin = process.env.ALLOWED_ORIGIN ?? '*';
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*' },
+  cors: { origin: allowedOrigin },
 });
 
 const port: number = Number(process.env.PORT) || 3000;
 
 const mongoUri: string = process.env.MONGO_URI || '';
 void connectMongo(mongoUri);
-
-const allowedOrigin = process.env.ALLOWED_ORIGIN ?? '*';
 
 app.use(cors({ origin: allowedOrigin }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));

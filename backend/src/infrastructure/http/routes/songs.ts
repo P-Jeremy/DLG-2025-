@@ -8,13 +8,14 @@ import { DeleteSong } from '../../../application/usecases/DeleteSong';
 import { SongRepository } from '../../repositories/songRepository';
 import { PlaylistRepository } from '../../repositories/playlistRepository';
 import { UserMongoRepository } from '../../repositories/userRepository';
-import { NodemailerEmailService } from '../../services/NodemailerEmailService';
+import { ResendEmailService } from '../../services/ResendEmailService';
 import { S3FileUploadService } from '../../services/S3FileUploadService';
 import { authenticate } from '../middlewares/authenticate';
 import { requireAdmin } from '../middlewares/requireAdmin';
 import type { IEventEmitter } from '../../../application/interfaces/IEventEmitter';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const MAX_UPLOAD_SIZE_BYTES = 2 * 1024 * 1024;
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_UPLOAD_SIZE_BYTES } });
 
 export function createSongsRouter(eventEmitter: IEventEmitter): Router {
   const router = Router();
@@ -22,7 +23,7 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
   const songRepository = new SongRepository();
   const playlistRepository = new PlaylistRepository();
   const userRepository = new UserMongoRepository();
-  const emailService = new NodemailerEmailService();
+  const emailService = new ResendEmailService();
   const fileUploadService = new S3FileUploadService();
 
   const getSongsUsecase = new GetSongsUsecase(songRepository);
