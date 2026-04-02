@@ -1,7 +1,7 @@
 import { ResetPassword } from '../../src/application/usecases/ResetPassword';
 import { InvalidResetTokenError } from '../../src/domain/errors/DomainError';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
-import type { IPasswordHasher } from '../../src/domain/interfaces/IPasswordHasher';
+import type { IPasswordHasher } from '../../src/application/interfaces/IPasswordHasher';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';
 import { Pseudo } from '../../src/domain/value-objects/Pseudo';

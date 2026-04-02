@@ -1,7 +1,7 @@
 import { LoginUser } from '../../src/application/usecases/LoginUser';
 import { UserNotFoundError, AccountNotActiveError, InvalidPasswordError } from '../../src/domain/errors/DomainError';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
-import type { IPasswordHasher } from '../../src/domain/interfaces/IPasswordHasher';
+import type { IPasswordHasher } from '../../src/application/interfaces/IPasswordHasher';
 import type { IJwtService, JwtPayload } from '../../src/application/interfaces/IJwtService';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';

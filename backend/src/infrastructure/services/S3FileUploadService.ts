@@ -3,22 +3,25 @@ import { randomUUID } from 'crypto';
 import path from 'path';
 import type { IFileUploadService, UploadableFile } from '../../application/interfaces/IFileUploadService';
 
-const ALLOWED_MIME_TYPES = ['image/png', 'image/jpg', 'image/jpeg'];
+const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg'];
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
 export class S3FileUploadService implements IFileUploadService {
   private get s3Client(): S3Client {
+    const accessKeyId = process.env.AWS_ID;
+    const secretAccessKey = process.env.AWS_KEY;
+    if (!accessKeyId) throw new Error('AWS_ID environment variable is not set');
+    if (!secretAccessKey) throw new Error('AWS_KEY environment variable is not set');
     return new S3Client({
       region: process.env.AWS_REGION ?? 'us-east-1',
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
-      },
+      credentials: { accessKeyId, secretAccessKey },
     });
   }
 
   private get bucketName(): string {
-    return process.env.AWS_S3_BUCKET ?? '';
+    const bucket = process.env.BUCKET;
+    if (!bucket) throw new Error('BUCKET environment variable is not set');
+    return bucket;
   }
 
   async upload(file: UploadableFile): Promise<string> {
@@ -51,6 +54,7 @@ export class S3FileUploadService implements IFileUploadService {
     if (!url.startsWith(bucketPrefix)) return;
 
     const key = url.slice(bucketPrefix.length);
+    if (!/^[0-9a-f-]{36}\.(jpg|jpeg|png)$/i.test(key)) return;
 
     await this.s3Client.send(
       new DeleteObjectCommand({

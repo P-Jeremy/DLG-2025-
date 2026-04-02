@@ -1,6 +1,6 @@
 import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
 import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import type { IEmailService } from '../../domain/interfaces/IEmailService';
+import type { IEmailService } from '../interfaces/IEmailService';
 import type { IFileUploadService, UploadableFile } from '../interfaces/IFileUploadService';
 import type { IEventEmitter } from '../interfaces/IEventEmitter';
 import type { ISong } from '../../domain/interfaces/Song';

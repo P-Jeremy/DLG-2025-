@@ -1,6 +1,6 @@
 import { RequestPasswordReset } from '../../src/application/usecases/RequestPasswordReset';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
-import type { IEmailService } from '../../src/domain/interfaces/IEmailService';
+import type { IEmailService } from '../../src/application/interfaces/IEmailService';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';
 import { Pseudo } from '../../src/domain/value-objects/Pseudo';
@@ -95,7 +95,7 @@ describe('RequestPasswordReset use case', () => {
       findByEmail: jest.fn().mockResolvedValue(user),
     });
     const emailService = buildMockEmailService({
-      sendPasswordResetEmail: jest.fn().mockRejectedValue(new Error('SMTP error')),
+      sendPasswordResetEmail: jest.fn().mockRejectedValue(new Error('Email send failure')),
     });
     const usecase = new RequestPasswordReset(repository, emailService);
 

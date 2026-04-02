@@ -5,8 +5,8 @@ import { Pseudo } from '../../domain/value-objects/Pseudo';
 import { HashedPassword } from '../../domain/value-objects/HashedPassword';
 import { EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../domain/errors/DomainError';
 import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import type { IEmailService } from '../../domain/interfaces/IEmailService';
-import type { IPasswordHasher } from '../../domain/interfaces/IPasswordHasher';
+import type { IEmailService } from '../interfaces/IEmailService';
+import type { IPasswordHasher } from '../interfaces/IPasswordHasher';
 
 const TOKEN_BYTE_LENGTH = 32;
 
@@ -62,7 +62,7 @@ export class RegisterUser {
     try {
       await this.emailService.sendActivationEmail(email.toString(), activationToken);
     } catch (error: unknown) {
-      console.error('Failed to send activation email:', error);
+      console.error('Failed to send activation email:', error instanceof Error ? error.message : 'Unknown error');
     }
 
     return { userId: savedUser.id! };

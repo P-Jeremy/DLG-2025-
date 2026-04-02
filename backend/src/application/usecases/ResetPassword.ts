@@ -1,7 +1,7 @@
 import { HashedPassword } from '../../domain/value-objects/HashedPassword';
 import { InvalidResetTokenError } from '../../domain/errors/DomainError';
 import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import type { IPasswordHasher } from '../../domain/interfaces/IPasswordHasher';
+import type { IPasswordHasher } from '../interfaces/IPasswordHasher';
 
 export interface ResetPasswordInput {
   token: string;

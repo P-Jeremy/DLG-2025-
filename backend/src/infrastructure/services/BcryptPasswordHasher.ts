@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import type { IPasswordHasher } from '../../domain/interfaces/IPasswordHasher';
+import type { IPasswordHasher } from '../../application/interfaces/IPasswordHasher';
 
 const BCRYPT_ROUNDS = 10;
 

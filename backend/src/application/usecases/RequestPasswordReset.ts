@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import type { IEmailService } from '../../domain/interfaces/IEmailService';
+import type { IEmailService } from '../interfaces/IEmailService';
 
 const TOKEN_BYTE_LENGTH = 32;
 

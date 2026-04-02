@@ -1,6 +1,6 @@
 import { UserNotFoundError, AccountNotActiveError, InvalidPasswordError } from '../../domain/errors/DomainError';
 import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import type { IPasswordHasher } from '../../domain/interfaces/IPasswordHasher';
+import type { IPasswordHasher } from '../interfaces/IPasswordHasher';
 import type { IJwtService } from '../interfaces/IJwtService';
 
 export interface LoginUserInput {
