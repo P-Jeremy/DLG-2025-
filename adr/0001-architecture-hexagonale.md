@@ -67,11 +67,10 @@ Contient :
 
 Contient :
 
-* les contrôleurs
-* les routes
-* l’orchestration des cas d’usage
+* les cas d’usage (use cases)
+* les interfaces de ports (IRepository, IEmailService, etc.)
 
-👉 Elle fait le lien entre le monde extérieur et le domaine.
+👉 Elle orchestre les objets de domaine. Aucune dépendance vers le framework.
 
 ---
 
