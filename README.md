@@ -32,11 +32,13 @@ L’objectif est de repartir d’une base propre, en appliquant les bonnes prati
 
 | Couche               | Technologie                              |
 | -------------------- | ---------------------------------------- |
-| Frontend             | React 19 + Vite + TypeScript             |
+| Frontend             | React 19 + Vite + TypeScript + Sass      |
 | Backend              | Express 5 + TypeScript                   |
-| Base de données      | MongoDB (Mongoose)                       |
+| Base de données      | MongoDB (Mongoose) — Atlas en production |
+| Temps-réel           | Socket.io                                |
+| Upload fichiers      | AWS S3 (multer-s3)                       |
+| PWA                  | vite-plugin-pwa                          |
 | Tests                | Jest + Supertest + mongodb-memory-server |
-| Workspaces           | npm workspaces                           |
 | Déploiement Frontend | Vercel                                   |
 | Déploiement Backend  | Render                                   |
 
@@ -49,18 +51,22 @@ monorepo-dlg/
 ├── backend/
 │   └── src/
 │       ├── domain/          # Entités, value objects, interfaces repository
-│       ├── application/     # Cas d'usage (use cases)
-│       ├── infrastructure/  # Controllers, routes, repositories, DB
+│       ├── application/     # Cas d'usage (use cases), interfaces de ports
+│       ├── infrastructure/  # Controllers, routes, repositories, services, DB
 │       └── index.ts
 ├── frontend/
 │   └── src/
 │       ├── api/
 │       ├── components/
 │       ├── contexts/
+│       ├── hooks/
 │       ├── pages/
-│       └── layouts/
+│       ├── layouts/
+│       ├── styles/
+│       ├── types/
+│       └── utils/
 ├── adr/                     # Architecture Decision Records
-├── package.json             # Racine — workspaces + scripts globaux
+├── package.json             # Racine — scripts globaux
 ├── CLAUDE.md                # Conventions de développement
 └── README.md                # Ce fichier
 ```
