@@ -183,7 +183,10 @@
 
 @media (max-width: $breakpoint-sm) {
   .add-song-page {
-    padding: 1.5rem 1rem;
+    padding-top: calc(max(env(safe-area-inset-top), 28px) + 104px);
+    padding-right: 1rem;
+    padding-bottom: 1.5rem;
+    padding-left: 1rem;
     align-items: flex-start;
   }
 
