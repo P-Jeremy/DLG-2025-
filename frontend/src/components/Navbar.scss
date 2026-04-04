@@ -6,7 +6,7 @@
   grid-template-areas: 'brand search actions';
   grid-template-columns: minmax(0, 1fr) minmax(0, 420px) minmax(0, 1fr);
   align-items: center;
-  padding: max(env(safe-area-inset-top), 0.6rem) 1.5rem 0.6rem;
+  padding: max(env(safe-area-inset-top), 1rem) 1.5rem 0.75rem;
   background: $color-primary;
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
   position: sticky;
@@ -150,7 +150,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     // max() garantit un minimum de 20px même si safe-area-inset-top = 0
     // (navigateur sans viewport-fit=cover, ou PWA non fullscreen)
-    padding-top: max(env(safe-area-inset-top), 20px);
+    padding-top: max(env(safe-area-inset-top), 28px);
     padding-bottom: 0.5rem;
     position: fixed;
     bottom: auto;
