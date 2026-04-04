@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AdminDropdown from './AdminDropdown';
 import NavbarSearch from './NavbarSearch/NavbarSearch';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,6 +7,7 @@ import './Navbar.scss';
 
 const Navbar: React.FC = () => {
   const { pseudo, isAdmin, logout } = useAuth();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const closeMenu = () => setMenuOpen(false);
@@ -47,7 +48,7 @@ const Navbar: React.FC = () => {
           {pseudo ? (
             <button
               className="navbar__item navbar__item--button"
-              onClick={() => { logout(); closeMenu(); }}
+              onClick={() => { logout(); closeMenu(); void navigate('/'); }}
             >
               Déconnexion ({pseudo})
             </button>
