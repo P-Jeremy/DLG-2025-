@@ -77,9 +77,9 @@ $content-padding-h-mobile: 0.75rem;
   top: $navbar-height + 20px;
   z-index: 50;
 
-  // Tablette : header 2 lignes fixe, hauteur ~100px + safe-area + 20px gap
+  // Tablette : header 2 lignes fixe, hauteur ~108px + safe-area + 20px gap
   @media (max-width: $breakpoint-md) {
-    top: calc(max(env(safe-area-inset-top), 20px) + 100px);
+    top: calc(max(env(safe-area-inset-top), 28px) + 108px);
     padding: 0 $content-padding-h-tablet;
   }
 
