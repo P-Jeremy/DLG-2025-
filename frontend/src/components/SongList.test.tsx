@@ -77,61 +77,6 @@ describe('Integration | Component | SongList', () => {
       expect(titles[2]).toHaveTextContent('Stairway to Heaven');
     });
 
-    it('displays the toggle unchecked (sort by title active) by default', async () => {
-      mockFetchReturning(songsSortedByTitle);
-
-      renderSongList();
-
-      await waitFor(() => {
-        expect(screen.getByText('Angie')).toBeInTheDocument();
-      });
-
-      expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).not.toBeChecked();
-    });
-  });
-
-  describe('sort by artist', () => {
-    it('sorts songs by author on the frontend without refetching', async () => {
-      mockFetchReturning(songsSortedByTitle);
-
-      renderSongList();
-
-      await waitFor(() => {
-        expect(screen.getByText('Angie')).toBeInTheDocument();
-      });
-
-      const fetchCallsBefore = (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch.mock.calls
-        .filter((call: unknown[]) => String(call[0]).includes('/api/songs?')).length;
-
-      fireEvent.click(screen.getByLabelText('Sort by artist'));
-
-      await waitFor(() => {
-        const titles = screen.getAllByText(/Angie|Bohemian Rhapsody|Stairway to Heaven/);
-        expect(titles[0]).toHaveTextContent('Stairway to Heaven');
-        expect(titles[1]).toHaveTextContent('Bohemian Rhapsody');
-        expect(titles[2]).toHaveTextContent('Angie');
-      });
-
-      const fetchCallsAfter = (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch.mock.calls
-        .filter((call: unknown[]) => String(call[0]).includes('/api/songs?')).length;
-      expect(fetchCallsAfter).toBe(fetchCallsBefore);
-    });
-
-    it('displays the toggle checked after selecting Artist', async () => {
-      mockFetchReturning(songsSortedByTitle);
-
-      renderSongList();
-
-      await waitFor(() => {
-        expect(screen.getByText('Angie')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByLabelText('Sort by artist'));
-
-      await waitFor(() => {
-        expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeChecked();
-      });
-    });
   });
 
   describe('error cases', () => {
@@ -362,30 +307,4 @@ describe('Integration | Component | SongList', () => {
     });
   });
 
-  describe('back to sort by title', () => {
-    it('re-sorts by title on the frontend after toggling back', async () => {
-      mockFetchReturning(songsSortedByTitle);
-
-      renderSongList();
-
-      await waitFor(() => {
-        expect(screen.getByText('Angie')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByLabelText('Sort by artist'));
-
-      await waitFor(() => {
-        expect(screen.getByRole('checkbox', { name: 'Trier par artiste' })).toBeChecked();
-      });
-
-      fireEvent.click(screen.getByLabelText('Sort by title'));
-
-      await waitFor(() => {
-        const titles = screen.getAllByText(/Angie|Bohemian Rhapsody|Stairway to Heaven/);
-        expect(titles[0]).toHaveTextContent('Angie');
-        expect(titles[1]).toHaveTextContent('Bohemian Rhapsody');
-        expect(titles[2]).toHaveTextContent('Stairway to Heaven');
-      });
-    });
-  });
 });

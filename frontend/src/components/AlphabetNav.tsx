@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from 'react';
-import type { Song, SortField } from '../types/song';
+import type { Song } from '../types/song';
 import { NAVBAR_HEIGHT_PX } from '../constants/layout';
 import './AlphabetNav.scss';
 
@@ -7,18 +7,12 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 interface AlphabetNavProps {
   songs: Song[];
-  sortField: SortField;
 }
 
-function extractFirstLetter(song: Song, sortField: SortField): string {
-  const field = sortField === 'author' ? song.author : song.title;
-  return field?.[0]?.toUpperCase() ?? '';
-}
-
-function computeAvailableLetters(songs: Song[], sortField: SortField): Set<string> {
+function computeAvailableLetters(songs: Song[]): Set<string> {
   const letters = new Set<string>();
   for (const song of songs) {
-    const letter = extractFirstLetter(song, sortField);
+    const letter = song.title?.[0]?.toUpperCase() ?? '';
     if (letter) letters.add(letter);
   }
   return letters;
@@ -31,10 +25,10 @@ function scrollToLetter(letter: string): void {
   window.scrollTo({ top, behavior: 'smooth' });
 }
 
-const AlphabetNav: React.FC<AlphabetNavProps> = ({ songs, sortField }) => {
+const AlphabetNav: React.FC<AlphabetNavProps> = ({ songs }) => {
   const availableLetters = useMemo(
-    () => computeAvailableLetters(songs, sortField),
-    [songs, sortField],
+    () => computeAvailableLetters(songs),
+    [songs],
   );
 
   useEffect(() => {

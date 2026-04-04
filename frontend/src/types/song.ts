@@ -5,5 +5,3 @@ export interface Song {
   lyrics?: string;
   tab?: string;
 }
-
-export type SortField = 'title' | 'author';

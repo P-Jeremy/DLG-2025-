@@ -8,7 +8,8 @@
 }
 
 html {
-  background: #fff;
+  // Fond de base — le pattern vinyl s'affiche par-dessus via .app-bg__pattern
+  background: #faf7f4;
   overscroll-behavior-y: none;
 }
 
@@ -32,11 +33,6 @@ body {
   width: 100%;
 }
 
-@media (max-width: 900px) {
-  #root {
-    padding-top: 160px;
-  }
-}
 
 button {
   -webkit-appearance: none;

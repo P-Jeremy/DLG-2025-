@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import DOMPurify from 'dompurify';
-import type { Song, SortField } from '../types/song';
+import type { Song } from '../types/song';
 import { NAVBAR_HEIGHT_PX } from '../constants/layout';
 import DeleteConfirmButton from './SongItem/DeleteConfirmButton';
 import './SongItem.scss';
 
 interface SongItemProps {
   song: Song;
-  sortField?: SortField;
   isAdmin?: boolean;
   onDelete?: (songId: string) => Promise<void>;
   onEdit?: (songId: string) => void;
@@ -16,7 +15,7 @@ interface SongItemProps {
   onOpen: (songId: string | null) => void;
 }
 
-const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin = false, onDelete, onEdit, isOpen, onOpen }) => {
+const SongItem: React.FC<SongItemProps> = ({ song, isAdmin = false, onDelete, onEdit, isOpen, onOpen }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [showTab, setShowTab] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -70,9 +69,7 @@ const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin 
     return firstChar ?? '';
   };
 
-  const songLetter = sortField === 'author'
-    ? extractFirstLetter(song.author)
-    : extractFirstLetter(song.title);
+  const songLetter = extractFirstLetter(song.title);
 
   const toggleAll = () => {
     if (confirmDelete) return;
@@ -146,7 +143,7 @@ const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin 
         >
           <div className="song-details-actions">
             {song.tab && (
-              <button onClick={() => {
+              <button className={showTab ? 'active' : ''} onClick={() => {
                 if (showTab) {
                   flushSync(() => setShowTab(false));
                   scrollCardIntoView();
@@ -154,11 +151,11 @@ const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin 
                   withScrollPreserved(() => setShowTab(true));
                 }
               }}>
-                {showTab ? 'Masquer la tablature' : 'Afficher la tablature'}
+                {'Tablature'}
               </button>
             )}
             {song.lyrics && (
-              <button onClick={() => {
+              <button className={showLyrics ? 'active' : ''} onClick={() => {
                 if (showLyrics) {
                   flushSync(() => setShowLyrics(false));
                   scrollCardIntoView();
@@ -166,7 +163,7 @@ const SongItem: React.FC<SongItemProps> = ({ song, sortField = 'title', isAdmin 
                   withScrollPreserved(() => setShowLyrics(true));
                 }
               }}>
-                {showLyrics ? 'Masquer les paroles' : 'Afficher les paroles'}
+                {'Paroles'}
               </button>
             )}
           </div>

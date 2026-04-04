@@ -225,6 +225,13 @@
         padding: 0.5em 0.75em;
         min-height: 40px;
         white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .active {
+        background: $color-primary;
+        color: #fff;
+        box-shadow: none;
       }
 
       @media (min-width: $breakpoint-md) {

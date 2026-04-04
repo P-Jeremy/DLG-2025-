@@ -10,18 +10,18 @@ const makeSong = (id: string, title: string, author?: string): Song => ({
 
 describe('AlphabetNav', () => {
   it('renders all 26 letters', () => {
-    render(<AlphabetNav songs={[]} sortField="title" />);
+    render(<AlphabetNav songs={[]} />);
     'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((letter) => {
       expect(screen.getByText(letter)).toBeInTheDocument();
     });
   });
 
-  it('marks letters as active when songs start with those letters (sortField title)', () => {
+  it('marks letters as active when songs start with those letters', () => {
     const songs = [
       makeSong('1', 'Amazing Grace'),
       makeSong('2', 'Bohemian Rhapsody'),
     ];
-    render(<AlphabetNav songs={songs} sortField="title" />);
+    render(<AlphabetNav songs={songs} />);
 
     expect(screen.getByRole('button', { name: /lettre A/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /lettre B/i })).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe('AlphabetNav', () => {
 
   it('marks letters as disabled when no songs start with those letters', () => {
     const songs = [makeSong('1', 'Amazing Grace')];
-    render(<AlphabetNav songs={songs} sortField="title" />);
+    render(<AlphabetNav songs={songs} />);
 
     const disabledLetters = screen.getAllByText(/[B-Z]/);
     disabledLetters.forEach((el) => {
@@ -51,7 +51,7 @@ describe('AlphabetNav', () => {
     });
     jest.spyOn(window, 'scrollTo').mockImplementation(mockScrollTo);
 
-    render(<AlphabetNav songs={songs} sortField="title" />);
+    render(<AlphabetNav songs={songs} />);
     fireEvent.click(screen.getByRole('button', { name: /lettre C/i }));
 
     expect(mockScrollTo).toHaveBeenCalledWith({ top: expect.any(Number), behavior: 'smooth' });
@@ -61,30 +61,15 @@ describe('AlphabetNav', () => {
 
   it('does not render a button for inactive letters', () => {
     const songs = [makeSong('1', 'Amazing Grace')];
-    render(<AlphabetNav songs={songs} sortField="title" />);
+    render(<AlphabetNav songs={songs} />);
 
     const zEl = screen.getByText('Z');
     expect(zEl.tagName.toLowerCase()).not.toBe('button');
   });
 
-  it('uses author first letter when sortField is author', () => {
-    const songs = [makeSong('1', 'Some Title', 'Xavier Doe')];
-    render(<AlphabetNav songs={songs} sortField="author" />);
-
-    expect(screen.getByRole('button', { name: /lettre X/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /lettre S/i })).not.toBeInTheDocument();
-  });
-
-  it('ignores songs without author when sortField is author', () => {
-    const songs = [makeSong('1', 'Title Without Author')];
-    render(<AlphabetNav songs={songs} sortField="author" />);
-
-    expect(screen.queryByRole('button', { name: /lettre T/i })).not.toBeInTheDocument();
-  });
-
   it('handles uppercase normalization correctly', () => {
     const songs = [makeSong('1', 'amazing grace')];
-    render(<AlphabetNav songs={songs} sortField="title" />);
+    render(<AlphabetNav songs={songs} />);
 
     expect(screen.getByRole('button', { name: /lettre A/i })).toBeInTheDocument();
   });

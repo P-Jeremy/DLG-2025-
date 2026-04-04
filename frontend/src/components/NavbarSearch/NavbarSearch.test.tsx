@@ -23,7 +23,7 @@ describe('Unit | Component | NavbarSearch', () => {
 
     const input = screen.getByRole('searchbox', { name: 'Rechercher une chanson' });
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute('placeholder', 'Rechercher…');
+    expect(input).toHaveAttribute('placeholder', 'Rechercher par titre ou artiste…');
   });
 
   it('renders the input as type search', () => {
@@ -33,10 +33,11 @@ describe('Unit | Component | NavbarSearch', () => {
     expect(input).toHaveAttribute('type', 'search');
   });
 
-  it('renders the SortToggle component', () => {
+  it('does not render sort tabs (tabs are in SongList, not in the header)', () => {
     renderNavbarSearch();
 
-    expect(screen.getByRole('checkbox')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Titre' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Artiste' })).not.toBeInTheDocument();
   });
 
   it('blurs the input when Enter key is pressed', () => {
