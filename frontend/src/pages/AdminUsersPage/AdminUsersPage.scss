@@ -8,7 +8,7 @@
   min-height: calc(100dvh - 60px);
 
   @media (max-width: $breakpoint-md) {
-    padding-top: calc(max(env(safe-area-inset-top), 28px) + 104px);
+    padding-top: calc(max(env(safe-area-inset-top), 28px) + 120px);
   }
 }
 
@@ -105,7 +105,7 @@
 
 @media (max-width: $breakpoint-sm) {
   .admin-users-page {
-    padding-top: calc(max(env(safe-area-inset-top), 28px) + 104px);
+    padding-top: calc(max(env(safe-area-inset-top), 28px) + 120px);
     padding-right: 0.75rem;
     padding-bottom: 1.5rem;
     padding-left: 0.75rem;
