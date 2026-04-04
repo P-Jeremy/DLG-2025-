@@ -3,10 +3,8 @@
 .navbar-search {
   grid-area: search;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
   width: 100%;
   padding: 0 0.5rem;
   min-width: 0;
@@ -14,34 +12,34 @@
 
 .navbar-search__input {
   width: 100%;
-  max-width: 180px;
-  padding: 0.4rem 0.85rem;
-  border: 1.5px solid rgba(0, 0, 0, 0.1);
-  border-radius: $border-radius-button;
-  font-size: 0.92rem;
+  max-width: 420px;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
   font-family: inherit;
-  background: #fff;
-  color: $color-text;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
   outline: none;
   box-sizing: border-box;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: border-color $transition-fast, box-shadow $transition-fast;
+  transition: background-color $transition-fast, box-shadow $transition-fast;
   pointer-events: auto;
   touch-action: manipulation;
 
   &:focus {
-    border-color: $color-primary;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+    background: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
   }
 
   &::placeholder {
-    color: rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.65);
   }
-}
 
-.navbar-search__sort {
-  display: flex;
-  justify-content: center;
+  // Icône loupe native du type search — colorée en blanc
+  &::-webkit-search-decoration,
+  &::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
 }
 
 .navbar-search--hidden {
@@ -50,22 +48,25 @@
   user-select: none;
 }
 
+// Tablette : input centrée et contrainte — pas pleine largeur
 @media (max-width: $breakpoint-md) {
   .navbar-search {
-    max-width: 360px;
-    margin: 0 auto;
-    padding: 0.5rem 0 0.25rem;
-    justify-self: center;
-    width: 100%;
+    padding: 0.3rem 1.5rem 0.5rem;
+  }
+
+  .navbar-search__input {
+    max-width: 480px;
   }
 }
 
 @media (max-width: $breakpoint-sm) {
   .navbar-search {
-    max-width: 100%;
-    padding: 0.5rem 0.5rem 0.25rem;
+    padding: 0.3rem 1rem 0.45rem;
   }
+}
 
+// iOS : prevent auto-zoom on focus
+@media (max-width: $breakpoint-sm) {
   .navbar-search__input {
     font-size: 16px;
   }
