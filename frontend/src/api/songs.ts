@@ -1,9 +1,9 @@
-import type { Song, SortField } from '../types/song';
+import type { Song } from '../types/song';
 import { API_BASE_URL } from './config';
 import { handleApiResponseError } from '../utils/apiErrorHandling';
 
-export async function fetchSongs(sortBy: SortField): Promise<Song[]> {
-  const res = await fetch(`${API_BASE_URL}/api/songs?sortBy=${sortBy}`);
+export async function fetchSongs(): Promise<Song[]> {
+  const res = await fetch(`${API_BASE_URL}/api/songs?sortBy=title`);
   if (!res.ok) throw new Error('Erreur lors du chargement des chansons');
   const parsedResponse = await res.json() as unknown;
 

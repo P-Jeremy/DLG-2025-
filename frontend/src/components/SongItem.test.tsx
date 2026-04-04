@@ -41,21 +41,26 @@ describe('Integration | Component | SongItem', () => {
       fireEvent.click(screen.getByText('Test Song'));
     });
 
-    it('displays the tab section and lyrics section', () => {
-      expect(screen.getByText('Tablature')).toBeInTheDocument();
-      expect(screen.getByText('Paroles', { selector: 'div' })).toBeInTheDocument();
+    it('displays tab and lyrics sections by default when opened', () => {
+      expect(screen.getByAltText('Tablature')).toBeInTheDocument();
       expect(screen.getByText('Paroles test')).toBeInTheDocument();
     });
 
-    it('hides the tab section when clicking "Masquer la tablature"', () => {
-      fireEvent.click(screen.getByText(/Masquer la tablature/));
+    it('hides the tab section when clicking the Tablature button', () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Tablature' }));
 
       expect(screen.queryByAltText('Tablature')).not.toBeInTheDocument();
-      expect(screen.getByText('Paroles', { selector: 'div' })).toBeInTheDocument();
     });
 
-    it('hides the lyrics section when clicking "Masquer les paroles"', () => {
-      fireEvent.click(screen.getByText(/Masquer les paroles/));
+    it('shows the tab section again when clicking the Tablature button a second time', () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Tablature' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Tablature' }));
+
+      expect(screen.getByAltText('Tablature')).toBeInTheDocument();
+    });
+
+    it('hides the lyrics section when clicking the Paroles button', () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Paroles' }));
 
       expect(screen.queryByText('Paroles test')).not.toBeInTheDocument();
     });
@@ -73,14 +78,8 @@ describe('Integration | Component | SongItem', () => {
   });
 
   describe('data-song-letter attribute', () => {
-    it('uses the first letter of title when sortField is "title"', () => {
-      const { container } = renderClosed({ sortField: 'title' });
-
-      expect(container.querySelector('[data-song-letter="T"]')).toBeInTheDocument();
-    });
-
-    it('uses the first letter of author when sortField is "author"', () => {
-      const { container } = renderClosed({ sortField: 'author' });
+    it('uses the first letter of the song title', () => {
+      const { container } = renderClosed();
 
       expect(container.querySelector('[data-song-letter="T"]')).toBeInTheDocument();
     });

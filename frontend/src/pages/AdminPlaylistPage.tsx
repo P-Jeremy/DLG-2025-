@@ -42,7 +42,7 @@ const AdminPlaylistPage: React.FC = () => {
     try {
       const [playlistData, allSongsData] = await Promise.all([
         fetchPlaylist(playlistName, token),
-        fetchSongs('title'),
+        fetchSongs(),
       ]);
       setSongs(playlistData.songs);
       setAllSongs(allSongsData);

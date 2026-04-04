@@ -45,7 +45,7 @@ function getSongListRenderState(
 
 const SongList: React.FC = () => {
   const { isAdmin, token } = useAuth();
-  const { searchQuery, sortField, setSearchVisible } = useSearch();
+  const { searchQuery, setSearchVisible } = useSearch();
   const navigate = useNavigate();
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -80,7 +80,7 @@ const SongList: React.FC = () => {
     setError(null);
     try {
       const [data, playlistsData] = await Promise.all([
-        fetchSongs('title'),
+        fetchSongs(),
         fetchPlaylistsPublic(),
       ]);
       setSongs(data);
@@ -131,15 +131,17 @@ const SongList: React.FC = () => {
   const filteredSongs = useMemo(() => {
     const base = playlistSongs ?? songs;
     const query = searchQuery.toLowerCase().trim();
-    const getValue = (s: Song) => (s[sortField] ?? '').toLowerCase();
     const searched = query
-      ? base.filter((s) => getValue(s).startsWith(query))
+      ? base.filter((s) =>
+          s.title.toLowerCase().startsWith(query) ||
+          (s.author ?? '').toLowerCase().startsWith(query)
+        )
       : base;
     if (playlistSongs) return searched;
     return [...searched].sort((a, b) =>
-      getValue(a).localeCompare(getValue(b), undefined, { sensitivity: 'base' }),
+      a.title.toLowerCase().localeCompare(b.title.toLowerCase(), undefined, { sensitivity: 'base' }),
     );
-  }, [songs, playlistSongs, searchQuery, sortField]);
+  }, [songs, playlistSongs, searchQuery]);
 
   const handleRefresh = useCallback(() => {
     void loadSongs();
@@ -216,7 +218,7 @@ const SongList: React.FC = () => {
           <>
             {!selectedPlaylistName && (
               <div className="song-list-alphabet">
-                <AlphabetNav songs={filteredSongs} sortField={sortField} />
+                <AlphabetNav songs={filteredSongs} />
               </div>
             )}
             <div className="song-list">
@@ -224,7 +226,6 @@ const SongList: React.FC = () => {
                 <SongItem
                   key={song.id}
                   song={song}
-                  sortField={sortField}
                   isAdmin={isAdmin}
                   onDelete={isAdmin ? handleDeleteSong : undefined}
                   onEdit={isAdmin ? handleEditSong : undefined}
@@ -244,7 +245,7 @@ const SongList: React.FC = () => {
       {!selectedPlaylistName && <ShuffleBar onShuffle={handleShuffle} />}
       {!isShuffleActive && !shuffling && (
         <div className="song-list-controls">
-          <div className="song-list-controls-card">
+            <div className="song-list-controls-card">
             {playlists.length > 0 && (
               <PlaylistFilter
                 playlists={playlists}

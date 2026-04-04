@@ -43,7 +43,7 @@ const EditSongPage: React.FC = () => {
     const loadData = async () => {
       setLoadingData(true);
       try {
-        const songs = await fetchSongs('title');
+        const songs = await fetchSongs();
         const found = songs.find((s) => s.id === id) ?? null;
         setSong(found);
 
