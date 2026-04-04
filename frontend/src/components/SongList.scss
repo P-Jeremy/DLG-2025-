@@ -16,16 +16,36 @@
   }
 }
 
+// Zone réservée au bouton scroll-to-top selon le breakpoint
+$scroll-btn-zone-desktop: 72px;  // 48px bouton + 24px gap
+$scroll-btn-zone-tablet: 56px;   // 40px bouton + 16px gap
+
 .song-list-bg {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
   min-height: 100vh;
-  padding: 0;
   background: transparent;
+  // Padding symétrique : contenu vraiment centré, bouton scroll dans la zone droite
+  padding: 0 $scroll-btn-zone-desktop;
+
+  @media (max-width: $breakpoint-md) {
+    padding: 0 $scroll-btn-zone-tablet;
+  }
+
+  // Mobile : pas de bouton scroll, pas de padding
+  @media (max-width: $breakpoint-sm) {
+    padding: 0;
+  }
 }
 
+
+// Largeur de contenu commune aux 3 éléments principaux
+$content-max-width: 900px;
+$content-padding-h: 1.5rem;
+$content-padding-h-tablet: 1rem;
+$content-padding-h-mobile: 0.75rem;
 
 .song-list-controls {
   display: flex;
@@ -33,36 +53,39 @@
   align-items: center;
   gap: 1rem;
   width: 100%;
-  max-width: 900px;
-  padding: 0.5rem 1.5rem 0.75rem;
+  max-width: $content-max-width;
+  padding: 0.5rem $content-padding-h 0.75rem;
   box-sizing: border-box;
 
   @media (max-width: $breakpoint-md) {
-    padding: 0.5rem 1rem 0.75rem;
+    padding: 0.5rem $content-padding-h-tablet 0.75rem;
   }
 
   @media (max-width: $breakpoint-sm) {
-    padding: 0.5rem 0.75rem 0.75rem;
+    padding: 0.5rem $content-padding-h-mobile 0.75rem;
   }
 }
 
 .song-list-alphabet {
   width: 100%;
-  max-width: 900px;
-  padding: 0 1.5rem;
+  max-width: $content-max-width;
+  padding: 0 $content-padding-h;
   box-sizing: border-box;
   margin-bottom: 0.75rem;
   position: sticky;
-  top: $navbar-height + 48px;
+  // Desktop : header 1 ligne ~52px + 20px gap
+  top: $navbar-height + 20px;
   z-index: 50;
 
+  // Tablette : header 2 lignes fixe, hauteur ~100px + safe-area + 20px gap
   @media (max-width: $breakpoint-md) {
-    top: 168px;
-    padding: 0 1rem;
+    top: calc(max(env(safe-area-inset-top), 20px) + 100px);
+    padding: 0 $content-padding-h-tablet;
   }
 
+  // Téléphone : masqué
   @media (max-width: $breakpoint-sm) {
-    padding: 0 0.75rem;
+    display: none;
   }
 }
 
@@ -86,21 +109,19 @@
 
 .song-list {
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  max-width: $content-max-width;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
   box-sizing: border-box;
-  padding: 0 1.5rem 2rem 1.5rem;
+  padding: 0 $content-padding-h 2rem;
 
   @media (max-width: $breakpoint-md) {
-    max-width: 700px;
-    padding: 0 0.5rem 2rem 0.5rem;
+    padding: 0 $content-padding-h-tablet 2rem;
   }
 
   @media (max-width: $breakpoint-sm) {
-    max-width: 98vw;
+    padding: 0 $content-padding-h-mobile 2rem;
   }
 }
 
