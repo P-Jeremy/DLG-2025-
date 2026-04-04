@@ -13,6 +13,11 @@
   outline: none;
 }
 
+// Retire le focus ring sur clic/touch, le conserve pour navigation clavier
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
 html {
   // Fond de base — le pattern vinyl s'affiche par-dessus via .app-bg__pattern
   background: #faf7f4;
