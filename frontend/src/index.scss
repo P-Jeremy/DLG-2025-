@@ -5,6 +5,12 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+// Retire le focus ring sur clic/touch, le conserve pour navigation clavier
+*:focus:not(:focus-visible) {
+  outline: none;
 }
 
 html {
@@ -51,9 +57,11 @@ button {
   -webkit-tap-highlight-color: transparent;
   transition: border-color $transition-fast, background-color $transition-fast;
 
-  &:hover,
-  &:active {
-    border-color: $color-button-hover-border;
-    background-color: $color-button-hover-bg;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover,
+    &:active {
+      border-color: $color-button-hover-border;
+      background-color: $color-button-hover-bg;
+    }
   }
 }
