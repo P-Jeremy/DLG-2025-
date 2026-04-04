@@ -7,6 +7,10 @@
   align-items: center;
   padding: 2rem 1.5rem;
   min-height: calc(100dvh - 60px);
+
+  @media (max-width: $breakpoint-md) {
+    padding-top: calc(max(env(safe-area-inset-top), 28px) + 120px);
+  }
 }
 
 .add-song-card {
@@ -179,7 +183,10 @@
 
 @media (max-width: $breakpoint-sm) {
   .add-song-page {
-    padding: 1.5rem 1rem;
+    padding-top: calc(max(env(safe-area-inset-top), 28px) + 120px);
+    padding-right: 1rem;
+    padding-bottom: 1.5rem;
+    padding-left: 1rem;
     align-items: flex-start;
   }
 

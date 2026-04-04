@@ -6,6 +6,10 @@
   align-items: center;
   padding: 2rem 1.5rem;
   min-height: calc(100dvh - 60px);
+
+  @media (max-width: $breakpoint-md) {
+    padding-top: calc(max(env(safe-area-inset-top), 28px) + 120px);
+  }
 }
 
 .admin-playlists-manage-card {
@@ -235,7 +239,10 @@
 
 @media (max-width: $breakpoint-sm) {
   .admin-playlists-manage-page {
-    padding: 1.5rem 0.75rem;
+    padding-top: calc(max(env(safe-area-inset-top), 28px) + 120px);
+    padding-right: 0.75rem;
+    padding-bottom: 1.5rem;
+    padding-left: 0.75rem;
     align-items: flex-start;
   }
 
