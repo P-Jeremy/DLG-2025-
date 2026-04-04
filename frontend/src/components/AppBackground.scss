@@ -1,17 +1,35 @@
 @use '../styles/variables' as *;
 
 .app-bg {
-  background: transparent;
+  // Pas de background ici — la couleur est sur html dans index.scss
+  // Le pattern fixed se place entre html et le contenu
+  position: relative;
   min-height: 100vh;
   width: 100%;
 }
 
-.app-parallax-bg {
+.app-bg__pattern {
   position: fixed;
   inset: 0;
   background-image: url('/background.png');
-  background-size: 15em;
-  background-position: center 50%;
-  z-index: -1;
+  background-repeat: repeat;
+  background-position: center center;
   pointer-events: none;
+  z-index: -1;
+
+  // Mobile : ~3 vinyls par ligne visibles
+  background-size: 9em;
+  opacity: 0.18;
+
+  // Tablette : légèrement plus grand
+  @media (min-width: $breakpoint-sm) {
+    background-size: 12em;
+    opacity: 0.22;
+  }
+
+  // Desktop
+  @media (min-width: $breakpoint-md) {
+    background-size: 16em;
+    opacity: 0.25;
+  }
 }
