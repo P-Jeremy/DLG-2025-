@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.1.0 (2026-04-05)
+
+- [FEATURE] Amélioration rendu en mode mobile (#52)
+- feat(front): Fix/mobile safe area and admin layout (#51)
+- feat(front): Navbar style mobile amélioration (#50)
+- feat(front): Amélioration navbar (#49)
+- [FEAT] Améliorations ux (#48)
+- docs: synchronise CLAUDE.md, README et ADR avec la réalité du projet (#47)
+- feat(email): migrate from Nodemailer/Gmail to Resend SDK (#46)
+- feat(deploy): update deploy workflow clean 4 (#45)
+- feat(deploy): update deploy workflow clean 3 (#44)
+- feat(deploy): update deploy workflow clean 2 (#43)
+- [FEAT] Maj Deploy propre (#42)
+- [TECH] Maj deploy workflow (#41)
+- [FEAT] Maj icones pwa (#40)
+- [DOC] Readme corriger la partie déploiement (#39)
+- [DOC] Fix Readme (#38)
+- [DOC] Fix ADR 0001 (#37)
+- [DOC] Amélioration documentation (#36)
+
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 ### [2.0.3](https://github.com/P-Jeremy/DLG-2025-/compare/v1.0.0...v2.0.3) (2026-04-04)
