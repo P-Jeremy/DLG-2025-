@@ -58,11 +58,11 @@ $content-padding-h-mobile: 0.75rem;
   box-sizing: border-box;
 
   @media (max-width: $breakpoint-md) {
-    padding: 0.5rem $content-padding-h-tablet 0.75rem;
+    padding: 2rem $content-padding-h-tablet 0.75rem;
   }
 
   @media (max-width: $breakpoint-sm) {
-    padding: 0.5rem $content-padding-h-mobile 0.75rem;
+    padding: 2rem $content-padding-h-mobile 0.75rem;
   }
 }
 
