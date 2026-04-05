@@ -43,6 +43,7 @@ jobs:
           ref: main
           token: ${{ secrets.PAT_DEPLOY }}
           fetch-depth: 0
+          fetch-tags: true
 
       # -------------------------
       # Ensure main is up to date
@@ -115,23 +116,93 @@ jobs:
           fi
 
       # -------------------------
-      # Generate version (if needed)
+      # Generate version and changelog
       # -------------------------
       - name: Generate version and changelog
         if: env.SKIP_BUMP != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_DEPLOY }}
+          REPO: ${{ github.repository }}
+          VERSION_TYPE: ${{ github.event.inputs.version_type }}
         run: |
-          VERSION_TYPE=${{ github.event.inputs.version_type }}
+          node -e "
+            const { execSync } = require('child_process');
+            const fs = require('fs');
 
-          if [ "$VERSION_TYPE" = "major" ]; then
-            npx standard-version --release-as major
-          elif [ "$VERSION_TYPE" = "minor" ]; then
-            npx standard-version --release-as minor
-          else
-            npx standard-version --release-as patch
-          fi
+            // Bump version
+            const pkg = JSON.parse(fs.readFileSync('package.json'));
+            const [major, minor, patch] = pkg.version.split('.').map(Number);
+            const type = process.env.VERSION_TYPE;
+            let newVersion;
+            if (type === 'major') newVersion = \`\${major + 1}.0.0\`;
+            else if (type === 'minor') newVersion = \`\${major}.\${minor + 1}.0\`;
+            else newVersion = \`\${major}.\${minor}.\${patch + 1}\`;
 
-          VERSION=$(node -p "require('./package.json').version")
+            pkg.version = newVersion;
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+
+            // Find last tag date
+            let since = '';
+            try {
+              const lastTag = execSync('git describe --tags --abbrev=0').toString().trim();
+              const tagDate = execSync(\`git log -1 --format=%aI \${lastTag}\`).toString().trim();
+              since = tagDate;
+            } catch {
+              since = '2000-01-01T00:00:00Z';
+            }
+
+            // Fetch merged PRs since last tag via GitHub API
+            const https = require('https');
+            const fetch = (url) => new Promise((resolve, reject) => {
+              const options = {
+                headers: {
+                  'Authorization': \`Bearer \${process.env.GITHUB_TOKEN}\`,
+                  'User-Agent': 'deploy-script',
+                  'Accept': 'application/vnd.github+json',
+                },
+              };
+              https.get(url, options, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => resolve(JSON.parse(data)));
+              }).on('error', reject);
+            });
+
+            (async () => {
+              const repo = process.env.REPO;
+              const prs = await fetch(\`https://api.github.com/repos/\${repo}/pulls?state=closed&sort=updated&direction=desc&per_page=50\`);
+              const newPrs = prs.filter(pr => pr.merged_at && pr.merged_at > since);
+
+              const date = new Date().toISOString().split('T')[0];
+              const prLines = newPrs.length > 0
+                ? newPrs.map(pr => \`- \${pr.title} (#\${pr.number})\`).join('\n')
+                : '- Corrections et améliorations internes';
+
+              const entry = \`## \${newVersion} (\${date})\n\n\${prLines}\n\`;
+
+              const existing = fs.existsSync('CHANGELOG.md') ? fs.readFileSync('CHANGELOG.md', 'utf8') : '';
+              const header = '# Changelog\n\n';
+              const body = existing.startsWith(header) ? existing.slice(header.length) : existing;
+              fs.writeFileSync('CHANGELOG.md', header + entry + '\n' + body);
+
+              // Sync sub-packages
+              ['./backend/package.json', './frontend/package.json'].forEach(p => {
+                const sub = JSON.parse(fs.readFileSync(p));
+                sub.version = newVersion;
+                fs.writeFileSync(p, JSON.stringify(sub, null, 2) + '\n');
+              });
+
+              fs.writeFileSync('RELEASE_NOTES.md', entry.trim());
+              fs.writeFileSync('.new-version', newVersion);
+            })();
+          "
+
+          VERSION=$(cat .new-version)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          git add package.json backend/package.json frontend/package.json CHANGELOG.md
+          git commit -m "chore(release): $VERSION"
+          git tag "v$VERSION"
 
       # -------------------------
       # Fallback version if skipped
@@ -142,33 +213,6 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      # -------------------------
-      # Sync versions to sub-packages
-      # -------------------------
-      - name: Sync versions to sub-packages
-        run: |
-          VERSION=${{ env.VERSION }}
-
-          node -e "
-            const fs = require('fs');
-
-            const update = (path) => {
-              const pkg = JSON.parse(fs.readFileSync(path));
-              pkg.version = '$VERSION';
-              fs.writeFileSync(path, JSON.stringify(pkg, null, 2));
-            };
-
-            update('./backend/package.json');
-            update('./frontend/package.json');
-          "
-
-          git add backend/package.json frontend/package.json
-
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit --amend --no-edit
-          fi
 
       # -------------------------
       # Build
@@ -212,7 +256,7 @@ jobs:
         with:
           tag_name: v${{ env.VERSION }}
           name: Release v${{ env.VERSION }}
-          body_path: CHANGELOG.md
+          body_path: RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_DEPLOY }}
 
