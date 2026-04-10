@@ -9,13 +9,14 @@ import http from 'http';
 import { Server } from 'socket.io';
 import helmet from 'helmet';
 import cors from 'cors';
-import mongoose from 'mongoose';
 import authRouter from './infrastructure/http/routes/auth';
 import usersRouter from './infrastructure/http/routes/users';
 import { createPlaylistsRouter } from './infrastructure/http/routes/playlists';
 import { connectMongo } from './infrastructure/db/mongo';
 import { createSongsRouter } from './infrastructure/http/routes/songs';
 import { SocketEventEmitter } from './infrastructure/services/SocketEventEmitter';
+import { requestLogger } from './infrastructure/http/middlewares/requestLogger';
+import monitoringRouter from './infrastructure/http/routes/monitoring';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -27,26 +28,20 @@ const io = new Server(server, {
 
 const port: number = Number(process.env.PORT) || 3000;
 
-const mongoUri: string = process.env.MONGO_URI || '';
+const mongoUri = process.env.MONGO_URI;
+if (!mongoUri) {
+  console.error('[Config] MONGO_URI is not defined — aborting.');
+  process.exit(1);
+}
 void connectMongo(mongoUri);
 
 app.use(cors({ origin: allowedOrigin }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(express.json());
+app.use(requestLogger);
+app.use(monitoringRouter);
 
 const socketEventEmitter = new SocketEventEmitter(io);
-
-app.get('/health', (_req, res) => {
-  const mongoConnected = mongoose.connection.readyState === 1;
-  const status = mongoConnected ? 'ok' : 'degraded';
-  const httpStatus = mongoConnected ? 200 : 503;
-
-  res.status(httpStatus).json({
-    status,
-    mongo: mongoConnected ? 'connected' : 'disconnected',
-    uptime: Math.floor(process.uptime()),
-  });
-});
 
 app.use('/api', createSongsRouter(socketEventEmitter));
 app.use('/api/auth', authRouter);
