@@ -56,8 +56,8 @@
   }
 }
 
-// Mobile : affichage accordion inline (pas de dropdown flottant)
-@media (max-width: $breakpoint-sm) {
+// Mobile/tablet : affichage accordion inline dès que le burger est visible
+@media (max-width: $breakpoint-md) {
   .admin-dropdown {
     width: 100%;
   }
