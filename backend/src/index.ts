@@ -15,6 +15,9 @@ import { createPlaylistsRouter } from './infrastructure/http/routes/playlists';
 import { connectMongo } from './infrastructure/db/mongo';
 import { createSongsRouter } from './infrastructure/http/routes/songs';
 import { SocketEventEmitter } from './infrastructure/services/SocketEventEmitter';
+import { requestLogger } from './infrastructure/http/middlewares/requestLogger';
+import { errorLogger } from './infrastructure/http/middlewares/errorLogger';
+import monitoringRouter from './infrastructure/http/routes/monitoring';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -26,12 +29,18 @@ const io = new Server(server, {
 
 const port: number = Number(process.env.PORT) || 3000;
 
-const mongoUri: string = process.env.MONGO_URI || '';
+const mongoUri = process.env.MONGO_URI;
+if (!mongoUri) {
+  console.error('[Config] MONGO_URI is not defined — aborting.');
+  process.exit(1);
+}
 void connectMongo(mongoUri);
 
 app.use(cors({ origin: allowedOrigin }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(express.json());
+app.use(requestLogger);
+app.use(monitoringRouter);
 
 const socketEventEmitter = new SocketEventEmitter(io);
 
@@ -39,6 +48,7 @@ app.use('/api', createSongsRouter(socketEventEmitter));
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api', createPlaylistsRouter());
+app.use(errorLogger);
 
 export default app;
 export { server };
