@@ -141,19 +141,20 @@ jobs:
             pkg.version = newVersion;
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 
-            // Find last tag date
-            let since = '';
+            // Extract PR numbers from git log since last tag
+            let prNumbers = [];
             try {
               const lastTag = execSync('git describe --tags --abbrev=0').toString().trim();
-              const tagDate = execSync(\`git log -1 --format=%aI \${lastTag}\`).toString().trim();
-              since = tagDate;
+              const log = execSync(\`git log \${lastTag}..HEAD --format=%s\`).toString();
+              const matches = [...log.matchAll(/#(\\d+)/g)];
+              prNumbers = [...new Set(matches.map(m => parseInt(m[1])))];
             } catch {
-              since = '2000-01-01T00:00:00Z';
+              // no previous tag — will show fallback message
             }
 
-            // Fetch merged PRs since last tag via GitHub API
+            // Fetch PR details from GitHub API
             const https = require('https');
-            const fetch = (url) => new Promise((resolve, reject) => {
+            const fetchPR = (number) => new Promise((resolve, reject) => {
               const options = {
                 headers: {
                   'Authorization': \`Bearer \${process.env.GITHUB_TOKEN}\`,
@@ -161,7 +162,7 @@ jobs:
                   'Accept': 'application/vnd.github+json',
                 },
               };
-              https.get(url, options, (res) => {
+              https.get(\`https://api.github.com/repos/\${process.env.REPO}/pulls/\${number}\`, options, (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => resolve(JSON.parse(data)));
@@ -169,9 +170,9 @@ jobs:
             });
 
             (async () => {
-              const repo = process.env.REPO;
-              const prs = await fetch(\`https://api.github.com/repos/\${repo}/pulls?state=closed&sort=updated&direction=desc&per_page=50\`);
-              const newPrs = prs.filter(pr => pr.merged_at && pr.merged_at > since);
+              const newPrs = (await Promise.all(prNumbers.map(n => fetchPR(n))))
+                .filter(pr => pr.merged_at)
+                .sort((a, b) => b.number - a.number);
 
               const date = new Date().toISOString().split('T')[0];
               const prLines = newPrs.length > 0
