@@ -15,7 +15,7 @@ function registerConnectionEvents(): void {
   mongoose.connection.on('connected', () => logMongo('INFO', 'Connection established'));
   mongoose.connection.on('disconnected', () => logMongo('WARN', 'Disconnected — Mongoose will retry'));
   mongoose.connection.on('reconnected', () => logMongo('INFO', 'Reconnected'));
-  mongoose.connection.on('error', () => logMongo('ERROR', 'Connection error — check MONGO_URI'));
+  mongoose.connection.on('error', (err: Error) => logMongo('ERROR', `Connection error — ${err.name}`));
   mongoose.connection.on('close', () => logMongo('WARN', 'Connection closed'));
 }
 
