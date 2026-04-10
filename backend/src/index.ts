@@ -16,6 +16,7 @@ import { connectMongo } from './infrastructure/db/mongo';
 import { createSongsRouter } from './infrastructure/http/routes/songs';
 import { SocketEventEmitter } from './infrastructure/services/SocketEventEmitter';
 import { requestLogger } from './infrastructure/http/middlewares/requestLogger';
+import { errorLogger } from './infrastructure/http/middlewares/errorLogger';
 import monitoringRouter from './infrastructure/http/routes/monitoring';
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api', createSongsRouter(socketEventEmitter));
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api', createPlaylistsRouter());
+app.use(errorLogger);
 
 export default app;
 export { server };
