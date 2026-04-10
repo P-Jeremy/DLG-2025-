@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0 (2026-04-10)
+
+- [TECH] Ajout de monitoring (#55)
+- [FEATURE] Amélioration burger menu sur tablette (#54)
+
 ## 2.1.0 (2026-04-05)
 
 - [FEATURE] Amélioration rendu en mode mobile (#52)
