@@ -9,6 +9,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import helmet from 'helmet';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import authRouter from './infrastructure/http/routes/auth';
 import usersRouter from './infrastructure/http/routes/users';
 import { createPlaylistsRouter } from './infrastructure/http/routes/playlists';
@@ -34,6 +35,18 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(express.json());
 
 const socketEventEmitter = new SocketEventEmitter(io);
+
+app.get('/health', (_req, res) => {
+  const mongoConnected = mongoose.connection.readyState === 1;
+  const status = mongoConnected ? 'ok' : 'degraded';
+  const httpStatus = mongoConnected ? 200 : 503;
+
+  res.status(httpStatus).json({
+    status,
+    mongo: mongoConnected ? 'connected' : 'disconnected',
+    uptime: Math.floor(process.uptime()),
+  });
+});
 
 app.use('/api', createSongsRouter(socketEventEmitter));
 app.use('/api/auth', authRouter);
