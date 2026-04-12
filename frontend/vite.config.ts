@@ -48,12 +48,11 @@ export default defineConfig(({ mode }) => {
           runtimeCaching: [
             {
               urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
-              handler: 'NetworkFirst',
+              handler: 'StaleWhileRevalidate',
               options: {
                 cacheName: 'api-cache',
-                networkTimeoutSeconds: 5,
                 expiration: {
-                  maxEntries: 50,
+                  maxEntries: 10,
                   maxAgeSeconds: 24 * 60 * 60,
                 },
                 cacheableResponse: { statuses: [0, 200] },
