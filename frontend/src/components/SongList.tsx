@@ -9,6 +9,7 @@ import ShuffleBar from './ShuffleBar';
 import { fetchSongs, deleteSong } from '../api/songs';
 import { fetchPlaylistsPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
+import { useApiCacheUpdate } from '../hooks/useApiCacheUpdate';
 import { useAuth } from '../contexts/AuthContext';
 import { useSearch } from '../contexts/SearchContext';
 import { SONG_EVENTS } from '../constants/events';
@@ -149,6 +150,7 @@ const SongList: React.FC = () => {
   }, [withShuffleDelay]);
 
   useSocket(SONG_EVENTS.REFRESH, handleRefresh);
+  useApiCacheUpdate(handleRefresh);
 
   const isShuffleActive = shuffledSong !== null;
   const effectivePlaylistName = pendingPlaylistName ?? selectedPlaylistName;
