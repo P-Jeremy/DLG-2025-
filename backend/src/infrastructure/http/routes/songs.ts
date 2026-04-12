@@ -10,6 +10,7 @@ import { PlaylistRepository } from '../../repositories/playlistRepository';
 import { UserMongoRepository } from '../../repositories/userRepository';
 import { ResendEmailService } from '../../services/ResendEmailService';
 import { S3FileUploadService } from '../../services/S3FileUploadService';
+import { MetaRepository } from '../../repositories/metaRepository';
 import { authenticate } from '../middlewares/authenticate';
 import { requireAdmin } from '../middlewares/requireAdmin';
 import type { IEventEmitter } from '../../../application/interfaces/IEventEmitter';
@@ -25,6 +26,7 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
   const userRepository = new UserMongoRepository();
   const emailService = new ResendEmailService();
   const fileUploadService = new S3FileUploadService();
+  const metaRepository = new MetaRepository();
 
   const getSongsUsecase = new GetSongsUsecase(songRepository);
   const addSongUsecase = new AddSong(
@@ -33,9 +35,10 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
     emailService,
     fileUploadService,
     eventEmitter,
+    metaRepository,
   );
-  const updateSongUsecase = new UpdateSong(songRepository, fileUploadService, eventEmitter);
-  const deleteSongUsecase = new DeleteSong(songRepository, playlistRepository, fileUploadService);
+  const updateSongUsecase = new UpdateSong(songRepository, fileUploadService, eventEmitter, metaRepository);
+  const deleteSongUsecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, metaRepository);
 
   const controller = new SongsController(
     getSongsUsecase,

@@ -2,6 +2,7 @@ import { UpdateSong } from '../../src/application/usecases/UpdateSong';
 import type { ISongRepository } from '../../src/domain/interfaces/ISongRepository';
 import type { IFileUploadService, UploadableFile } from '../../src/application/interfaces/IFileUploadService';
 import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
+import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { ISong } from '../../src/domain/interfaces/Song';
 import { SongNotFoundError } from '../../src/domain/errors/DomainError';
 
@@ -43,13 +44,19 @@ const buildMockEventEmitter = (overrides: Partial<IEventEmitter> = {}): IEventEm
   ...overrides,
 });
 
+const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMetaRepository => ({
+  touch: jest.fn().mockResolvedValue(undefined),
+  getUpdatedAt: jest.fn().mockResolvedValue(new Date()),
+  ...overrides,
+});
+
 describe('UpdateSong use case', () => {
   it('throws SongNotFoundError when the song does not exist', async () => {
     const songRepository = buildMockSongRepository({
       findById: jest.fn().mockResolvedValue(null),
     });
 
-    const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), buildMockEventEmitter());
+    const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), buildMockEventEmitter(), buildMockMetaRepository());
 
     await expect(
       usecase.execute({ songId: 'nonexistent', title: 'T', author: 'A', lyrics: 'L' }),
@@ -65,7 +72,7 @@ describe('UpdateSong use case', () => {
     });
     const fileUploadService = buildMockFileUploadService();
 
-    const usecase = new UpdateSong(songRepository, fileUploadService, buildMockEventEmitter());
+    const usecase = new UpdateSong(songRepository, fileUploadService, buildMockEventEmitter(), buildMockMetaRepository());
 
     await usecase.execute({
       songId: 'song-1',
@@ -100,7 +107,7 @@ describe('UpdateSong use case', () => {
       upload: jest.fn().mockResolvedValue(newTabUrl),
     });
 
-    const usecase = new UpdateSong(songRepository, fileUploadService, buildMockEventEmitter());
+    const usecase = new UpdateSong(songRepository, fileUploadService, buildMockEventEmitter(), buildMockMetaRepository());
 
     await usecase.execute({
       songId: 'song-1',
@@ -123,7 +130,7 @@ describe('UpdateSong use case', () => {
       findById: jest.fn().mockResolvedValue(buildSong()),
     });
 
-    const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), eventEmitter);
+    const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), eventEmitter, buildMockMetaRepository());
 
     await usecase.execute({ songId: 'song-1', title: 'T', author: 'A', lyrics: 'L' });
 
@@ -144,7 +151,7 @@ describe('UpdateSong use case', () => {
       update: jest.fn().mockResolvedValue(updatedSong),
     });
 
-    const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), buildMockEventEmitter());
+    const usecase = new UpdateSong(songRepository, buildMockFileUploadService(), buildMockEventEmitter(), buildMockMetaRepository());
 
     const { song } = await usecase.execute({
       songId: 'song-1',

@@ -1,6 +1,7 @@
 import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
 import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
 import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
+import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
 import { PlaylistNotFoundError, SongNotFoundError } from '../../domain/errors/DomainError';
 
 export interface RemoveSongFromPlaylistInput {
@@ -16,6 +17,7 @@ export class RemoveSongFromPlaylist {
   constructor(
     private readonly songRepository: ISongRepository,
     private readonly playlistRepository: IPlaylistRepository,
+    private readonly metaRepository: IMetaRepository,
   ) {}
 
   async execute(input: RemoveSongFromPlaylistInput): Promise<RemoveSongFromPlaylistOutput> {
@@ -31,6 +33,8 @@ export class RemoveSongFromPlaylist {
       name: input.playlistName,
       songIds: updatedSongIds,
     });
+
+    await this.metaRepository.touch();
 
     return { playlist };
   }

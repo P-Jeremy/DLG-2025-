@@ -1,6 +1,7 @@
 import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
 import type { IFileUploadService, UploadableFile } from '../interfaces/IFileUploadService';
 import type { IEventEmitter } from '../interfaces/IEventEmitter';
+import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
 import type { ISong } from '../../domain/interfaces/Song';
 import { SongNotFoundError } from '../../domain/errors/DomainError';
 import { SONG_EVENTS } from '../constants/events';
@@ -24,6 +25,7 @@ export class UpdateSong {
     private readonly songRepository: ISongRepository,
     private readonly fileUploadService: IFileUploadService,
     private readonly eventEmitter: IEventEmitter,
+    private readonly metaRepository: IMetaRepository,
   ) {}
 
   async execute(input: UpdateSongInput): Promise<UpdateSongOutput> {
@@ -46,6 +48,8 @@ export class UpdateSong {
     };
 
     const savedSong = await this.songRepository.update(updatedSongData);
+
+    await this.metaRepository.touch();
 
     this.eventEmitter.emit(SONG_UPDATED_EVENT);
 

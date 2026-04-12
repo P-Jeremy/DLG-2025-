@@ -27,6 +27,10 @@ jest.mock('socket.io-client', () => ({
   }),
 }));
 
+jest.mock('../hooks/useMetaSync', () => ({
+  useMetaSync: jest.fn(),
+}));
+
 let broadcastOnMessage: (() => void) | null = null;
 let mockBroadcastClose: jest.Mock;
 

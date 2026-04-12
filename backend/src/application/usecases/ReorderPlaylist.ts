@@ -1,5 +1,6 @@
 import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
 import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
+import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
 import { InvalidPlaylistSongError, PlaylistNotFoundError } from '../../domain/errors/DomainError';
 
 export interface ReorderPlaylistInput {
@@ -14,6 +15,7 @@ export interface ReorderPlaylistOutput {
 export class ReorderPlaylist {
   constructor(
     private readonly playlistRepository: IPlaylistRepository,
+    private readonly metaRepository: IMetaRepository,
   ) {}
 
   async execute(input: ReorderPlaylistInput): Promise<ReorderPlaylistOutput> {
@@ -30,6 +32,8 @@ export class ReorderPlaylist {
       name: input.playlistName,
       songIds: input.songIds,
     });
+
+    await this.metaRepository.touch();
 
     return { playlist };
   }

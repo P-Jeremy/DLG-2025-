@@ -1,5 +1,6 @@
 import { DeletePlaylist } from '../../src/application/usecases/DeletePlaylist';
 import type { IPlaylistRepository } from '../../src/domain/interfaces/IPlaylistRepository';
+import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { PlaylistNotFoundError } from '../../src/domain/errors/DomainError';
 
@@ -13,6 +14,12 @@ const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {
   ...overrides,
 });
 
+const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMetaRepository => ({
+  touch: jest.fn().mockResolvedValue(undefined),
+  getUpdatedAt: jest.fn().mockResolvedValue(new Date()),
+  ...overrides,
+});
+
 describe('DeletePlaylist use case', () => {
   it('should delete an existing playlist', async () => {
     const existingPlaylist: IPlaylist = { id: 'pl-1', name: 'rock', songIds: [] };
@@ -21,7 +28,7 @@ describe('DeletePlaylist use case', () => {
       deleteByName: jest.fn().mockResolvedValue(undefined),
     });
 
-    const usecase = new DeletePlaylist(playlistRepository);
+    const usecase = new DeletePlaylist(playlistRepository, buildMockMetaRepository());
     await usecase.execute({ name: 'rock' });
 
     expect(playlistRepository.deleteByName).toHaveBeenCalledWith('rock');
@@ -32,7 +39,7 @@ describe('DeletePlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(null),
     });
 
-    const usecase = new DeletePlaylist(playlistRepository);
+    const usecase = new DeletePlaylist(playlistRepository, buildMockMetaRepository());
 
     await expect(usecase.execute({ name: 'nonexistent' })).rejects.toThrow(PlaylistNotFoundError);
     expect(playlistRepository.deleteByName).not.toHaveBeenCalled();

@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
           orientation: 'portrait',
           background_color: '#f5f5f5',
           theme_color: '#1976d2',
-          description: 'Chansons DLG v2', // 👈 force update PWA
+          description: 'Chansons DLG v3.1.0', // 👈 force update PWA
           icons: [
             {
               src: '/icons/pwa/icon-192.png',
@@ -47,13 +47,13 @@ export default defineConfig(({ mode }) => {
         workbox: {
           runtimeCaching: [
             {
-              urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+              urlPattern: ({ url }) => url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/meta'),
               handler: 'StaleWhileRevalidate',
               options: {
                 cacheName: 'api-cache',
                 expiration: {
                   maxEntries: 10,
-                  maxAgeSeconds: 24 * 60 * 60,
+                  maxAgeSeconds: 2 * 60 * 60,
                 },
                 broadcastUpdate: {
                   channelName: 'api-updates',
