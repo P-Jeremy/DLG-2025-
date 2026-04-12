@@ -55,6 +55,10 @@ export default defineConfig(({ mode }) => {
                   maxEntries: 10,
                   maxAgeSeconds: 24 * 60 * 60,
                 },
+                broadcastUpdate: {
+                  channelName: 'api-updates',
+                  options: {},
+                },
                 cacheableResponse: { statuses: [0, 200] },
               },
             },

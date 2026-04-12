@@ -27,6 +27,28 @@ jest.mock('socket.io-client', () => ({
   }),
 }));
 
+let broadcastOnMessage: (() => void) | null = null;
+let mockBroadcastClose: jest.Mock;
+
+function makeBroadcastChannelInstance() {
+  mockBroadcastClose = jest.fn();
+  broadcastOnMessage = null;
+  const instance: { onmessage: (() => void) | null; close: jest.Mock } = {
+    onmessage: null,
+    close: mockBroadcastClose,
+  };
+  Object.defineProperty(instance, 'onmessage', {
+    set(handler: () => void) { broadcastOnMessage = handler; },
+    get() { return broadcastOnMessage; },
+    configurable: true,
+  });
+  return instance;
+}
+
+const MockBroadcastChannel = jest.fn().mockImplementation(makeBroadcastChannelInstance);
+
+(globalThis as typeof globalThis & { BroadcastChannel: unknown }).BroadcastChannel = MockBroadcastChannel;
+
 const songsSortedByTitle = [
   { id: '2', title: 'Angie', author: 'Rolling Stones' },
   { id: '1', title: 'Bohemian Rhapsody', author: 'Queen' },
@@ -45,6 +67,10 @@ const mockFetchReturning = (songs: typeof songsSortedByTitle) => {
 };
 
 describe('Integration | Component | SongList', () => {
+  beforeEach(() => {
+    MockBroadcastChannel.mockImplementation(makeBroadcastChannelInstance);
+  });
+
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -290,6 +316,38 @@ describe('Integration | Component | SongList', () => {
       expect(screen.getByText('Aucune chanson trouvée.')).toBeInTheDocument();
 
       jest.useRealTimers();
+    });
+  });
+
+  describe('api cache update via BroadcastChannel', () => {
+    beforeEach(() => {
+      broadcastOnMessage = null;
+      mockBroadcastClose.mockClear();
+      MockBroadcastChannel.mockClear();
+    });
+
+    it('reloads songs when a message is received on the api-updates channel', async () => {
+      mockFetchReturning(songsSortedByTitle);
+
+      renderSongList();
+
+      await waitFor(() => {
+        expect(screen.getByText('Angie')).toBeInTheDocument();
+      });
+
+      const fetchCallsBefore = getMockFetch().mock.calls.filter(
+        (call: unknown[]) => String(call[0]).includes('/api/songs?'),
+      ).length;
+
+      expect(broadcastOnMessage).not.toBeNull();
+      await act(async () => { broadcastOnMessage!(); });
+
+      await waitFor(() => {
+        const fetchCallsAfter = getMockFetch().mock.calls.filter(
+          (call: unknown[]) => String(call[0]).includes('/api/songs?'),
+        ).length;
+        expect(fetchCallsAfter).toBeGreaterThan(fetchCallsBefore);
+      });
     });
   });
 

@@ -128,74 +128,82 @@ jobs:
           node -e "
             const { execSync } = require('child_process');
             const fs = require('fs');
+            const https = require('https');
 
-            // Bump version
+            // ── Version bump (synchronous) ────────────────────────────────────
             const pkg = JSON.parse(fs.readFileSync('package.json'));
             const [major, minor, patch] = pkg.version.split('.').map(Number);
             const type = process.env.VERSION_TYPE;
-            let newVersion;
-            if (type === 'major') newVersion = \`\${major + 1}.0.0\`;
-            else if (type === 'minor') newVersion = \`\${major}.\${minor + 1}.0\`;
-            else newVersion = \`\${major}.\${minor}.\${patch + 1}\`;
+            const newVersion =
+              type === 'major' ? \`\${major + 1}.0.0\` :
+              type === 'minor' ? \`\${major}.\${minor + 1}.0\` :
+                                 \`\${major}.\${minor}.\${patch + 1}\`;
 
-            pkg.version = newVersion;
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            ['.', './backend', './frontend'].forEach(dir => {
+              const p = \`\${dir}/package.json\`;
+              const sub = JSON.parse(fs.readFileSync(p));
+              sub.version = newVersion;
+              fs.writeFileSync(p, JSON.stringify(sub, null, 2) + '\n');
+            });
 
-            // Extract PR numbers from git log since last tag
+            fs.writeFileSync('.new-version', newVersion);
+
+            // ── Commit messages since last tag (synchronous) ──────────────────
+            const date = new Date().toISOString().split('T')[0];
+            let commitLines = ['Corrections et améliorations internes'];
             let prNumbers = [];
             try {
               const lastTag = execSync('git describe --tags --abbrev=0').toString().trim();
-              const log = execSync(\`git log \${lastTag}..HEAD --format=%s\`).toString();
+              const log = execSync(\`git log \${lastTag}..HEAD --format=%s\`).toString().trim();
+              const lines = log.split('\n').filter(l => l && !l.startsWith('chore(release)'));
+              if (lines.length > 0) commitLines = lines;
               const matches = [...log.matchAll(/#(\\d+)/g)];
               prNumbers = [...new Set(matches.map(m => parseInt(m[1])))];
-            } catch {
-              // no previous tag — will show fallback message
-            }
+            } catch { /* no previous tag */ }
 
-            // Fetch PR details from GitHub API
-            const https = require('https');
-            const fetchPR = (number) => new Promise((resolve, reject) => {
+            // ── CHANGELOG helpers ─────────────────────────────────────────────
+            const buildEntry = (lines) =>
+              \`## \${newVersion} (\${date})\n\n\${lines.map(l => \`- \${l}\`).join('\n')}\n\`;
+
+            const writeChangelog = (entry) => {
+              const existing = fs.existsSync('CHANGELOG.md') ? fs.readFileSync('CHANGELOG.md', 'utf8') : '';
+              const header = '# Changelog\n\n';
+              const body = existing.startsWith(header) ? existing.slice(header.length) : existing;
+              fs.writeFileSync('CHANGELOG.md', header + entry + '\n' + body);
+              fs.writeFileSync('RELEASE_NOTES.md', entry.trim());
+            };
+
+            // ── Write CHANGELOG now with commit messages (guaranteed) ─────────
+            writeChangelog(buildEntry(commitLines));
+
+            // ── Enrich CHANGELOG with GitHub PR titles (best-effort) ──────────
+            if (prNumbers.length === 0) return;
+
+            const fetchPR = (number) => new Promise((resolve) => {
               const options = {
                 headers: {
-                  'Authorization': \`Bearer \${process.env.GITHUB_TOKEN}\`,
+                  Authorization: \`Bearer \${process.env.GITHUB_TOKEN}\`,
                   'User-Agent': 'deploy-script',
-                  'Accept': 'application/vnd.github+json',
+                  Accept: 'application/vnd.github+json',
                 },
               };
               https.get(\`https://api.github.com/repos/\${process.env.REPO}/pulls/\${number}\`, options, (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
-                res.on('end', () => resolve(JSON.parse(data)));
-              }).on('error', reject);
+                res.on('end', () => { try { resolve(JSON.parse(data)); } catch { resolve(null); } });
+              }).on('error', () => resolve(null));
             });
 
-            (async () => {
-              const newPrs = (await Promise.all(prNumbers.map(n => fetchPR(n))))
-                .filter(pr => pr.merged_at)
-                .sort((a, b) => b.number - a.number);
-
-              const date = new Date().toISOString().split('T')[0];
-              const prLines = newPrs.length > 0
-                ? newPrs.map(pr => \`- \${pr.title} (#\${pr.number})\`).join('\n')
-                : '- Corrections et améliorations internes';
-
-              const entry = \`## \${newVersion} (\${date})\n\n\${prLines}\n\`;
-
-              const existing = fs.existsSync('CHANGELOG.md') ? fs.readFileSync('CHANGELOG.md', 'utf8') : '';
-              const header = '# Changelog\n\n';
-              const body = existing.startsWith(header) ? existing.slice(header.length) : existing;
-              fs.writeFileSync('CHANGELOG.md', header + entry + '\n' + body);
-
-              // Sync sub-packages
-              ['./backend/package.json', './frontend/package.json'].forEach(p => {
-                const sub = JSON.parse(fs.readFileSync(p));
-                sub.version = newVersion;
-                fs.writeFileSync(p, JSON.stringify(sub, null, 2) + '\n');
-              });
-
-              fs.writeFileSync('RELEASE_NOTES.md', entry.trim());
-              fs.writeFileSync('.new-version', newVersion);
-            })();
+            Promise.all(prNumbers.map(fetchPR))
+              .then(prs => {
+                const merged = prs
+                  .filter(pr => pr && pr.merged_at)
+                  .sort((a, b) => b.number - a.number);
+                if (merged.length > 0) {
+                  writeChangelog(buildEntry(merged.map(pr => \`\${pr.title} (#\${pr.number})\`)));
+                }
+              })
+              .catch(() => { /* keep commit-message changelog */ });
           "
 
           VERSION=$(cat .new-version)
