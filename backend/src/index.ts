@@ -14,6 +14,7 @@ import usersRouter from './infrastructure/http/routes/users';
 import { createPlaylistsRouter } from './infrastructure/http/routes/playlists';
 import { connectMongo } from './infrastructure/db/mongo';
 import { createSongsRouter } from './infrastructure/http/routes/songs';
+import { createMetaRouter } from './infrastructure/http/routes/meta';
 import { SocketEventEmitter } from './infrastructure/services/SocketEventEmitter';
 import { requestLogger } from './infrastructure/http/middlewares/requestLogger';
 import { errorLogger } from './infrastructure/http/middlewares/errorLogger';
@@ -45,9 +46,10 @@ app.use(monitoringRouter);
 const socketEventEmitter = new SocketEventEmitter(io);
 
 app.use('/api', createSongsRouter(socketEventEmitter));
+app.use('/api', createPlaylistsRouter());
+app.use('/api', createMetaRouter());
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
-app.use('/api', createPlaylistsRouter());
 app.use(errorLogger);
 
 export default app;

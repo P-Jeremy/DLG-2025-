@@ -5,6 +5,7 @@ import { connectMongo } from '../src/infrastructure/db/mongo';
 import { SongModel } from '../src/infrastructure/models/songModel';
 import { PlaylistModel } from '../src/infrastructure/models/playlistModel';
 import { UserModel } from '../src/infrastructure/models/userModel';
+import { MetaModel } from '../src/infrastructure/models/metaModel';
 
 dotenv.config();
 
@@ -110,6 +111,7 @@ async function seed(): Promise<void> {
     await SongModel.deleteMany({});
     await PlaylistModel.deleteMany({});
     await UserModel.deleteMany({});
+    await MetaModel.deleteMany({});
 
     const insertedSongs = await SongModel.insertMany(seedSongs);
     const firstSongIds = insertedSongs.slice(0, SONGS_IN_PLAYLIST_COUNT).map((song) => song._id);
@@ -131,6 +133,12 @@ async function seed(): Promise<void> {
       avatar: null,
       tokens: [],
     });
+
+    await MetaModel.findOneAndUpdate(
+      { singleton: 'global' },
+      { $set: { updatedAt: new Date() } },
+      { upsert: true },
+    );
 
     console.log(`Seed complete:`);
     console.log(`  Songs inserted: ${insertedSongs.length}`);

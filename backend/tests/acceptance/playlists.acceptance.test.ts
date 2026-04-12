@@ -2,6 +2,7 @@ import request from 'supertest';
 import app from '../../src/index';
 import { insertTestAdmin } from '../helpers/insertTestAdmin';
 import { insertTestSongs } from '../helpers/insertTestSongs';
+import { MetaModel } from '../../src/infrastructure/models/metaModel';
 
 function getTypedApp(): import('express').Application {
   return app as import('express').Application;
@@ -45,6 +46,7 @@ describe('Playlists endpoints (acceptance)', () => {
   describe('POST /api/playlists', () => {
     it('should create a new playlist', async () => {
       const adminToken = await getAdminToken();
+      const before = new Date();
 
       const { status, body } = await request(getTypedApp())
         .post('/api/playlists')
@@ -54,6 +56,9 @@ describe('Playlists endpoints (acceptance)', () => {
       expect(status).toBe(201);
       expect((body as { name: string }).name).toBe('jazz');
       expect((body as { songIds: string[] }).songIds).toEqual([]);
+      const meta = await MetaModel.findOne({ singleton: 'global' });
+      expect(meta).not.toBeNull();
+      expect(meta!.updatedAt.getTime()).toBeGreaterThan(before.getTime());
     });
 
     it('should return 409 when playlist already exists', async () => {
@@ -101,6 +106,8 @@ describe('Playlists endpoints (acceptance)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'old-name' });
 
+      const before = new Date();
+
       const { status, body } = await request(getTypedApp())
         .patch('/api/playlists/old-name')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -108,6 +115,9 @@ describe('Playlists endpoints (acceptance)', () => {
 
       expect(status).toBe(200);
       expect((body as { name: string }).name).toBe('new-name');
+      const meta = await MetaModel.findOne({ singleton: 'global' });
+      expect(meta).not.toBeNull();
+      expect(meta!.updatedAt.getTime()).toBeGreaterThan(before.getTime());
     });
 
     it('should return 404 when playlist does not exist', async () => {
@@ -131,11 +141,16 @@ describe('Playlists endpoints (acceptance)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'to-delete' });
 
+      const before = new Date();
+
       const { status } = await request(getTypedApp())
         .delete('/api/playlists/to-delete')
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(status).toBe(204);
+      const meta = await MetaModel.findOne({ singleton: 'global' });
+      expect(meta).not.toBeNull();
+      expect(meta!.updatedAt.getTime()).toBeGreaterThan(before.getTime());
     });
 
     it('should return 404 when playlist does not exist', async () => {
@@ -153,6 +168,35 @@ describe('Playlists endpoints (acceptance)', () => {
         .delete('/api/playlists/some-playlist');
 
       expect(status).toBe(401);
+    });
+  });
+
+  describe('POST /api/playlists/:playlistName/songs', () => {
+    it('should add a song to a playlist and update meta.updatedAt', async () => {
+      const adminToken = await getAdminToken();
+
+      const songs = await insertTestSongs([
+        { title: 'Song To Add', author: 'Artist', lyrics: 'l', tab: 't' },
+      ]);
+      const songId = (songs[0] as { _id: { toString(): string } })._id.toString();
+
+      await request(getTypedApp())
+        .post('/api/playlists')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ name: 'add-song-test' });
+
+      const before = new Date();
+
+      const { status, body } = await request(getTypedApp())
+        .post('/api/playlists/add-song-test/songs')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ songId });
+
+      expect(status).toBe(200);
+      expect((body as { songIds: string[] }).songIds).toContain(songId);
+      const meta = await MetaModel.findOne({ singleton: 'global' });
+      expect(meta).not.toBeNull();
+      expect(meta!.updatedAt.getTime()).toBeGreaterThan(before.getTime());
     });
   });
 
@@ -178,12 +222,17 @@ describe('Playlists endpoints (acceptance)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ songId: removeId });
 
+      const before = new Date();
+
       const { status, body } = await request(getTypedApp())
         .delete(`/api/playlists/remove-test/songs/${removeId}`)
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(status).toBe(200);
       expect((body as { songIds: string[] }).songIds).toEqual([keepId]);
+      const meta = await MetaModel.findOne({ singleton: 'global' });
+      expect(meta).not.toBeNull();
+      expect(meta!.updatedAt.getTime()).toBeGreaterThan(before.getTime());
     });
 
     it('should return 404 when the playlist does not exist', async () => {
@@ -226,6 +275,8 @@ describe('Playlists endpoints (acceptance)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ songId: songBId });
 
+      const before = new Date();
+
       const { status, body } = await request(getTypedApp())
         .put('/api/playlists/pop')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -233,6 +284,9 @@ describe('Playlists endpoints (acceptance)', () => {
 
       expect(status).toBe(200);
       expect((body as { songIds: string[] }).songIds).toEqual([songBId, songAId]);
+      const meta = await MetaModel.findOne({ singleton: 'global' });
+      expect(meta).not.toBeNull();
+      expect(meta!.updatedAt.getTime()).toBeGreaterThan(before.getTime());
     });
 
     it('should return 400 for invalid songIds (not belonging to playlist)', async () => {

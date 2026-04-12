@@ -47,7 +47,7 @@ export class SongsController {
   }
 
   async updateSong(req: Request, res: Response): Promise<void> {
-    const id = req.params['id'] as string;
+    const id = String(req.params['id']);
 
     try {
       const input = this.deserializer.deserializeUpdateSong(
@@ -72,7 +72,7 @@ export class SongsController {
   }
 
   async deleteSong(req: Request, res: Response): Promise<void> {
-    const id = req.params['id'] as string;
+    const id = String(req.params['id']);
 
     try {
       await this.deleteSongUsecase.execute({ songId: id });

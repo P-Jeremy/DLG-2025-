@@ -1,5 +1,6 @@
 import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
 import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
+import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
 import { DuplicatePlaylistError, PlaylistNotFoundError } from '../../domain/errors/DomainError';
 
 export interface RenamePlaylistInput {
@@ -14,6 +15,7 @@ export interface RenamePlaylistOutput {
 export class RenamePlaylist {
   constructor(
     private readonly playlistRepository: IPlaylistRepository,
+    private readonly metaRepository: IMetaRepository,
   ) {}
 
   async execute(input: RenamePlaylistInput): Promise<RenamePlaylistOutput> {
@@ -24,6 +26,8 @@ export class RenamePlaylist {
     if (nameConflict) throw new DuplicatePlaylistError();
 
     const playlist = await this.playlistRepository.rename(input.name, input.newName);
+
+    await this.metaRepository.touch();
 
     return { playlist };
   }

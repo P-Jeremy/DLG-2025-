@@ -3,6 +3,7 @@ import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
 import type { IEmailService } from '../interfaces/IEmailService';
 import type { IFileUploadService, UploadableFile } from '../interfaces/IFileUploadService';
 import type { IEventEmitter } from '../interfaces/IEventEmitter';
+import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
 import type { ISong } from '../../domain/interfaces/Song';
 import { SONG_EVENTS } from '../constants/events';
 
@@ -26,6 +27,7 @@ export class AddSong {
     private readonly emailService: IEmailService,
     private readonly fileUploadService: IFileUploadService,
     private readonly eventEmitter: IEventEmitter,
+    private readonly metaRepository: IMetaRepository,
   ) {}
 
   async execute(input: AddSongInput): Promise<AddSongOutput> {
@@ -39,6 +41,8 @@ export class AddSong {
     };
 
     const savedSong = await this.songRepository.save(songData);
+
+    await this.metaRepository.touch();
 
     const usersToNotify = await this.userRepository.findAllWithTitleNotif();
     await Promise.allSettled(

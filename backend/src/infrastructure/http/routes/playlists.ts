@@ -10,6 +10,7 @@ import { RenamePlaylist } from '../../../application/usecases/RenamePlaylist';
 import { DeletePlaylist } from '../../../application/usecases/DeletePlaylist';
 import { SongRepository } from '../../repositories/songRepository';
 import { PlaylistRepository } from '../../repositories/playlistRepository';
+import { MetaRepository } from '../../repositories/metaRepository';
 import { authenticate } from '../middlewares/authenticate';
 import { requireAdmin } from '../middlewares/requireAdmin';
 
@@ -18,15 +19,16 @@ export function createPlaylistsRouter(): Router {
 
   const songRepository = new SongRepository();
   const playlistRepository = new PlaylistRepository();
+  const metaRepository = new MetaRepository();
 
   const getPlaylistUsecase = new GetPlaylist(songRepository, playlistRepository);
-  const reorderPlaylistUsecase = new ReorderPlaylist(playlistRepository);
-  const addSongToPlaylistUsecase = new AddSongToPlaylist(songRepository, playlistRepository);
-  const removeSongFromPlaylistUsecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
+  const reorderPlaylistUsecase = new ReorderPlaylist(playlistRepository, metaRepository);
+  const addSongToPlaylistUsecase = new AddSongToPlaylist(songRepository, playlistRepository, metaRepository);
+  const removeSongFromPlaylistUsecase = new RemoveSongFromPlaylist(songRepository, playlistRepository, metaRepository);
   const getAllPlaylistsUsecase = new GetAllPlaylists(playlistRepository);
-  const createPlaylistUsecase = new CreatePlaylist(playlistRepository);
-  const renamePlaylistUsecase = new RenamePlaylist(playlistRepository);
-  const deletePlaylistUsecase = new DeletePlaylist(playlistRepository);
+  const createPlaylistUsecase = new CreatePlaylist(playlistRepository, metaRepository);
+  const renamePlaylistUsecase = new RenamePlaylist(playlistRepository, metaRepository);
+  const deletePlaylistUsecase = new DeletePlaylist(playlistRepository, metaRepository);
 
   const controller = new PlaylistsController(
     getPlaylistUsecase,

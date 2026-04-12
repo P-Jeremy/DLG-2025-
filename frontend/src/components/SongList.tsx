@@ -10,6 +10,7 @@ import { fetchSongs, deleteSong } from '../api/songs';
 import { fetchPlaylistsPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
 import { useApiCacheUpdate } from '../hooks/useApiCacheUpdate';
+import { useMetaSync } from '../hooks/useMetaSync';
 import { useAuth } from '../contexts/AuthContext';
 import { useSearch } from '../contexts/SearchContext';
 import { SONG_EVENTS } from '../constants/events';
@@ -153,6 +154,7 @@ const SongList: React.FC = () => {
 
   useSocket(SONG_EVENTS.REFRESH, handleRefresh);
   useApiCacheUpdate(handleRefresh);
+  useMetaSync(loadSongs);
 
   const isShuffleActive = shuffledSong !== null;
   const effectivePlaylistName = pendingPlaylistName ?? selectedPlaylistName;

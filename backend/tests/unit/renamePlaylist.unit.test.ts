@@ -1,5 +1,6 @@
 import { RenamePlaylist } from '../../src/application/usecases/RenamePlaylist';
 import type { IPlaylistRepository } from '../../src/domain/interfaces/IPlaylistRepository';
+import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { DuplicatePlaylistError, PlaylistNotFoundError } from '../../src/domain/errors/DomainError';
 
@@ -10,6 +11,12 @@ const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {
   deleteByName: jest.fn().mockResolvedValue(undefined),
   removeSongFromAll: jest.fn().mockResolvedValue(undefined),
   rename: jest.fn().mockResolvedValue(null),
+  ...overrides,
+});
+
+const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMetaRepository => ({
+  touch: jest.fn().mockResolvedValue(undefined),
+  getUpdatedAt: jest.fn().mockResolvedValue(new Date()),
   ...overrides,
 });
 
@@ -27,7 +34,7 @@ describe('RenamePlaylist use case', () => {
       rename: jest.fn().mockResolvedValue(renamedPlaylist),
     });
 
-    const usecase = new RenamePlaylist(playlistRepository);
+    const usecase = new RenamePlaylist(playlistRepository, buildMockMetaRepository());
     const { playlist } = await usecase.execute({ name: 'rock', newName: 'hard-rock' });
 
     expect(playlistRepository.rename).toHaveBeenCalledWith('rock', 'hard-rock');
@@ -39,7 +46,7 @@ describe('RenamePlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(null),
     });
 
-    const usecase = new RenamePlaylist(playlistRepository);
+    const usecase = new RenamePlaylist(playlistRepository, buildMockMetaRepository());
 
     await expect(usecase.execute({ name: 'nonexistent', newName: 'new-name' })).rejects.toThrow(PlaylistNotFoundError);
     expect(playlistRepository.rename).not.toHaveBeenCalled();
@@ -57,7 +64,7 @@ describe('RenamePlaylist use case', () => {
       findByName,
     });
 
-    const usecase = new RenamePlaylist(playlistRepository);
+    const usecase = new RenamePlaylist(playlistRepository, buildMockMetaRepository());
 
     await expect(usecase.execute({ name: 'rock', newName: 'pop' })).rejects.toThrow(DuplicatePlaylistError);
     expect(playlistRepository.rename).not.toHaveBeenCalled();

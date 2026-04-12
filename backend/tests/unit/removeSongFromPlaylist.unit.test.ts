@@ -1,6 +1,7 @@
 import { RemoveSongFromPlaylist } from '../../src/application/usecases/RemoveSongFromPlaylist';
 import type { ISongRepository } from '../../src/domain/interfaces/ISongRepository';
 import type { IPlaylistRepository } from '../../src/domain/interfaces/IPlaylistRepository';
+import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { ISong } from '../../src/domain/interfaces/Song';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { PlaylistNotFoundError, SongNotFoundError } from '../../src/domain/errors/DomainError';
@@ -33,6 +34,12 @@ const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {
   ...overrides,
 });
 
+const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMetaRepository => ({
+  touch: jest.fn().mockResolvedValue(undefined),
+  getUpdatedAt: jest.fn().mockResolvedValue(new Date()),
+  ...overrides,
+});
+
 describe('RemoveSongFromPlaylist use case', () => {
   it('should remove the song from the playlist', async () => {
     const song = buildSong('song-1');
@@ -45,7 +52,7 @@ describe('RemoveSongFromPlaylist use case', () => {
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
     const { playlist } = await usecase.execute({ playlistName: 'rock', songId: 'song-1' });
 
     expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: ['song-2'] });
@@ -63,7 +70,7 @@ describe('RemoveSongFromPlaylist use case', () => {
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
     const { playlist } = await usecase.execute({ playlistName: 'rock', songId: 'song-1' });
 
     expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: [] });
@@ -76,7 +83,7 @@ describe('RemoveSongFromPlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(null),
     });
 
-    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
 
     await expect(
       usecase.execute({ playlistName: 'nonexistent', songId: 'song-1' }),
@@ -91,7 +98,7 @@ describe('RemoveSongFromPlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(existingPlaylist),
     });
 
-    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository);
+    const usecase = new RemoveSongFromPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
 
     await expect(
       usecase.execute({ playlistName: 'rock', songId: 'nonexistent' }),

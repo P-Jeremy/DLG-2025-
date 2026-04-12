@@ -4,6 +4,7 @@ import type { IUserRepository } from '../../src/domain/interfaces/IUserRepositor
 import type { IEmailService } from '../../src/application/interfaces/IEmailService';
 import type { IFileUploadService, UploadableFile } from '../../src/application/interfaces/IFileUploadService';
 import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
+import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { ISong } from '../../src/domain/interfaces/Song';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';
@@ -61,6 +62,12 @@ const buildMockEventEmitter = (overrides: Partial<IEventEmitter> = {}): IEventEm
   ...overrides,
 });
 
+const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMetaRepository => ({
+  touch: jest.fn().mockResolvedValue(undefined),
+  getUpdatedAt: jest.fn().mockResolvedValue(new Date()),
+  ...overrides,
+});
+
 const buildUserWithTitleNotif = (email: string): User =>
   new User({
     id: 'user-id',
@@ -88,6 +95,7 @@ describe('AddSong use case', () => {
       buildMockEmailService(),
       fileUploadService,
       buildMockEventEmitter(),
+      buildMockMetaRepository(),
     );
 
     const file = buildMockFile();
@@ -117,6 +125,7 @@ describe('AddSong use case', () => {
       buildMockEmailService(),
       buildMockFileUploadService(),
       buildMockEventEmitter(),
+      buildMockMetaRepository(),
     );
 
     const { song } = await usecase.execute({
@@ -149,7 +158,7 @@ describe('AddSong use case', () => {
       save: jest.fn().mockResolvedValue(savedSong),
     });
 
-    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter());
+    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter(), buildMockMetaRepository());
 
     await usecase.execute({
       title: 'New Song',
@@ -172,7 +181,7 @@ describe('AddSong use case', () => {
     const emailService = buildMockEmailService();
     const songRepository = buildMockSongRepository();
 
-    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter());
+    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter(), buildMockMetaRepository());
 
     await usecase.execute({
       title: 'Silent Song',
@@ -197,7 +206,7 @@ describe('AddSong use case', () => {
     });
     const songRepository = buildMockSongRepository();
 
-    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter());
+    const usecase = new AddSong(songRepository, userRepository, emailService, buildMockFileUploadService(), buildMockEventEmitter(), buildMockMetaRepository());
 
     await expect(
       usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile() }),
@@ -212,6 +221,7 @@ describe('AddSong use case', () => {
       buildMockEmailService(),
       buildMockFileUploadService(),
       eventEmitter,
+      buildMockMetaRepository(),
     );
 
     await usecase.execute({ title: 'Song', author: 'Artist', lyrics: '', tabFile: buildMockFile() });

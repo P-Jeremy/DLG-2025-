@@ -1,5 +1,6 @@
 import { ReorderPlaylist } from '../../src/application/usecases/ReorderPlaylist';
 import type { IPlaylistRepository } from '../../src/domain/interfaces/IPlaylistRepository';
+import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { InvalidPlaylistSongError, PlaylistNotFoundError } from '../../src/domain/errors/DomainError';
 
@@ -13,6 +14,12 @@ const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {
   ...overrides,
 });
 
+const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMetaRepository => ({
+  touch: jest.fn().mockResolvedValue(undefined),
+  getUpdatedAt: jest.fn().mockResolvedValue(new Date()),
+  ...overrides,
+});
+
 describe('ReorderPlaylist use case', () => {
   it('should save playlist with new song order', async () => {
     const existingPlaylist: IPlaylist = { name: 'rock', songIds: ['song-1', 'song-2', 'song-3'] };
@@ -22,7 +29,7 @@ describe('ReorderPlaylist use case', () => {
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new ReorderPlaylist(playlistRepository);
+    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository());
     const { playlist } = await usecase.execute({
       playlistName: 'rock',
       songIds: ['song-3', 'song-1', 'song-2'],
@@ -41,7 +48,7 @@ describe('ReorderPlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(existingPlaylist),
     });
 
-    const usecase = new ReorderPlaylist(playlistRepository);
+    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository());
 
     await expect(
       usecase.execute({ playlistName: 'rock', songIds: ['song-1', 'song-99'] }),
@@ -55,7 +62,7 @@ describe('ReorderPlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(null),
     });
 
-    const usecase = new ReorderPlaylist(playlistRepository);
+    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository());
 
     await expect(
       usecase.execute({ playlistName: 'nonexistent', songIds: [] }),
