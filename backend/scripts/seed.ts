@@ -74,7 +74,7 @@ const seedSongs = [
   {
     title: 'Don\'t Stop Believin\'',
     author: 'Journey',
-    lyrics: `Just a small town girl\nLivin\' in a lonely world\nShe took the midnight train goin\' anywhere\nJust a city boy\nBorn and raised in South Detroit`,
+    lyrics: `Just a small town girl\nLivin' in a lonely world\nShe took the midnight train goin' anywhere\nJust a city boy\nBorn and raised in South Detroit`,
     tab: `e|----------------------------|\nB|----------------------------|\nG|----------------------------|\nD|---4-4-4-5-5-5-2-2-2-0-0-0--|\nA|-2-2-2-2-3-3-3-0-0-0--------|\nE|----------------------------|`,
   },
 ];
@@ -144,4 +144,4 @@ async function seed(): Promise<void> {
   }
 }
 
-seed();
+void seed();
