@@ -9,6 +9,7 @@ import { UserModel } from '../src/infrastructure/models/userModel';
 dotenv.config();
 
 const REQUIRED_NODE_ENV = 'development';
+const LOCAL_URI_PREFIXES = ['mongodb://localhost', 'mongodb://127.0.0.1'];
 const ROCK_CLASSICS_PLAYLIST_NAME = 'Rock Classics';
 const ADMIN_EMAIL = 'admin@dlg.com';
 const ADMIN_PSEUDO = 'Admin';
@@ -89,6 +90,12 @@ async function seed(): Promise<void> {
 
   if (!mongoUri) {
     console.error('MONGO_URI environment variable is required');
+    process.exit(1);
+  }
+
+  const isLocalUri = LOCAL_URI_PREFIXES.some((prefix) => mongoUri.startsWith(prefix));
+  if (!isLocalUri) {
+    console.error('Seed script can only run against a local MongoDB instance (localhost / 127.0.0.1)');
     process.exit(1);
   }
 
