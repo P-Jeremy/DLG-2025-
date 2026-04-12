@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { version } from './package.json';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -24,7 +25,7 @@ export default defineConfig(({ mode }) => {
           orientation: 'portrait',
           background_color: '#f5f5f5',
           theme_color: '#1976d2',
-          description: 'Chansons DLG v3.1.0', // 👈 force update PWA
+          description: `Chansons DLG v${version}`,
           icons: [
             {
               src: '/icons/pwa/icon-192.png',
