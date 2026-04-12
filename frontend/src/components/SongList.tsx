@@ -7,7 +7,7 @@ import PlaylistFilter from './PlaylistFilter';
 import VinylLoader from './VinylLoader';
 import ShuffleBar from './ShuffleBar';
 import { fetchSongs, deleteSong } from '../api/songs';
-import { fetchPlaylistsPublic, fetchPlaylistPublic } from '../api/playlists';
+import { fetchPlaylistsPublic } from '../api/playlists';
 import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../contexts/AuthContext';
 import { useSearch } from '../contexts/SearchContext';
@@ -26,16 +26,13 @@ function pickRandomSong(songs: Song[]): Song {
 type SongListRenderState = 'loading' | 'shuffle-active' | 'empty' | 'songs-list';
 
 function getSongListRenderState(
-  isPlaylistLoading: boolean,
-  isShuffling: boolean,
+  isLoading: boolean,
   isShuffleActive: boolean,
   songCount: number,
 ): SongListRenderState {
-  const isLoading = isPlaylistLoading || isShuffling;
   if (isLoading) return 'loading';
 
-  const isShowingShuffledSong = isShuffleActive;
-  if (isShowingShuffledSong) return 'shuffle-active';
+  if (isShuffleActive) return 'shuffle-active';
 
   const isPlaylistEmpty = songCount === 0;
   if (isPlaylistEmpty) return 'empty';
@@ -50,9 +47,8 @@ const SongList: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [selectedPlaylistName, setSelectedPlaylistName] = useState<string | null>(null);
-  const [playlistSongs, setPlaylistSongs] = useState<Song[] | null>(null);
+  const [pendingPlaylistName, setPendingPlaylistName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [playlistLoading, setPlaylistLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openSongId, setOpenSongId] = useState<string | null>(null);
   const [shuffledSong, setShuffledSong] = useState<Song | null>(null);
@@ -97,36 +93,14 @@ const SongList: React.FC = () => {
     setShuffledSong(null);
   }, [loadSongs]);
 
-  useEffect(() => {
-    const isPlaylistDeselected = selectedPlaylistName === null;
-    
-    if (isPlaylistDeselected) {
-      setPlaylistSongs(null);
-      setShuffledSong(null);
-      return;
-    }
-
-    let cancelled = false;
-    setPlaylistLoading(true);
-    fetchPlaylistPublic(selectedPlaylistName)
-      .then(({ playlist }) => {
-        if (cancelled) return;
-        if (!playlist) {
-          setPlaylistSongs([]);
-          return;
-        }
-        const ordered = playlist.songIds
-          .map((id) => songs.find((s) => s.id === id))
-          .filter((s): s is Song => s !== undefined);
-        setPlaylistSongs(ordered);
-        setShuffledSong(null);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) setError(getErrorMessage(err));
-      })
-      .finally(() => { if (!cancelled) setPlaylistLoading(false); });
-    return () => { cancelled = true; };
-  }, [selectedPlaylistName, songs]);
+  const playlistSongs = useMemo(() => {
+    if (selectedPlaylistName === null) return null;
+    const playlist = playlists.find((p) => p.name === selectedPlaylistName);
+    if (!playlist) return [];
+    return playlist.songIds
+      .map((id) => songs.find((s) => s.id === id))
+      .filter((s): s is Song => s !== undefined);
+  }, [selectedPlaylistName, playlists, songs]);
 
   const filteredSongs = useMemo(() => {
     const base = playlistSongs ?? songs;
@@ -142,6 +116,15 @@ const SongList: React.FC = () => {
       a.title.toLowerCase().localeCompare(b.title.toLowerCase(), undefined, { sensitivity: 'base' }),
     );
   }, [songs, playlistSongs, searchQuery]);
+
+  const handlePlaylistSelect = useCallback((name: string | null) => {
+    withShuffleDelay(() => {
+      setSelectedPlaylistName(name);
+      setPendingPlaylistName(null);
+      setShuffledSong(null);
+    });
+    setPendingPlaylistName(name);
+  }, [withShuffleDelay]);
 
   const handleRefresh = useCallback(() => {
     void loadSongs();
@@ -168,10 +151,11 @@ const SongList: React.FC = () => {
   useSocket(SONG_EVENTS.REFRESH, handleRefresh);
 
   const isShuffleActive = shuffledSong !== null;
+  const effectivePlaylistName = pendingPlaylistName ?? selectedPlaylistName;
 
   useEffect(() => {
-    setSearchVisible(!isShuffleActive && !selectedPlaylistName);
-  }, [isShuffleActive, selectedPlaylistName, setSearchVisible]);
+    setSearchVisible(!isShuffleActive && !effectivePlaylistName);
+  }, [isShuffleActive, effectivePlaylistName, setSearchVisible]);
 
   if (loading) return (
     <div className="song-list-bg">
@@ -181,7 +165,6 @@ const SongList: React.FC = () => {
   if (error) return <div className="song-list-bg"><div className="song-list-error">Erreur : {error}</div></div>;
 
   const renderState = getSongListRenderState(
-    playlistLoading,
     shuffling,
     isShuffleActive,
     filteredSongs.length,
@@ -216,7 +199,7 @@ const SongList: React.FC = () => {
       case 'songs-list':
         return (
           <>
-            {!selectedPlaylistName && (
+            {!effectivePlaylistName && (
               <div className="song-list-alphabet">
                 <AlphabetNav songs={filteredSongs} />
               </div>
@@ -242,15 +225,15 @@ const SongList: React.FC = () => {
   return (
     <div className="song-list-bg">
       <ScrollToTopButton />
-      {!selectedPlaylistName && <ShuffleBar onShuffle={handleShuffle} />}
+      {!effectivePlaylistName && <ShuffleBar onShuffle={handleShuffle} />}
       {!isShuffleActive && !shuffling && (
         <div className="song-list-controls">
-            <div className="song-list-controls-card">
+          <div className="song-list-controls-card">
             {playlists.length > 0 && (
               <PlaylistFilter
                 playlists={playlists}
                 selectedPlaylistName={selectedPlaylistName}
-                onSelect={setSelectedPlaylistName}
+                onSelect={handlePlaylistSelect}
               />
             )}
           </div>
