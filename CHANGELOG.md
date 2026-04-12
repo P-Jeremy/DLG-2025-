@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.0 (2026-04-12)
+
+- [FEAT] Mise à jour du cache à la modification de chanson ou playlist (#59)
+
+## 3.2.0 (2026-04-12)
+
+- [FEAT] Mise à jour du cache à la modification de chanson ou playlist (#59)
+
 ## 3.1.0 (2026-04-12)
 
 - [FIX] Mise au propre Ci deploy (#58)
