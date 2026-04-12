@@ -81,9 +81,13 @@ git clone <url-du-repo>
 cd monorepo-dlg
 npm install
 
+# Démarrer MongoDB local
+docker compose up -d
+
 # Backend (terminal 1)
 cd backend
-cp .env.example .env
+cp sample.env .env        # puis ajuster SEED_ADMIN_PASSWORD
+npm run seed              # peupler la base locale (10 chansons, 1 playlist, 1 admin)
 npm run dev
 
 # Frontend (terminal 2)
@@ -99,8 +103,9 @@ npm run dev
 
 ```env
 PORT=3001
-MONGO_URI=mongodb://localhost:27017/dlg
+MONGO_URI=mongodb://localhost:27017/dlg-dev
 NODE_ENV=development
+SEED_ADMIN_PASSWORD=mot_de_passe_local
 ```
 
 ### Frontend — `frontend/.env` (optionnel)
@@ -226,7 +231,7 @@ Les commits peuvent être assistés par Copilot lors des PR.
 **MongoDB refuse la connexion locale :**
 
 ```bash
-brew services start mongodb-community
+docker compose up -d
 ```
 
 **Port 3001 ou 5173 déjà utilisé :**

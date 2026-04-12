@@ -31,14 +31,6 @@ export async function fetchPlaylistsPublic(): Promise<Playlist[]> {
   return (await res.json()) as Playlist[];
 }
 
-export async function fetchPlaylistPublic(playlistName: string): Promise<PlaylistData> {
-  const res = await fetch(`${API_BASE_URL}/api/playlists/${encodeURIComponent(playlistName)}`);
-
-  if (!res.ok) throw new Error('Erreur lors du chargement de la playlist');
-
-  return (await res.json()) as PlaylistData;
-}
-
 export async function createPlaylist(name: string, token: string): Promise<Playlist> {
   const res = await fetch(`${API_BASE_URL}/api/playlists`, {
     method: 'POST',

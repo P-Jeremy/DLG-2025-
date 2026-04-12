@@ -6,6 +6,8 @@ import NavbarSearch from './NavbarSearch/NavbarSearch';
 import { AuthProvider } from '../contexts/AuthContext';
 import { SearchProvider } from '../contexts/SearchContext';
 
+const PLAYLISTS_API_PATH = '/api/playlists';
+
 const renderSongList = () => render(
   <MemoryRouter>
     <AuthProvider>
@@ -31,10 +33,11 @@ const songsSortedByTitle = [
   { id: '3', title: 'Stairway to Heaven', author: 'Led Zeppelin' },
 ];
 
+const getMockFetch = () => (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch;
 
 const mockFetchReturning = (songs: typeof songsSortedByTitle) => {
   (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
-    if (String(url).includes('/api/playlists')) {
+    if (String(url).includes(PLAYLISTS_API_PATH)) {
       return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
     }
     return Promise.resolve({ ok: true, json: () => Promise.resolve(songs) } as Response);
@@ -56,7 +59,7 @@ describe('Integration | Component | SongList', () => {
         expect(screen.getByText('Angie')).toBeInTheDocument();
       });
 
-      const fetchCalls = (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch.mock.calls
+      const fetchCalls = getMockFetch().mock.calls
         .filter((call: unknown[]) => String(call[0]).includes('/api/songs?'));
       expect(fetchCalls).toHaveLength(1);
       expect(fetchCalls[0][0]).toBe('/api/songs?sortBy=title');
@@ -82,7 +85,7 @@ describe('Integration | Component | SongList', () => {
   describe('error cases', () => {
     it('displays the error message when fetch rejects', async () => {
       (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
-        if (String(url).includes('/api/playlists')) {
+        if (String(url).includes(PLAYLISTS_API_PATH)) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
         }
         return Promise.reject(new Error('Network error'));
@@ -97,7 +100,7 @@ describe('Integration | Component | SongList', () => {
 
     it('displays the error message when the HTTP response is an error', async () => {
       (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
-        if (String(url).includes('/api/playlists')) {
+        if (String(url).includes(PLAYLISTS_API_PATH)) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
         }
         return Promise.resolve({ ok: false, json: () => Promise.resolve([]) } as Response);
@@ -112,9 +115,9 @@ describe('Integration | Component | SongList', () => {
   });
 
   describe('empty list', () => {
-    it('displays "No songs found." when the backend returns an empty array', async () => {
+    it('shows the empty state message when the backend returns an empty array', async () => {
       (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
-        if (String(url).includes('/api/playlists')) {
+        if (String(url).includes(PLAYLISTS_API_PATH)) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
         }
         return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response);
@@ -130,30 +133,122 @@ describe('Integration | Component | SongList', () => {
 
   describe('playlist filter', () => {
     const playlists = [{ name: 'Rock', songIds: ['1', '2'] }];
-    const playlistData = { playlist: { name: 'Rock', songIds: ['1', '2'] }, songs: [] };
 
     const mockFetchWithPlaylists = () => {
       (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
         const urlStr = String(url);
-        if (urlStr.includes('/api/playlists/')) {
-          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlistData) } as Response);
-        }
-        if (urlStr.includes('/api/playlists')) {
+        if (urlStr.includes(PLAYLISTS_API_PATH)) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(playlists) } as Response);
         }
         return Promise.resolve({ ok: true, json: () => Promise.resolve(songsSortedByTitle) } as Response);
       });
     };
 
-    it('shows the vinyl loader while the playlist fetch is in flight', async () => {
-      let resolvePlaylist!: (value: Response) => void;
-      const playlistPromise = new Promise<Response>((resolve) => { resolvePlaylist = resolve; });
+    it('shows the vinyl loader briefly after selecting a playlist', async () => {
+      jest.useFakeTimers();
+      mockFetchWithPlaylists();
 
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Rock')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      expect(screen.getByAltText('Chargement...')).toBeInTheDocument();
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.queryByAltText('Chargement...')).not.toBeInTheDocument();
+
+      jest.useRealTimers();
+    });
+
+    it('displays songs in playlist order after selecting a playlist', async () => {
+      jest.useFakeTimers();
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      const titles = screen.getAllByText(/Angie|Bohemian Rhapsody/);
+      expect(titles[0]).toHaveTextContent('Bohemian Rhapsody');
+      expect(titles[1]).toHaveTextContent('Angie');
+
+      jest.useRealTimers();
+    });
+
+    it('restores full list when deselecting the playlist filter', async () => {
+      jest.useFakeTimers();
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.queryByText('Stairway to Heaven')).not.toBeInTheDocument();
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: '' } });
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.getByText('Stairway to Heaven')).toBeInTheDocument();
+
+      jest.useRealTimers();
+    });
+
+    it('hides the alphabet nav when a playlist is selected', async () => {
+      jest.useFakeTimers();
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.queryByRole('navigation', { name: 'Alphabet' })).not.toBeInTheDocument();
+
+      jest.useRealTimers();
+    });
+
+    it('does not make a network request for the individual playlist when selecting a filter', async () => {
+      jest.useFakeTimers();
+      mockFetchWithPlaylists();
+
+      renderSongList();
+
+      await waitFor(() => expect(screen.getByText('Rock')).toBeInTheDocument());
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      const playlistDetailCalls = getMockFetch().mock.calls.filter(
+        (call: unknown[]) => String(call[0]).includes(`${PLAYLISTS_API_PATH}/`),
+      );
+      expect(playlistDetailCalls).toHaveLength(0);
+
+      jest.useRealTimers();
+    });
+
+    it('filters out unknown song ids and only shows songs present in the songs list', async () => {
+      jest.useFakeTimers();
+      const playlistsWithUnknownId = [{ name: 'Rock', songIds: ['1', '999'] }];
       (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
         const urlStr = String(url);
-        if (urlStr.includes('/api/playlists/')) return playlistPromise;
-        if (urlStr.includes('/api/playlists')) {
-          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlists) } as Response);
+        if (urlStr.includes(PLAYLISTS_API_PATH)) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlistsWithUnknownId) } as Response);
         }
         return Promise.resolve({ ok: true, json: () => Promise.resolve(songsSortedByTitle) } as Response);
       });
@@ -164,78 +259,37 @@ describe('Integration | Component | SongList', () => {
 
       fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
 
-      expect(screen.getByAltText('Chargement...')).toBeInTheDocument();
+      await act(async () => { jest.advanceTimersByTime(1000); });
 
-      await act(async () => {
-        resolvePlaylist({ ok: true, json: () => Promise.resolve(playlistData) } as Response);
-      });
+      expect(screen.getByText('Bohemian Rhapsody')).toBeInTheDocument();
+      expect(screen.queryByText('Angie')).not.toBeInTheDocument();
+      expect(screen.queryByText('Stairway to Heaven')).not.toBeInTheDocument();
+
+      jest.useRealTimers();
     });
 
-    it('displays songs in playlist order after selecting a playlist', async () => {
-      mockFetchWithPlaylists();
-
-      renderSongList();
-
-      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
-
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
-
-      await waitFor(() => {
-        const titles = screen.getAllByText(/Angie|Bohemian Rhapsody/);
-        expect(titles[0]).toHaveTextContent('Bohemian Rhapsody');
-        expect(titles[1]).toHaveTextContent('Angie');
-      });
-    });
-
-    it('restores full list when deselecting the playlist filter', async () => {
-      mockFetchWithPlaylists();
-
-      renderSongList();
-
-      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
-
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
-
-      await waitFor(() => expect(screen.queryByText('Stairway to Heaven')).not.toBeInTheDocument());
-
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: '' } });
-
-      await waitFor(() => expect(screen.getByText('Stairway to Heaven')).toBeInTheDocument());
-    });
-
-    it('hides the alphabet nav when a playlist is selected', async () => {
-      mockFetchWithPlaylists();
-
-      renderSongList();
-
-      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
-
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
-
-      await waitFor(() => expect(screen.queryByRole('navigation', { name: 'Alphabet' })).not.toBeInTheDocument());
-    });
-
-    it('displays error message when the playlist fetch fails', async () => {
+    it('shows the empty state message when selecting a playlist with no songs', async () => {
+      jest.useFakeTimers();
+      const emptyPlaylist = [{ name: 'Vide', songIds: [] }];
       (globalThis as typeof globalThis & { fetch: jest.Mock }).fetch = jest.fn((url: RequestInfo | URL) => {
         const urlStr = String(url);
-        if (urlStr.includes('/api/playlists/')) {
-          return Promise.reject(new Error('Playlist network error'));
-        }
-        if (urlStr.includes('/api/playlists')) {
-          return Promise.resolve({ ok: true, json: () => Promise.resolve(playlists) } as Response);
+        if (urlStr.includes(PLAYLISTS_API_PATH)) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(emptyPlaylist) } as Response);
         }
         return Promise.resolve({ ok: true, json: () => Promise.resolve(songsSortedByTitle) } as Response);
       });
 
       renderSongList();
 
-      await waitFor(() => expect(screen.getByText('Angie')).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByText('Vide')).toBeInTheDocument());
 
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Rock' } });
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Vide' } });
 
-      await waitFor(() => {
-        expect(screen.getByText('Erreur : Playlist network error')).toBeInTheDocument();
-      });
+      await act(async () => { jest.advanceTimersByTime(1000); });
+
+      expect(screen.getByText('Aucune chanson trouvée.')).toBeInTheDocument();
+
+      jest.useRealTimers();
     });
   });
 
