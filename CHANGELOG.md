@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0 (2026-04-12)
+
+- [TECH] Trie par playliste côté front (#56)
+- [TECH] Filtre playlist 100% frontend — suppression appel réseau redondant
+- [TECH] Cache PWA StaleWhileRevalidate + BroadcastUpdate automatique
+- [TECH] Setup base locale : Docker Compose + script seed MongoDB
+
 ## 2.2.0 (2026-04-10)
 
 - [TECH] Ajout de monitoring (#55)

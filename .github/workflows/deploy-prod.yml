@@ -141,6 +141,15 @@ jobs:
             pkg.version = newVersion;
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 
+            // Sync sub-packages immediately (synchronous — must not depend on async block)
+            ['./backend/package.json', './frontend/package.json'].forEach(p => {
+              const sub = JSON.parse(fs.readFileSync(p));
+              sub.version = newVersion;
+              fs.writeFileSync(p, JSON.stringify(sub, null, 2) + '\n');
+            });
+
+            fs.writeFileSync('.new-version', newVersion);
+
             // Extract PR numbers from git log since last tag
             let prNumbers = [];
             try {
@@ -186,15 +195,7 @@ jobs:
               const body = existing.startsWith(header) ? existing.slice(header.length) : existing;
               fs.writeFileSync('CHANGELOG.md', header + entry + '\n' + body);
 
-              // Sync sub-packages
-              ['./backend/package.json', './frontend/package.json'].forEach(p => {
-                const sub = JSON.parse(fs.readFileSync(p));
-                sub.version = newVersion;
-                fs.writeFileSync(p, JSON.stringify(sub, null, 2) + '\n');
-              });
-
               fs.writeFileSync('RELEASE_NOTES.md', entry.trim());
-              fs.writeFileSync('.new-version', newVersion);
             })();
           "
 
