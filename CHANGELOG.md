@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.0 (2026-04-12)
+
+- [TECH] Trie par playliste côté front (#56)
+
 ## 2.2.0 (2026-04-10)
 
 - [TECH] Ajout de monitoring (#55)
