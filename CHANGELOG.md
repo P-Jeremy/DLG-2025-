@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.0 (2026-04-12)
+
+- [FIX] Mise au propre Ci deploy (#58)
+- [TECH] Maj cache à l'ajout/modification chanson ou playlist (#57)
+
+## 3.1.0 (2026-04-12)
+
+- fix(ci): replace illegal return with if-guard in node -e script (#58)
+- [TECH] Maj cache à l'ajout/modification chanson ou playlist (#57)
+
 ## 3.0.0 (2026-04-12)
 
 - [TECH] Trie par playliste côté front (#56)
