@@ -19,6 +19,7 @@ import type { Playlist } from '../api/playlists';
 import './SongList.scss';
 
 const SHUFFLE_DELAY_MS = 500;
+const MIN_LOADING_DURATION_MS = 800;
 
 function pickRandomSong(songs: Song[]): Song {
   return songs[Math.floor(Math.random() * songs.length)];
@@ -79,6 +80,7 @@ const SongList: React.FC = () => {
       const [data, playlistsData] = await Promise.all([
         fetchSongs(),
         fetchPlaylistsPublic(),
+        new Promise<void>((resolve) => setTimeout(resolve, MIN_LOADING_DURATION_MS)),
       ]);
       setSongs(data);
       setPlaylists(playlistsData);
