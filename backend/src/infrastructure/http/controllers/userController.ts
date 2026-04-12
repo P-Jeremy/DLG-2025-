@@ -47,7 +47,7 @@ export class UserController {
       const usecase = new SetUserRole(this.userRepository);
       const result = await usecase.execute({
         requesterId: userId,
-        targetUserId: req.params.id,
+        targetUserId: String(req.params.id),
         isAdmin: req.body.isAdmin,
       });
       res.json(result);
