@@ -27,8 +27,11 @@ jest.mock('socket.io-client', () => ({
   }),
 }));
 
+import * as useMetaSyncModule from '../hooks/useMetaSync';
+
 jest.mock('../hooks/useMetaSync', () => ({
   useMetaSync: jest.fn(),
+  confirmPendingSync: jest.fn(),
 }));
 
 let broadcastOnMessage: (() => void) | null = null;
@@ -352,6 +355,8 @@ describe('Integration | Component | SongList', () => {
         ).length;
         expect(fetchCallsAfter).toBeGreaterThan(fetchCallsBefore);
       });
+
+      expect(useMetaSyncModule.confirmPendingSync).toHaveBeenCalled();
     });
   });
 
