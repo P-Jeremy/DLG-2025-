@@ -141,7 +141,7 @@ const SongList: React.FC = () => {
 
   const handleCacheUpdate = useCallback(() => {
     confirmPendingSync();
-    void loadSongs();
+    void loadSongs(true);
   }, [loadSongs]);
 
   const handleDeleteSong = useCallback(async (songId: string) => {
