@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useMetaSync } from './useMetaSync';
+import { useMetaSync, confirmPendingSync } from './useMetaSync';
 import * as metaApi from '../api/meta';
 
 jest.mock('../api/meta');
@@ -22,7 +22,7 @@ describe('useMetaSync', () => {
     await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
   });
 
-  it('updates localStorage after refresh', async () => {
+  it('stores pendingSync with meta.updatedAt when stale', async () => {
     localStorage.setItem('lastSync', '2024-01-01T00:00:00.000Z');
     const updatedAt = '2024-06-01T00:00:00.000Z';
     mockFetchMeta.mockResolvedValue({ updatedAt });
@@ -30,7 +30,20 @@ describe('useMetaSync', () => {
 
     renderHook(() => useMetaSync(onRefresh));
 
-    await waitFor(() => expect(localStorage.getItem('lastSync')).toBe(updatedAt));
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    expect(localStorage.getItem('pendingSync')).toBe(updatedAt);
+  });
+
+  it('does NOT update lastSync after refresh', async () => {
+    localStorage.setItem('lastSync', '2024-01-01T00:00:00.000Z');
+    const updatedAt = '2024-06-01T00:00:00.000Z';
+    mockFetchMeta.mockResolvedValue({ updatedAt });
+    const onRefresh = jest.fn().mockResolvedValue(undefined);
+
+    renderHook(() => useMetaSync(onRefresh));
+
+    await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    expect(localStorage.getItem('lastSync')).toBe('2024-01-01T00:00:00.000Z');
   });
 
   it('does not call onRefresh when meta.updatedAt equals lastSync', async () => {
@@ -65,7 +78,7 @@ describe('useMetaSync', () => {
     expect(() => unmount()).not.toThrow();
   });
 
-  it('does not update localStorage if onRefresh throws', async () => {
+  it('still sets pendingSync even if onRefresh throws', async () => {
     localStorage.setItem('lastSync', '2024-01-01T00:00:00.000Z');
     const updatedAt = '2024-06-01T00:00:00.000Z';
     mockFetchMeta.mockResolvedValue({ updatedAt });
@@ -73,8 +86,31 @@ describe('useMetaSync', () => {
 
     renderHook(() => useMetaSync(onRefresh));
 
-    await waitFor(() => expect(mockFetchMeta).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1));
+    expect(localStorage.getItem('pendingSync')).toBe(updatedAt);
+    expect(localStorage.getItem('lastSync')).toBe('2024-01-01T00:00:00.000Z');
+  });
+});
+
+describe('confirmPendingSync', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('promotes pendingSync to lastSync and removes pendingSync', () => {
+    localStorage.setItem('pendingSync', '2024-06-01T00:00:00.000Z');
+
+    confirmPendingSync();
+
+    expect(localStorage.getItem('lastSync')).toBe('2024-06-01T00:00:00.000Z');
+    expect(localStorage.getItem('pendingSync')).toBeNull();
+  });
+
+  it('does nothing when no pendingSync exists', () => {
+    localStorage.setItem('lastSync', '2024-01-01T00:00:00.000Z');
+
+    confirmPendingSync();
+
     expect(localStorage.getItem('lastSync')).toBe('2024-01-01T00:00:00.000Z');
   });
 });
