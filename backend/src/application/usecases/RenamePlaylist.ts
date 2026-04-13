@@ -1,7 +1,9 @@
-import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
-import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
-import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
-import { DuplicatePlaylistError, PlaylistNotFoundError } from '../../domain/errors/DomainError';
+import type { IPlaylistRepository } from "../../domain/interfaces/IPlaylistRepository";
+import type { IPlaylist } from "../../domain/interfaces/IPlaylist";
+import type { IEventEmitter } from "../interfaces/IEventEmitter";
+import type { IMetaRepository } from "../../domain/interfaces/IMetaRepository";
+import { DuplicatePlaylistError, PlaylistNotFoundError } from "../../domain/errors/DomainError";
+import { SONG_EVENTS } from "../constants/events";
 
 export interface RenamePlaylistInput {
   name: string;
@@ -16,6 +18,7 @@ export class RenamePlaylist {
   constructor(
     private readonly playlistRepository: IPlaylistRepository,
     private readonly metaRepository: IMetaRepository,
+    private readonly eventEmitter: IEventEmitter,
   ) {}
 
   async execute(input: RenamePlaylistInput): Promise<RenamePlaylistOutput> {
@@ -28,6 +31,8 @@ export class RenamePlaylist {
     const playlist = await this.playlistRepository.rename(input.name, input.newName);
 
     await this.metaRepository.touch();
+
+    this.eventEmitter.emit(SONG_EVENTS.REFRESH);
 
     return { playlist };
   }

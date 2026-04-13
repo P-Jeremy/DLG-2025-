@@ -74,13 +74,13 @@ const SongList: React.FC = () => {
     }, SHUFFLE_DELAY_MS);
   }, []);
 
-  const loadSongs = useCallback(async () => {
+  const loadSongs = useCallback(async (force = false) => {
     setLoading(true);
     setError(null);
     try {
       const [data, playlistsData] = await Promise.all([
-        fetchSongs(),
-        fetchPlaylistsPublic(),
+        fetchSongs({ force }),
+        fetchPlaylistsPublic({ force }),
         new Promise<void>((resolve) => setTimeout(resolve, MIN_LOADING_DURATION_MS)),
       ]);
       setSongs(data);
@@ -130,8 +130,13 @@ const SongList: React.FC = () => {
     setPendingPlaylistName(name);
   }, [withShuffleDelay]);
 
+  const forceLoadSongs = useCallback(async () => {
+    await loadSongs(true);
+    confirmPendingSync();
+  }, [loadSongs]);
+
   const handleRefresh = useCallback(() => {
-    void loadSongs();
+    void loadSongs(true);
   }, [loadSongs]);
 
   const handleCacheUpdate = useCallback(() => {
@@ -159,7 +164,7 @@ const SongList: React.FC = () => {
 
   useSocket(SONG_EVENTS.REFRESH, handleRefresh);
   useApiCacheUpdate(handleCacheUpdate);
-  useMetaSync(loadSongs);
+  useMetaSync(forceLoadSongs);
 
   const isShuffleActive = shuffledSong !== null;
   const effectivePlaylistName = pendingPlaylistName ?? selectedPlaylistName;

@@ -1,8 +1,10 @@
-import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
-import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
-import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
-import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
-import { PlaylistNotFoundError, SongNotFoundError } from '../../domain/errors/DomainError';
+import type { ISongRepository } from "../../domain/interfaces/ISongRepository";
+import type { IPlaylistRepository } from "../../domain/interfaces/IPlaylistRepository";
+import type { IPlaylist } from "../../domain/interfaces/IPlaylist";
+import type { IEventEmitter } from "../interfaces/IEventEmitter";
+import type { IMetaRepository } from "../../domain/interfaces/IMetaRepository";
+import { PlaylistNotFoundError, SongNotFoundError } from "../../domain/errors/DomainError";
+import { SONG_EVENTS } from "../constants/events";
 
 export interface RemoveSongFromPlaylistInput {
   playlistName: string;
@@ -18,6 +20,7 @@ export class RemoveSongFromPlaylist {
     private readonly songRepository: ISongRepository,
     private readonly playlistRepository: IPlaylistRepository,
     private readonly metaRepository: IMetaRepository,
+    private readonly eventEmitter: IEventEmitter,
   ) {}
 
   async execute(input: RemoveSongFromPlaylistInput): Promise<RemoveSongFromPlaylistOutput> {
@@ -35,6 +38,8 @@ export class RemoveSongFromPlaylist {
     });
 
     await this.metaRepository.touch();
+
+    this.eventEmitter.emit(SONG_EVENTS.REFRESH);
 
     return { playlist };
   }

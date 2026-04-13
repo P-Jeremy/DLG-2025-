@@ -2,8 +2,10 @@ import type { Song } from '../types/song';
 import { API_BASE_URL } from './config';
 import { handleApiResponseError } from '../utils/apiErrorHandling';
 
-export async function fetchSongs(): Promise<Song[]> {
-  const res = await fetch(`${API_BASE_URL}/api/songs?sortBy=title`);
+export async function fetchSongs(options?: { force?: boolean }): Promise<Song[]> {
+  const base = `${API_BASE_URL}/api/songs?sortBy=title`;
+  const url = options?.force ? `${base}&_t=${Date.now()}` : base;
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Erreur lors du chargement des chansons');
   const parsedResponse = await res.json() as unknown;
 
