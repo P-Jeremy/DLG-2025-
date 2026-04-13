@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.5.0 (2026-04-13)
+
+- [FIX] Suppression d'une chanson : bypass cache SW lors du broadcast pour éviter la réapparition (#62)
+
+## 3.5.0 (2026-04-13)
+
+- fix(pwa): force cache bypass on SW broadcast to prevent stale data after delete (#62)
+
 ## 3.4.0 (2026-04-13)
 
 - [FIX] WebSocket : émission REFRESH manquante sur toutes les mutations chanson et playlist (#61)
