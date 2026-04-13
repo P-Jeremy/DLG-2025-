@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.0 (2026-04-13)
+
+- [FIX] Cache SW : confirmation du sync différée à la réception des données fraîches (#60)
+
+## 3.3.0 (2026-04-13)
+
+- fix(pwa): confirm lastSync only after SW broadcast delivers fresh data (#60)
+
 ## 3.2.0 (2026-04-12)
 
 - [FEAT] Mise à jour du cache à la modification de chanson ou playlist (#59)
