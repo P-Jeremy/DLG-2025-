@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.4.0 (2026-04-13)
+
+- [FIX] WebSocket : émission REFRESH manquante sur toutes les mutations chanson et playlist (#61)
+
+## 3.4.0 (2026-04-13)
+
+- fix(websocket): emit REFRESH on all mutating song and playlist operations (#61)
+
 ## 3.3.0 (2026-04-13)
 
 - [FIX] Cache SW : confirmation du sync différée à la réception des données fraîches (#60)
