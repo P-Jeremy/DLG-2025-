@@ -38,7 +38,7 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
     metaRepository,
   );
   const updateSongUsecase = new UpdateSong(songRepository, fileUploadService, eventEmitter, metaRepository);
-  const deleteSongUsecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, metaRepository);
+  const deleteSongUsecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, metaRepository, eventEmitter);
 
   const controller = new SongsController(
     getSongsUsecase,

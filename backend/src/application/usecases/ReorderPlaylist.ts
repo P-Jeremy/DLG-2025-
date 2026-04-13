@@ -1,7 +1,9 @@
-import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
-import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
-import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
-import { InvalidPlaylistSongError, PlaylistNotFoundError } from '../../domain/errors/DomainError';
+import type { IPlaylistRepository } from "../../domain/interfaces/IPlaylistRepository";
+import type { IPlaylist } from "../../domain/interfaces/IPlaylist";
+import type { IEventEmitter } from "../interfaces/IEventEmitter";
+import type { IMetaRepository } from "../../domain/interfaces/IMetaRepository";
+import { InvalidPlaylistSongError, PlaylistNotFoundError } from "../../domain/errors/DomainError";
+import { SONG_EVENTS } from "../constants/events";
 
 export interface ReorderPlaylistInput {
   playlistName: string;
@@ -16,6 +18,7 @@ export class ReorderPlaylist {
   constructor(
     private readonly playlistRepository: IPlaylistRepository,
     private readonly metaRepository: IMetaRepository,
+    private readonly eventEmitter: IEventEmitter,
   ) {}
 
   async execute(input: ReorderPlaylistInput): Promise<ReorderPlaylistOutput> {
@@ -34,6 +37,8 @@ export class ReorderPlaylist {
     });
 
     await this.metaRepository.touch();
+
+    this.eventEmitter.emit(SONG_EVENTS.REFRESH);
 
     return { playlist };
   }

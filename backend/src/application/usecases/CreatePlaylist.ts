@@ -1,7 +1,9 @@
-import type { IPlaylistRepository } from '../../domain/interfaces/IPlaylistRepository';
-import type { IPlaylist } from '../../domain/interfaces/IPlaylist';
-import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
-import { DuplicatePlaylistError } from '../../domain/errors/DomainError';
+import type { IPlaylistRepository } from "../../domain/interfaces/IPlaylistRepository";
+import type { IPlaylist } from "../../domain/interfaces/IPlaylist";
+import type { IEventEmitter } from "../interfaces/IEventEmitter";
+import type { IMetaRepository } from "../../domain/interfaces/IMetaRepository";
+import { DuplicatePlaylistError } from "../../domain/errors/DomainError";
+import { SONG_EVENTS } from "../constants/events";
 
 export interface CreatePlaylistInput {
   name: string;
@@ -15,6 +17,7 @@ export class CreatePlaylist {
   constructor(
     private readonly playlistRepository: IPlaylistRepository,
     private readonly metaRepository: IMetaRepository,
+    private readonly eventEmitter: IEventEmitter,
   ) {}
 
   async execute(input: CreatePlaylistInput): Promise<CreatePlaylistOutput> {
@@ -27,6 +30,8 @@ export class CreatePlaylist {
     });
 
     await this.metaRepository.touch();
+
+    this.eventEmitter.emit(SONG_EVENTS.REFRESH);
 
     return { playlist };
   }

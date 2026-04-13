@@ -13,8 +13,9 @@ import { PlaylistRepository } from '../../repositories/playlistRepository';
 import { MetaRepository } from '../../repositories/metaRepository';
 import { authenticate } from '../middlewares/authenticate';
 import { requireAdmin } from '../middlewares/requireAdmin';
+import type { IEventEmitter } from '../../../application/interfaces/IEventEmitter';
 
-export function createPlaylistsRouter(): Router {
+export function createPlaylistsRouter(eventEmitter: IEventEmitter): Router {
   const router = Router();
 
   const songRepository = new SongRepository();
@@ -22,13 +23,13 @@ export function createPlaylistsRouter(): Router {
   const metaRepository = new MetaRepository();
 
   const getPlaylistUsecase = new GetPlaylist(songRepository, playlistRepository);
-  const reorderPlaylistUsecase = new ReorderPlaylist(playlistRepository, metaRepository);
-  const addSongToPlaylistUsecase = new AddSongToPlaylist(songRepository, playlistRepository, metaRepository);
-  const removeSongFromPlaylistUsecase = new RemoveSongFromPlaylist(songRepository, playlistRepository, metaRepository);
+  const reorderPlaylistUsecase = new ReorderPlaylist(playlistRepository, metaRepository, eventEmitter);
+  const addSongToPlaylistUsecase = new AddSongToPlaylist(songRepository, playlistRepository, metaRepository, eventEmitter);
+  const removeSongFromPlaylistUsecase = new RemoveSongFromPlaylist(songRepository, playlistRepository, metaRepository, eventEmitter);
   const getAllPlaylistsUsecase = new GetAllPlaylists(playlistRepository);
-  const createPlaylistUsecase = new CreatePlaylist(playlistRepository, metaRepository);
-  const renamePlaylistUsecase = new RenamePlaylist(playlistRepository, metaRepository);
-  const deletePlaylistUsecase = new DeletePlaylist(playlistRepository, metaRepository);
+  const createPlaylistUsecase = new CreatePlaylist(playlistRepository, metaRepository, eventEmitter);
+  const renamePlaylistUsecase = new RenamePlaylist(playlistRepository, metaRepository, eventEmitter);
+  const deletePlaylistUsecase = new DeletePlaylist(playlistRepository, metaRepository, eventEmitter);
 
   const controller = new PlaylistsController(
     getPlaylistUsecase,

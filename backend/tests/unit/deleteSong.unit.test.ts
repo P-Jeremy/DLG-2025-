@@ -6,6 +6,7 @@ import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepositor
 import type { ISong } from '../../src/domain/interfaces/Song';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { SongNotFoundError } from '../../src/domain/errors/DomainError';
+import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
 
 const buildSong = (id: string, tab = ''): ISong => ({
   id,
@@ -47,6 +48,10 @@ const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMet
   ...overrides,
 });
 
+const buildMockEventEmitter = (): IEventEmitter => ({
+  emit: jest.fn(),
+});
+
 describe('DeleteSong use case', () => {
   it('should delete the song, remove it from all playlists, and delete its S3 image', async () => {
     const song = buildSong('song-1', 'https://bucket.s3.amazonaws.com/image.jpg');
@@ -55,7 +60,7 @@ describe('DeleteSong use case', () => {
     const playlistRepository = buildMockPlaylistRepository();
     const fileUploadService = buildMockFileUploadService();
 
-    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository());
+    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository(), buildMockEventEmitter());
     await usecase.execute({ songId: 'song-1' });
 
     expect(fileUploadService.delete).toHaveBeenCalledWith('https://bucket.s3.amazonaws.com/image.jpg');
@@ -70,7 +75,7 @@ describe('DeleteSong use case', () => {
     const playlistRepository = buildMockPlaylistRepository();
     const fileUploadService = buildMockFileUploadService();
 
-    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository());
+    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository(), buildMockEventEmitter());
     await usecase.execute({ songId: 'song-1' });
 
     expect(fileUploadService.delete).not.toHaveBeenCalled();
@@ -83,7 +88,7 @@ describe('DeleteSong use case', () => {
     const playlistRepository = buildMockPlaylistRepository();
     const fileUploadService = buildMockFileUploadService();
 
-    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository());
+    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository(), buildMockEventEmitter());
 
     await expect(usecase.execute({ songId: 'nonexistent' })).rejects.toThrow(SongNotFoundError);
     expect(playlistRepository.removeSongFromAll).not.toHaveBeenCalled();
@@ -110,7 +115,7 @@ describe('DeleteSong use case', () => {
     });
     const fileUploadService = buildMockFileUploadService();
 
-    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository());
+    const usecase = new DeleteSong(songRepository, playlistRepository, fileUploadService, buildMockMetaRepository(), buildMockEventEmitter());
     await usecase.execute({ songId: 'song-1' });
 
     expect(callOrder).toEqual(['removeSongFromAll', 'deleteById']);

@@ -5,6 +5,7 @@ import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepositor
 import type { ISong } from '../../src/domain/interfaces/Song';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { SongNotFoundError } from '../../src/domain/errors/DomainError';
+import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
 
 const buildSong = (id: string): ISong => ({
   id,
@@ -40,6 +41,10 @@ const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMet
   ...overrides,
 });
 
+const buildMockEventEmitter = (): IEventEmitter => ({
+  emit: jest.fn(),
+});
+
 describe('AddSongToPlaylist use case', () => {
   it('should add a song to an empty playlist when playlist does not exist', async () => {
     const song = buildSong('song-1');
@@ -51,7 +56,7 @@ describe('AddSongToPlaylist use case', () => {
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
+    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
     const { playlist } = await usecase.execute({ playlistName: 'rock', songId: 'song-1' });
 
     expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: ['song-1'] });
@@ -69,7 +74,7 @@ describe('AddSongToPlaylist use case', () => {
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
+    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
     const { playlist } = await usecase.execute({ playlistName: 'rock', songId: 'song-2' });
 
     expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: ['song-1', 'song-2'] });
@@ -86,7 +91,7 @@ describe('AddSongToPlaylist use case', () => {
       save: jest.fn().mockResolvedValue(existingPlaylist),
     });
 
-    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
+    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
     await usecase.execute({ playlistName: 'rock', songId: 'song-1' });
 
     expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: ['song-1'] });
@@ -96,7 +101,7 @@ describe('AddSongToPlaylist use case', () => {
     const songRepository = buildMockSongRepository({ findById: jest.fn().mockResolvedValue(null) });
     const playlistRepository = buildMockPlaylistRepository();
 
-    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository());
+    const usecase = new AddSongToPlaylist(songRepository, playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
 
     await expect(usecase.execute({ playlistName: 'rock', songId: 'nonexistent' })).rejects.toThrow(SongNotFoundError);
     expect(playlistRepository.save).not.toHaveBeenCalled();

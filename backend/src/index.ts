@@ -46,7 +46,7 @@ app.use(monitoringRouter);
 const socketEventEmitter = new SocketEventEmitter(io);
 
 app.use('/api', createSongsRouter(socketEventEmitter));
-app.use('/api', createPlaylistsRouter());
+app.use('/api', createPlaylistsRouter(socketEventEmitter));
 app.use('/api', createMetaRouter());
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);

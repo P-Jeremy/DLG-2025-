@@ -3,6 +3,7 @@ import type { IPlaylistRepository } from '../../src/domain/interfaces/IPlaylistR
 import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { InvalidPlaylistSongError, PlaylistNotFoundError } from '../../src/domain/errors/DomainError';
+import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
 
 const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {}): IPlaylistRepository => ({
   findByName: jest.fn().mockResolvedValue(null),
@@ -20,6 +21,10 @@ const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMet
   ...overrides,
 });
 
+const buildMockEventEmitter = (): IEventEmitter => ({
+  emit: jest.fn(),
+});
+
 describe('ReorderPlaylist use case', () => {
   it('should save playlist with new song order', async () => {
     const existingPlaylist: IPlaylist = { name: 'rock', songIds: ['song-1', 'song-2', 'song-3'] };
@@ -29,7 +34,7 @@ describe('ReorderPlaylist use case', () => {
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository());
+    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
     const { playlist } = await usecase.execute({
       playlistName: 'rock',
       songIds: ['song-3', 'song-1', 'song-2'],
@@ -48,7 +53,7 @@ describe('ReorderPlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(existingPlaylist),
     });
 
-    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository());
+    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
 
     await expect(
       usecase.execute({ playlistName: 'rock', songIds: ['song-1', 'song-99'] }),
@@ -62,7 +67,7 @@ describe('ReorderPlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(null),
     });
 
-    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository());
+    const usecase = new ReorderPlaylist(playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
 
     await expect(
       usecase.execute({ playlistName: 'nonexistent', songIds: [] }),

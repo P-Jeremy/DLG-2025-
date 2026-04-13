@@ -3,6 +3,7 @@ import type { IPlaylistRepository } from '../../src/domain/interfaces/IPlaylistR
 import type { IMetaRepository } from '../../src/domain/interfaces/IMetaRepository';
 import type { IPlaylist } from '../../src/domain/interfaces/IPlaylist';
 import { DuplicatePlaylistError } from '../../src/domain/errors/DomainError';
+import type { IEventEmitter } from '../../src/application/interfaces/IEventEmitter';
 
 const buildMockPlaylistRepository = (overrides: Partial<IPlaylistRepository> = {}): IPlaylistRepository => ({
   findByName: jest.fn().mockResolvedValue(null),
@@ -20,6 +21,10 @@ const buildMockMetaRepository = (overrides: Partial<IMetaRepository> = {}): IMet
   ...overrides,
 });
 
+const buildMockEventEmitter = (): IEventEmitter => ({
+  emit: jest.fn(),
+});
+
 describe('CreatePlaylist use case', () => {
   it('should create a new playlist with empty songIds', async () => {
     const savedPlaylist: IPlaylist = { id: 'pl-1', name: 'rock', songIds: [] };
@@ -28,7 +33,7 @@ describe('CreatePlaylist use case', () => {
       save: jest.fn().mockResolvedValue(savedPlaylist),
     });
 
-    const usecase = new CreatePlaylist(playlistRepository, buildMockMetaRepository());
+    const usecase = new CreatePlaylist(playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
     const { playlist } = await usecase.execute({ name: 'rock' });
 
     expect(playlistRepository.save).toHaveBeenCalledWith({ name: 'rock', songIds: [] });
@@ -41,7 +46,7 @@ describe('CreatePlaylist use case', () => {
       findByName: jest.fn().mockResolvedValue(existingPlaylist),
     });
 
-    const usecase = new CreatePlaylist(playlistRepository, buildMockMetaRepository());
+    const usecase = new CreatePlaylist(playlistRepository, buildMockMetaRepository(), buildMockEventEmitter());
 
     await expect(usecase.execute({ name: 'rock' })).rejects.toThrow(DuplicatePlaylistError);
     expect(playlistRepository.save).not.toHaveBeenCalled();

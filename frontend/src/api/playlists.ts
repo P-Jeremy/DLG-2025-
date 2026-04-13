@@ -23,8 +23,10 @@ export async function fetchPlaylists(token: string): Promise<Playlist[]> {
   return (await res.json()) as Playlist[];
 }
 
-export async function fetchPlaylistsPublic(): Promise<Playlist[]> {
-  const res = await fetch(`${API_BASE_URL}/api/playlists`);
+export async function fetchPlaylistsPublic(options?: { force?: boolean }): Promise<Playlist[]> {
+  const base = `${API_BASE_URL}/api/playlists`;
+  const url = options?.force ? `${base}?_t=${Date.now()}` : base;
+  const res = await fetch(url);
 
   if (!res.ok) throw new Error('Erreur lors du chargement des playlists');
 
