@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.5.1 (2026-04-14)
+
+- [CHORE] Keep-alive ping pour éviter le cold start Render (#63)
+
+## 3.5.1 (2026-04-14)
+
+- chore(ci): add keep-alive ping workflow to prevent Render free tier sleep (#63)
+
 ## 3.5.0 (2026-04-13)
 
 - [FIX] Suppression d'une chanson : bypass cache SW lors du broadcast pour éviter la réapparition (#62)
