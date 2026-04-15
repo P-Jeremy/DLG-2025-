@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.6.0 (2026-04-15)
+
+- [FIX] PWA — autoriser la rotation paysage sur tablettes (#67)
+- [CI] Keep alive plus robuste (#66)
+
+## 3.6.0 (2026-04-15)
+
+- fix(pwa): allow landscape orientation on Android tablets (#67)
+- Refactor keep-alive workflow for smart pinging (#66)
+
 ## 3.5.2 (2026-04-15)
 
 - [CI] Améliorer le keep-alive : route /health légère, jitter et logs de durée (#65)
