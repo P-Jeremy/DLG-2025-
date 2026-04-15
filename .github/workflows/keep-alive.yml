@@ -8,19 +8,36 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping backend
+      - name: Ping backend with retry + jitter
         run: |
-          for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.BACKEND_URL }}/api/meta")
-            echo "Attempt $i → $STATUS"
+          URL="${{ secrets.BACKEND_URL }}/health"
+
+          # Jitter aléatoire entre 0 et 30 secondes
+          JITTER=$((RANDOM % 30))
+          echo "Waiting jitter: ${JITTER}s"
+          sleep $JITTER
+
+          echo "Pinging $URL"
+
+          for i in {1..6}; do
+            START=$(date +%s)
+
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+
+            END=$(date +%s)
+            DURATION=$((END - START))
+
+            echo "Attempt $i → status=$STATUS time=${DURATION}s"
 
             if [ "$STATUS" -eq 200 ]; then
-              echo "Success"
+              echo "✅ Service is up"
               exit 0
             fi
 
             sleep 5
           done
 
-          echo "Done"
+          echo "⚠️ Service did not respond with 200, but continuing"
+          exit 0

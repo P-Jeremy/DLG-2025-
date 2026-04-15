@@ -2,13 +2,13 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../../src/index';
 
-describe('GET /health (acceptance)', () => {
+describe('GET /health-db (acceptance)', () => {
   afterEach(() => {
     delete (mongoose.connection as unknown as Record<string, unknown>)['readyState'];
   });
 
   it('should return 200 and ok status when MongoDB is connected', async () => {
-    const response = await request(app).get('/health');
+    const response = await request(app).get('/health-db');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ status: 'ok' });
@@ -20,7 +20,7 @@ describe('GET /health (acceptance)', () => {
       configurable: true,
     });
 
-    const response = await request(app).get('/health');
+    const response = await request(app).get('/health-db');
 
     expect(response.status).toBe(503);
     expect(response.body).toEqual({ status: 'degraded' });

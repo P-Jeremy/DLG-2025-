@@ -19,6 +19,7 @@ import { SocketEventEmitter } from './infrastructure/services/SocketEventEmitter
 import { requestLogger } from './infrastructure/http/middlewares/requestLogger';
 import { errorLogger } from './infrastructure/http/middlewares/errorLogger';
 import monitoringRouter from './infrastructure/http/routes/monitoring';
+import healthRouter from './infrastructure/http/routes/health';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -41,6 +42,7 @@ app.use(cors({ origin: allowedOrigin }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(express.json());
 app.use(requestLogger);
+app.use(healthRouter);
 app.use(monitoringRouter);
 
 const socketEventEmitter = new SocketEventEmitter(io);
