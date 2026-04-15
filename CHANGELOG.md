@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.5.2 (2026-04-15)
+
+- [CI] Améliorer le keep-alive : route /health légère, jitter et logs de durée (#65)
+- [FEAT] Ajuste keep alive cron (#64)
+
+## 3.5.2 (2026-04-15)
+
+- feat(backend): improve health check (#65)
+- Adjust cron schedule and enhance ping retry logic (#64)
+
 ## 3.5.1 (2026-04-14)
 
 - [CHORE] Keep-alive ping pour éviter le cold start Render (#63)
