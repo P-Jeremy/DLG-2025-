@@ -1,8 +1,9 @@
-name: Keep Alive
+name: Keep Alive Smart
 
 on:
   schedule:
-    - cron: '*/10 7-21 * * *'
+    - cron: '*/10 * * * *'
+    - cron: '5-59/10 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -10,34 +11,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ping backend with retry + jitter
+      - name: Smart ping backend
         run: |
           URL="${{ secrets.BACKEND_URL }}/health"
 
-          # Jitter aléatoire entre 0 et 30 secondes
-          JITTER=$((RANDOM % 30))
-          echo "Waiting jitter: ${JITTER}s"
-          sleep $JITTER
+          echo "Checking $URL"
 
-          echo "Pinging $URL"
+          START=$(date +%s)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          END=$(date +%s)
 
+          DURATION=$((END - START))
+
+          echo "Initial check → status=$STATUS time=${DURATION}s"
+
+          # Si rapide → app déjà chaude
+          if [ "$STATUS" -eq 200 ] && [ "$DURATION" -lt 2 ]; then
+            echo "🔥 App already warm, no action needed"
+            exit 0
+          fi
+
+          echo "💤 App likely sleeping, forcing wake-up..."
+
+          # Wake-up avec retries
           for i in {1..6}; do
             START=$(date +%s)
-
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-
             END=$(date +%s)
             DURATION=$((END - START))
 
-            echo "Attempt $i → status=$STATUS time=${DURATION}s"
+            echo "Wake attempt $i → status=$STATUS time=${DURATION}s"
 
             if [ "$STATUS" -eq 200 ]; then
-              echo "✅ Service is up"
+              echo "✅ App is awake"
               exit 0
             fi
 
             sleep 5
           done
 
-          echo "⚠️ Service did not respond with 200, but continuing"
+          echo "⚠️ Wake-up attempts finished"
           exit 0
