@@ -2,7 +2,7 @@ name: Keep Alive
 
 on:
   schedule:
-    - cron: '*/14 7-21 * * *'
+    - cron: '*/10 7-21 * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,9 +11,16 @@ jobs:
     steps:
       - name: Ping backend
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.BACKEND_URL }}/api/meta")
-          echo "Response status: $STATUS"
-          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 500 ]; then
-            echo "Unexpected status $STATUS"
-            exit 1
-          fi
+          for i in {1..5}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.BACKEND_URL }}/api/meta")
+            echo "Attempt $i → $STATUS"
+
+            if [ "$STATUS" -eq 200 ]; then
+              echo "Success"
+              exit 0
+            fi
+
+            sleep 5
+          done
+
+          echo "Done"
