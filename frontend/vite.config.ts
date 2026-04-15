@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
           short_name: 'DLG',
           start_url: '/',
           display: 'standalone',
-          orientation: 'portrait',
+          orientation: 'any',
           background_color: '#f5f5f5',
           theme_color: '#1976d2',
           description: `Chansons DLG v${version}`,
