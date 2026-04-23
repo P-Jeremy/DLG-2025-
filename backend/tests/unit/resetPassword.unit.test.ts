@@ -1,13 +1,15 @@
 import { ResetPassword } from '../../src/application/usecases/ResetPassword';
-import { InvalidResetTokenError } from '../../src/domain/errors/DomainError';
+import { Token, TokenScope } from '../../src/domain/models/Token';
+import { TokenExpiredError, TokenAlreadyUsedError, TokenInvalidError, UserNotFoundError } from '../../src/domain/errors/DomainError';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
+import type { ITokenRepository } from '../../src/domain/interfaces/ITokenRepository';
 import type { IPasswordHasher } from '../../src/application/interfaces/IPasswordHasher';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';
 import { Pseudo } from '../../src/domain/value-objects/Pseudo';
 import { HashedPassword } from '../../src/domain/value-objects/HashedPassword';
 
-const buildUserWithResetToken = (): User =>
+const buildActiveUser = (): User =>
   new User({
     id: 'user-id-1',
     email: new Email('user@example.com'),
@@ -16,20 +18,24 @@ const buildUserWithResetToken = (): User =>
     isAdmin: false,
     isActive: true,
     isDeleted: false,
-    titleNotif: true,
-    tokens: [{ used_token: 'valid-reset-token' }],
   });
 
 const buildMockUserRepository = (overrides: Partial<IUserRepository> = {}): IUserRepository => ({
   findByEmail: jest.fn().mockResolvedValue(null),
   findByPseudo: jest.fn().mockResolvedValue(null),
   findById: jest.fn().mockResolvedValue(null),
-  findByResetToken: jest.fn().mockResolvedValue(null),
-  findAllWithTitleNotif: jest.fn().mockResolvedValue([]),
   findAll: jest.fn().mockResolvedValue([]),
   setAdminRole: jest.fn().mockResolvedValue(null),
   save: jest.fn(),
   update: jest.fn().mockResolvedValue(null),
+  ...overrides,
+});
+
+const buildMockTokenRepository = (overrides: Partial<ITokenRepository> = {}): ITokenRepository => ({
+  save: jest.fn().mockResolvedValue(null),
+  findByHash: jest.fn().mockResolvedValue(null),
+  invalidatePreviousTokens: jest.fn().mockResolvedValue(undefined),
+  markAsUsed: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 
@@ -40,58 +46,162 @@ const buildMockPasswordHasher = (overrides: Partial<IPasswordHasher> = {}): IPas
 });
 
 describe('ResetPassword use case', () => {
-  it('should update the user password and clear tokens', async () => {
-    const user = buildUserWithResetToken();
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(user),
+  it('should update the user password when token is valid', async () => {
+    const user = buildActiveUser();
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('valid-reset-token'),
+      scope: TokenScope.RESET_PASSWORD,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository({
+      findById: jest.fn().mockResolvedValue(user),
+    });
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
     });
     const passwordHasher = buildMockPasswordHasher();
-    const usecase = new ResetPassword(repository, passwordHasher);
 
+    const usecase = new ResetPassword(userRepository, tokenRepository, passwordHasher);
     const result = await usecase.execute({ token: 'valid-reset-token', newPassword: 'new-password' });
 
     expect(result.success).toBe(true);
     expect(user.password.toString()).toBe('new-hashed-password');
-    expect(user.tokens).toHaveLength(0);
-    expect(repository.update).toHaveBeenCalledWith(user);
+    expect(userRepository.update).toHaveBeenCalledWith(user);
+    expect(tokenRepository.markAsUsed).toHaveBeenCalledWith('token-id');
   });
 
   it('should hash the new password using the password hasher', async () => {
-    const user = buildUserWithResetToken();
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(user),
+    const user = buildActiveUser();
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('valid-reset-token'),
+      scope: TokenScope.RESET_PASSWORD,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository({
+      findById: jest.fn().mockResolvedValue(user),
+    });
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
     });
     const passwordHasher = buildMockPasswordHasher();
-    const usecase = new ResetPassword(repository, passwordHasher);
 
+    const usecase = new ResetPassword(userRepository, tokenRepository, passwordHasher);
     await usecase.execute({ token: 'valid-reset-token', newPassword: 'new-password' });
 
     expect(passwordHasher.hash).toHaveBeenCalledWith('new-password');
   });
 
-  it('should throw InvalidResetTokenError when token is not found', async () => {
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(null),
+  it('should throw TokenInvalidError when token is not found', async () => {
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(null),
     });
     const passwordHasher = buildMockPasswordHasher();
-    const usecase = new ResetPassword(repository, passwordHasher);
+
+    const usecase = new ResetPassword(userRepository, tokenRepository, passwordHasher);
 
     await expect(
       usecase.execute({ token: 'unknown-token', newPassword: 'new-password' }),
-    ).rejects.toThrow(InvalidResetTokenError);
+    ).rejects.toThrow(TokenInvalidError);
+  });
+
+  it('should throw TokenExpiredError when token is expired', async () => {
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('expired-token'),
+      scope: TokenScope.RESET_PASSWORD,
+      expiresAt: new Date(Date.now() - 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+    const passwordHasher = buildMockPasswordHasher();
+
+    const usecase = new ResetPassword(userRepository, tokenRepository, passwordHasher);
+
+    await expect(
+      usecase.execute({ token: 'expired-token', newPassword: 'new-password' }),
+    ).rejects.toThrow(TokenExpiredError);
+  });
+
+  it('should throw TokenAlreadyUsedError when token is already used', async () => {
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('used-token'),
+      scope: TokenScope.RESET_PASSWORD,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: new Date(),
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+    const passwordHasher = buildMockPasswordHasher();
+
+    const usecase = new ResetPassword(userRepository, tokenRepository, passwordHasher);
+
+    await expect(
+      usecase.execute({ token: 'used-token', newPassword: 'new-password' }),
+    ).rejects.toThrow(TokenAlreadyUsedError);
+  });
+
+  it('should throw UserNotFoundError when user does not exist', async () => {
+    const token = new Token({
+      id: 'token-id',
+      userId: 'unknown-user',
+      tokenHash: Token.hashRawToken('valid-token'),
+      scope: TokenScope.RESET_PASSWORD,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository({
+      findById: jest.fn().mockResolvedValue(null),
+    });
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+    const passwordHasher = buildMockPasswordHasher();
+
+    const usecase = new ResetPassword(userRepository, tokenRepository, passwordHasher);
+
+    await expect(
+      usecase.execute({ token: 'valid-token', newPassword: 'new-password' }),
+    ).rejects.toThrow(UserNotFoundError);
   });
 
   it('should not call update when token is invalid', async () => {
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(null),
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(null),
     });
     const passwordHasher = buildMockPasswordHasher();
-    const usecase = new ResetPassword(repository, passwordHasher);
+
+    const usecase = new ResetPassword(userRepository, tokenRepository, passwordHasher);
 
     await expect(
       usecase.execute({ token: 'bad-token', newPassword: 'new-password' }),
     ).rejects.toThrow();
 
-    expect(repository.update).not.toHaveBeenCalled();
+    expect(userRepository.update).not.toHaveBeenCalled();
   });
 });

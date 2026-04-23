@@ -7,8 +7,6 @@ import { UpdateSong } from '../../../application/usecases/UpdateSong';
 import { DeleteSong } from '../../../application/usecases/DeleteSong';
 import { SongRepository } from '../../repositories/songRepository';
 import { PlaylistRepository } from '../../repositories/playlistRepository';
-import { UserMongoRepository } from '../../repositories/userRepository';
-import { ResendEmailService } from '../../services/ResendEmailService';
 import { S3FileUploadService } from '../../services/S3FileUploadService';
 import { MetaRepository } from '../../repositories/metaRepository';
 import { authenticate } from '../middlewares/authenticate';
@@ -23,16 +21,12 @@ export function createSongsRouter(eventEmitter: IEventEmitter): Router {
 
   const songRepository = new SongRepository();
   const playlistRepository = new PlaylistRepository();
-  const userRepository = new UserMongoRepository();
-  const emailService = new ResendEmailService();
   const fileUploadService = new S3FileUploadService();
   const metaRepository = new MetaRepository();
 
   const getSongsUsecase = new GetSongsUsecase(songRepository);
   const addSongUsecase = new AddSong(
     songRepository,
-    userRepository,
-    emailService,
     fileUploadService,
     eventEmitter,
     metaRepository,
