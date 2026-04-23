@@ -2,10 +2,10 @@ import type { Request, Response } from 'express';
 import { RegisterUser } from '../../../application/usecases/RegisterUser';
 import { LoginUser } from '../../../application/usecases/LoginUser';
 import { ActivateAccount } from '../../../application/usecases/ActivateAccount';
-import { RequestPasswordReset } from '../../../application/usecases/RequestPasswordReset';
 import { ResetPassword } from '../../../application/usecases/ResetPassword';
+import { GenerateAdminResetLink } from '../../../application/usecases/GenerateAdminResetLink';
 import type { IUserRepository } from '../../../domain/interfaces/IUserRepository';
-import type { IEmailService } from '../../../application/interfaces/IEmailService';
+import type { ITokenRepository } from '../../../domain/interfaces/ITokenRepository';
 import type { IPasswordHasher } from '../../../application/interfaces/IPasswordHasher';
 import type { IJwtService } from '../../../application/interfaces/IJwtService';
 import type { LoginUserInput } from '../../../application/usecases/LoginUser';
@@ -16,8 +16,9 @@ export class AuthController {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly jwtService: IJwtService,
-    private readonly emailService: IEmailService,
     private readonly passwordHasher: IPasswordHasher,
+    private readonly tokenRepository: ITokenRepository,
+    private readonly clientUrl: string,
   ) {}
 
   async register(req: Request, res: Response): Promise<void> {
@@ -29,8 +30,8 @@ export class AuthController {
     }
 
     try {
-      const usecase = new RegisterUser(this.userRepository, this.emailService, this.passwordHasher);
-      const result = await usecase.execute({ email, pseudo, password });
+      const usecase = new RegisterUser(this.userRepository, this.tokenRepository, this.passwordHasher);
+      const result = await usecase.execute({ email, pseudo, password, clientUrl: this.clientUrl });
       res.status(201).json(result);
     } catch (error) {
       const status = getHttpStatusForError(error);
@@ -53,8 +54,8 @@ export class AuthController {
 
   async activateAccount(req: Request, res: Response): Promise<void> {
     try {
-      const usecase = new ActivateAccount(this.userRepository);
-      const result = await usecase.execute({ token: String(req.params.token) });
+      const usecase = new ActivateAccount(this.userRepository, this.tokenRepository);
+      const result = await usecase.execute({ rawToken: String(req.params.token) });
       res.json(result);
     } catch (error) {
       const status = getHttpStatusForError(error);
@@ -63,20 +64,25 @@ export class AuthController {
     }
   }
 
-  async forgotPassword(req: Request, res: Response): Promise<void> {
+  async resetPassword(req: Request, res: Response): Promise<void> {
     try {
-      const usecase = new RequestPasswordReset(this.userRepository, this.emailService);
-      const result = await usecase.execute({ email: req.body.email });
+      const usecase = new ResetPassword(this.userRepository, this.tokenRepository, this.passwordHasher);
+      const result = await usecase.execute(req.body as ResetPasswordInput);
       res.json(result);
-    } catch {
-      res.status(500).json({ message: 'Internal server error' });
+    } catch (error) {
+      const status = getHttpStatusForError(error);
+      const message = getErrorMessage(error);
+      res.status(status).json({ message });
     }
   }
 
-  async resetPassword(req: Request, res: Response): Promise<void> {
+  async generateAdminResetLink(req: Request, res: Response): Promise<void> {
     try {
-      const usecase = new ResetPassword(this.userRepository, this.passwordHasher);
-      const result = await usecase.execute(req.body as ResetPasswordInput);
+      const usecase = new GenerateAdminResetLink(this.userRepository, this.tokenRepository);
+      const result = await usecase.execute({
+        userId: req.params.userId,
+        clientUrl: this.clientUrl,
+      });
       res.json(result);
     } catch (error) {
       const status = getHttpStatusForError(error);

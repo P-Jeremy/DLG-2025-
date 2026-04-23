@@ -1,18 +1,28 @@
 import { Router, Request, Response } from 'express';
 import { AuthController } from '../controllers/authController';
 import { UserMongoRepository } from '../../repositories/userRepository';
+import { TokenMongoRepository } from '../../repositories/tokenRepository';
 import { JwtService } from '../../services/JwtService';
-import { ResendEmailService } from '../../services/ResendEmailService';
 import { BcryptPasswordHasher } from '../../services/BcryptPasswordHasher';
 import { authRateLimiter } from '../middlewares/rateLimiter';
+import { authenticate } from '../middlewares/authenticate';
+import { requireAdmin } from '../middlewares/requireAdmin';
 
 const router = Router();
 
 const userRepository = new UserMongoRepository();
+const tokenRepository = new TokenMongoRepository();
 const jwtService = new JwtService();
-const emailService = new ResendEmailService();
 const passwordHasher = new BcryptPasswordHasher();
-const controller = new AuthController(userRepository, jwtService, emailService, passwordHasher);
+const clientUrl = process.env.CLIENT_URL ?? '';
+
+const controller = new AuthController(
+  userRepository,
+  jwtService,
+  passwordHasher,
+  tokenRepository,
+  clientUrl,
+);
 
 router.use(authRateLimiter);
 
@@ -28,12 +38,12 @@ router.get('/activate/:token', async (req: Request, res: Response) => {
   await controller.activateAccount(req, res);
 });
 
-router.post('/forgot-password', async (req: Request, res: Response) => {
-  await controller.forgotPassword(req, res);
-});
-
 router.post('/reset-password', async (req: Request, res: Response) => {
   await controller.resetPassword(req, res);
+});
+
+router.post('/admin/reset-link/:userId', authenticate, requireAdmin, async (req: Request, res: Response) => {
+  await controller.generateAdminResetLink(req, res);
 });
 
 export default router;
