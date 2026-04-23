@@ -1,29 +1,29 @@
-import crypto from 'crypto';
+import { Token, TokenScope } from '../../domain/models/Token';
 import { User } from '../../domain/models/User';
 import { Email } from '../../domain/value-objects/Email';
 import { Pseudo } from '../../domain/value-objects/Pseudo';
 import { HashedPassword } from '../../domain/value-objects/HashedPassword';
 import { EmailAlreadyTakenError, PseudoAlreadyTakenError } from '../../domain/errors/DomainError';
 import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import type { IEmailService } from '../interfaces/IEmailService';
+import type { ITokenRepository } from '../../domain/interfaces/ITokenRepository';
 import type { IPasswordHasher } from '../interfaces/IPasswordHasher';
-
-const TOKEN_BYTE_LENGTH = 32;
 
 export interface RegisterUserInput {
   email: string;
   pseudo: string;
   password: string;
+  clientUrl: string;
 }
 
 export interface RegisterUserOutput {
   userId: string;
+  activationLink: string;
 }
 
 export class RegisterUser {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly emailService: IEmailService,
+    private readonly tokenRepository: ITokenRepository,
     private readonly passwordHasher: IPasswordHasher,
   ) {}
 
@@ -32,19 +32,13 @@ export class RegisterUser {
     const pseudo = new Pseudo(input.pseudo);
 
     const existingByEmail = await this.userRepository.findByEmail(email.toString());
-    if (existingByEmail) {
-      throw new EmailAlreadyTakenError();
-    }
+    if (existingByEmail) throw new EmailAlreadyTakenError();
 
     const existingByPseudo = await this.userRepository.findByPseudo(pseudo.toString());
-    if (existingByPseudo) {
-      throw new PseudoAlreadyTakenError();
-    }
+    if (existingByPseudo) throw new PseudoAlreadyTakenError();
 
     const hashedPasswordValue = await this.passwordHasher.hash(input.password);
     const hashedPassword = new HashedPassword(hashedPasswordValue);
-
-    const activationToken = crypto.randomBytes(TOKEN_BYTE_LENGTH).toString('hex');
 
     const user = new User({
       email,
@@ -53,18 +47,24 @@ export class RegisterUser {
       isAdmin: false,
       isActive: false,
       isDeleted: false,
-      titleNotif: true,
-      tokens: [{ used_token: activationToken }],
     });
 
     const savedUser = await this.userRepository.save(user);
 
-    try {
-      await this.emailService.sendActivationEmail(email.toString(), activationToken);
-    } catch (error: unknown) {
-      console.error('Failed to send activation email:', error instanceof Error ? error.message : 'Unknown error');
-    }
+    const rawToken = Token.generateRawToken();
+    const tokenHash = Token.hashRawToken(rawToken);
 
-    return { userId: savedUser.id! };
+    await this.tokenRepository.invalidatePreviousTokens(savedUser.id!, TokenScope.VERIFY_ACCOUNT);
+    await this.tokenRepository.save(new Token({
+      userId: savedUser.id!,
+      tokenHash,
+      scope: TokenScope.VERIFY_ACCOUNT,
+      expiresAt: Token.expiryFor(TokenScope.VERIFY_ACCOUNT),
+      usedAt: null,
+      createdAt: new Date(),
+    }));
+
+    const activationLink = `${input.clientUrl}/activate/${rawToken}`;
+    return { userId: savedUser.id!, activationLink };
   }
 }

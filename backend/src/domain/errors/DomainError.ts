@@ -88,3 +88,24 @@ export class CannotModifyOwnRoleError extends DomainError {
     this.name = 'CannotModifyOwnRoleError';
   }
 }
+
+export class TokenExpiredError extends DomainError {
+  constructor() {
+    super('Token has expired');
+    this.name = 'TokenExpiredError';
+  }
+}
+
+export class TokenAlreadyUsedError extends DomainError {
+  constructor() {
+    super('Token has already been used');
+    this.name = 'TokenAlreadyUsedError';
+  }
+}
+
+export class TokenInvalidError extends DomainError {
+  constructor() {
+    super('Token is invalid');
+    this.name = 'TokenInvalidError';
+  }
+}

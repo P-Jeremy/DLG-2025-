@@ -1,6 +1,8 @@
 import { ActivateAccount } from '../../src/application/usecases/ActivateAccount';
-import { InvalidActivationTokenError } from '../../src/domain/errors/DomainError';
+import { Token, TokenScope } from '../../src/domain/models/Token';
+import { TokenExpiredError, TokenAlreadyUsedError, TokenInvalidError, UserNotFoundError } from '../../src/domain/errors/DomainError';
 import type { IUserRepository } from '../../src/domain/interfaces/IUserRepository';
+import type { ITokenRepository } from '../../src/domain/interfaces/ITokenRepository';
 import { User } from '../../src/domain/models/User';
 import { Email } from '../../src/domain/value-objects/Email';
 import { Pseudo } from '../../src/domain/value-objects/Pseudo';
@@ -15,16 +17,12 @@ const buildInactiveUser = (): User =>
     isAdmin: false,
     isActive: false,
     isDeleted: false,
-    titleNotif: true,
-    tokens: [{ used_token: 'valid-activation-token' }],
   });
 
 const buildMockUserRepository = (overrides: Partial<IUserRepository> = {}): IUserRepository => ({
   findByEmail: jest.fn().mockResolvedValue(null),
   findByPseudo: jest.fn().mockResolvedValue(null),
   findById: jest.fn().mockResolvedValue(null),
-  findByResetToken: jest.fn().mockResolvedValue(null),
-  findAllWithTitleNotif: jest.fn().mockResolvedValue([]),
   findAll: jest.fn().mockResolvedValue([]),
   setAdminRole: jest.fn().mockResolvedValue(null),
   save: jest.fn(),
@@ -32,53 +30,162 @@ const buildMockUserRepository = (overrides: Partial<IUserRepository> = {}): IUse
   ...overrides,
 });
 
-describe('ActivateAccount use case', () => {
-  it('should activate the user account and clear tokens', async () => {
-    const user = buildInactiveUser();
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(user),
-    });
-    const usecase = new ActivateAccount(repository);
+const buildMockTokenRepository = (overrides: Partial<ITokenRepository> = {}): ITokenRepository => ({
+  save: jest.fn().mockResolvedValue(null),
+  findByHash: jest.fn().mockResolvedValue(null),
+  invalidatePreviousTokens: jest.fn().mockResolvedValue(undefined),
+  markAsUsed: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
 
-    const result = await usecase.execute({ token: 'valid-activation-token' });
+describe('ActivateAccount use case', () => {
+  it('should activate the user account when token is valid', async () => {
+    const user = buildInactiveUser();
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('test-raw-token'),
+      scope: TokenScope.VERIFY_ACCOUNT,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository({
+      findById: jest.fn().mockResolvedValue(user),
+    });
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+
+    const usecase = new ActivateAccount(userRepository, tokenRepository);
+    const result = await usecase.execute({ rawToken: 'test-raw-token' });
 
     expect(result.success).toBe(true);
     expect(user.isActive).toBe(true);
-    expect(user.tokens).toHaveLength(0);
-    expect(repository.update).toHaveBeenCalledWith(user);
+    expect(userRepository.update).toHaveBeenCalledWith(user);
+    expect(tokenRepository.markAsUsed).toHaveBeenCalledWith('token-id');
   });
 
   it('should return success true when activation succeeds', async () => {
     const user = buildInactiveUser();
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(user),
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('test-raw-token'),
+      scope: TokenScope.VERIFY_ACCOUNT,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: null,
+      createdAt: new Date(),
     });
-    const usecase = new ActivateAccount(repository);
 
-    const result = await usecase.execute({ token: 'valid-activation-token' });
+    const userRepository = buildMockUserRepository({
+      findById: jest.fn().mockResolvedValue(user),
+    });
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+
+    const usecase = new ActivateAccount(userRepository, tokenRepository);
+    const result = await usecase.execute({ rawToken: 'test-raw-token' });
 
     expect(result).toEqual({ success: true });
   });
 
-  it('should throw InvalidActivationTokenError when token is not found', async () => {
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(null),
+  it('should throw TokenInvalidError when token is not found', async () => {
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(null),
     });
-    const usecase = new ActivateAccount(repository);
+
+    const usecase = new ActivateAccount(userRepository, tokenRepository);
 
     await expect(
-      usecase.execute({ token: 'unknown-token' }),
-    ).rejects.toThrow(InvalidActivationTokenError);
+      usecase.execute({ rawToken: 'unknown-token' }),
+    ).rejects.toThrow(TokenInvalidError);
+  });
+
+  it('should throw TokenExpiredError when token is expired', async () => {
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('expired-token'),
+      scope: TokenScope.VERIFY_ACCOUNT,
+      expiresAt: new Date(Date.now() - 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+
+    const usecase = new ActivateAccount(userRepository, tokenRepository);
+
+    await expect(
+      usecase.execute({ rawToken: 'expired-token' }),
+    ).rejects.toThrow(TokenExpiredError);
+  });
+
+  it('should throw TokenAlreadyUsedError when token is already used', async () => {
+    const token = new Token({
+      id: 'token-id',
+      userId: 'user-id-1',
+      tokenHash: Token.hashRawToken('used-token'),
+      scope: TokenScope.VERIFY_ACCOUNT,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: new Date(),
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+
+    const usecase = new ActivateAccount(userRepository, tokenRepository);
+
+    await expect(
+      usecase.execute({ rawToken: 'used-token' }),
+    ).rejects.toThrow(TokenAlreadyUsedError);
+  });
+
+  it('should throw UserNotFoundError when user does not exist', async () => {
+    const token = new Token({
+      id: 'token-id',
+      userId: 'unknown-user',
+      tokenHash: Token.hashRawToken('valid-token'),
+      scope: TokenScope.VERIFY_ACCOUNT,
+      expiresAt: new Date(Date.now() + 1000),
+      usedAt: null,
+      createdAt: new Date(),
+    });
+
+    const userRepository = buildMockUserRepository({
+      findById: jest.fn().mockResolvedValue(null),
+    });
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(token),
+    });
+
+    const usecase = new ActivateAccount(userRepository, tokenRepository);
+
+    await expect(
+      usecase.execute({ rawToken: 'valid-token' }),
+    ).rejects.toThrow(UserNotFoundError);
   });
 
   it('should not call update when token is invalid', async () => {
-    const repository = buildMockUserRepository({
-      findByResetToken: jest.fn().mockResolvedValue(null),
+    const userRepository = buildMockUserRepository();
+    const tokenRepository = buildMockTokenRepository({
+      findByHash: jest.fn().mockResolvedValue(null),
     });
-    const usecase = new ActivateAccount(repository);
 
-    await expect(usecase.execute({ token: 'bad-token' })).rejects.toThrow();
+    const usecase = new ActivateAccount(userRepository, tokenRepository);
 
-    expect(repository.update).not.toHaveBeenCalled();
+    await expect(usecase.execute({ rawToken: 'bad-token' })).rejects.toThrow();
+
+    expect(userRepository.update).not.toHaveBeenCalled();
   });
 });

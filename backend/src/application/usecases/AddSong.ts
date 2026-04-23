@@ -1,6 +1,4 @@
 import type { ISongRepository } from '../../domain/interfaces/ISongRepository';
-import type { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import type { IEmailService } from '../interfaces/IEmailService';
 import type { IFileUploadService, UploadableFile } from '../interfaces/IFileUploadService';
 import type { IEventEmitter } from '../interfaces/IEventEmitter';
 import type { IMetaRepository } from '../../domain/interfaces/IMetaRepository';
@@ -23,8 +21,6 @@ export interface AddSongOutput {
 export class AddSong {
   constructor(
     private readonly songRepository: ISongRepository,
-    private readonly userRepository: IUserRepository,
-    private readonly emailService: IEmailService,
     private readonly fileUploadService: IFileUploadService,
     private readonly eventEmitter: IEventEmitter,
     private readonly metaRepository: IMetaRepository,
@@ -43,14 +39,6 @@ export class AddSong {
     const savedSong = await this.songRepository.save(songData);
 
     await this.metaRepository.touch();
-
-    const usersToNotify = await this.userRepository.findAllWithTitleNotif();
-    await Promise.allSettled(
-      usersToNotify.map((user) =>
-        this.emailService.sendNewSongNotification(user.email.toString(), savedSong.title),
-      ),
-    );
-
     this.eventEmitter.emit(SONG_ADDED_EVENT);
 
     return { song: savedSong };
