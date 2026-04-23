@@ -11,8 +11,6 @@ export interface UserDocument extends Document {
   isDeleted: boolean;
   postNotif: boolean;
   commentNotif: boolean;
-  titleNotif: boolean;
-  tokens: { used_token: string }[];
 }
 
 const userSchema = new Schema<UserDocument>(
@@ -26,8 +24,6 @@ const userSchema = new Schema<UserDocument>(
     isDeleted: { type: Boolean, default: false },
     postNotif: { type: Boolean, default: true },
     commentNotif: { type: Boolean, default: true },
-    titleNotif: { type: Boolean, default: true },
-    tokens: [{ used_token: String }],
   },
   { timestamps: true },
 );

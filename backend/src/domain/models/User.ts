@@ -10,8 +10,6 @@ export class User {
   isAdmin: boolean;
   isActive: boolean;
   isDeleted: boolean;
-  titleNotif: boolean;
-  tokens: { used_token: string }[];
 
   constructor(props: {
     id?: string;
@@ -21,8 +19,6 @@ export class User {
     isAdmin: boolean;
     isActive: boolean;
     isDeleted: boolean;
-    titleNotif: boolean;
-    tokens: { used_token: string }[];
   }) {
     this.id = props.id;
     this.email = props.email;
@@ -31,7 +27,5 @@ export class User {
     this.isAdmin = props.isAdmin;
     this.isActive = props.isActive;
     this.isDeleted = props.isDeleted;
-    this.titleNotif = props.titleNotif;
-    this.tokens = props.tokens;
   }
 }

@@ -22,16 +22,6 @@ export class UserMongoRepository implements IUserRepository {
     return doc ? this.toDomain(doc) : null;
   }
 
-  async findByResetToken(token: string): Promise<User | null> {
-    const doc = await UserModel.findOne({ 'tokens.used_token': token }).exec();
-    return doc ? this.toDomain(doc) : null;
-  }
-
-  async findAllWithTitleNotif(): Promise<User[]> {
-    const docs = await UserModel.find({ titleNotif: true, isActive: true, isDeleted: false }).exec();
-    return docs.map((doc) => this.toDomain(doc));
-  }
-
   async findAll(): Promise<User[]> {
     const docs = await UserModel.find({ isDeleted: false }).exec();
     return docs.map((doc) => this.toDomain(doc));
@@ -59,8 +49,6 @@ export class UserMongoRepository implements IUserRepository {
       isAdmin: user.isAdmin,
       isActive: user.isActive,
       isDeleted: user.isDeleted,
-      titleNotif: user.titleNotif,
-      tokens: user.tokens,
     });
     const saved = await doc.save();
     return this.toDomain(saved);
@@ -76,8 +64,6 @@ export class UserMongoRepository implements IUserRepository {
         isAdmin: user.isAdmin,
         isActive: user.isActive,
         isDeleted: user.isDeleted,
-        titleNotif: user.titleNotif,
-        tokens: user.tokens,
       },
       { new: true },
     ).exec();
@@ -98,8 +84,6 @@ export class UserMongoRepository implements IUserRepository {
       isAdmin: doc.isAdmin,
       isActive: doc.isActive,
       isDeleted: doc.isDeleted,
-      titleNotif: doc.titleNotif,
-      tokens: doc.tokens,
     });
   }
 }
