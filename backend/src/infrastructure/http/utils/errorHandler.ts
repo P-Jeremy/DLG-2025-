@@ -7,6 +7,9 @@ import {
   InvalidPasswordError,
   InvalidActivationTokenError,
   InvalidResetTokenError,
+  TokenExpiredError,
+  TokenAlreadyUsedError,
+  TokenInvalidError,
 } from '../../../domain/errors/DomainError';
 
 type ErrorConstructor = new (...args: any[]) => Error;
@@ -17,6 +20,9 @@ const SINGLE_ERROR_STATUS_MAP = new Map<ErrorConstructor, number>([
   [InvalidActivationTokenError, 400],
   [InvalidResetTokenError, 400],
   [AccountNotActiveError, 403],
+  [TokenExpiredError, 400],
+  [TokenAlreadyUsedError, 400],
+  [TokenInvalidError, 400],
 ]);
 
 const MULTI_ERROR_STATUS_MAP = new Map<ErrorConstructor[], number>([
